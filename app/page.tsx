@@ -7,7 +7,7 @@ export default function LandingPage() {
       <div className="flex justify-center py-8">
         <p className="text-2xl font-bold">Spineline</p>
       </div>
-      <div className="max-w-[700px]">
+      <div className="max-w-[700px] py-16">
         <h1 className="mb-1 text-center text-6xl font-bold drop-shadow">
           Practice management that has your back.
         </h1>
@@ -16,7 +16,7 @@ export default function LandingPage() {
           hundreds of thriving practices today.
         </p>
       </div>
-      <div>
+      <div className="flex h-[52px] flex-row gap-x-4">
         <a href="/login">
           <Button>Log in</Button>
         </a>
