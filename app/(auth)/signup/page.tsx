@@ -1,6 +1,5 @@
 "use client";
 
-import Link from 'next/link';
 import {
   Form,
   FormControl,
@@ -46,7 +45,7 @@ export default function Signup() {
       } else if (result?.ok) {
         router.push('/business');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('An error occurred when signing in', error);
     }
   };

@@ -46,7 +46,7 @@ export const authOptions: AuthOptions = {
         email: {},
         password: {},
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         await dbConnect();
         let user = null;
         try {
@@ -84,7 +84,7 @@ export const authOptions: AuthOptions = {
         email: {},
         password: {},
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         await dbConnect();
         console.log('Signing up');
 
@@ -110,7 +110,7 @@ export const authOptions: AuthOptions = {
             password,
           });
           console.log('Practice was created');
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.log(
             'Got an error authorizing and creating a user during signup',
             error
