@@ -39,10 +39,9 @@ export default function Signup() {
       });
 
       if (result?.error) {
-        // Just assume the error is becasue the email is already in use
         form.setError('root', {
           type: 'manual',
-          message: 'The email is already in use.',
+          message: result.error,
         });
       } else if (result?.ok) {
         router.push('/business');
