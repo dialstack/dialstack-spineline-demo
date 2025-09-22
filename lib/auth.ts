@@ -32,7 +32,7 @@ export const authOptions: AuthOptions = {
         console.log('Updating session', session);
       }
       if (user) {
-        token.user = {...token.user, ...user};
+        token.user = Object.assign(token.user || {}, user);
       }
       return token;
     },

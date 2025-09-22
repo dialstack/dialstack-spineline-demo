@@ -101,7 +101,7 @@ export default function Signup() {
               disabled={form.formState.isSubmitting}
               className={'w-full rounded-md font-bold text-white'}
             >
-              {form.formState.isSubmitting || form.formState.isSubmitsuccessful ? (
+              {form.formState.isSubmitting || form.formState.isSubmitSuccessful ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading...
                 </>
