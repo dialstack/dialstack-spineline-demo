@@ -10,6 +10,9 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
 - **Type Safety**: Full TypeScript support with strict type checking
 - **Form Management**: React Hook Form with Zod validation
 - **Responsive Design**: Mobile-first design with shadcn/ui components
+- **Blue/Green Deployment**: Zero-downtime deployments with automatic rollback
+- **Infrastructure as Code**: Complete AWS infrastructure with OpenTofu
+- **Production Security**: SSH bastion, encrypted storage, SSL certificates
 
 ## Tech Stack
 
@@ -33,19 +36,30 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
 - **Zod** - TypeScript-first schema validation
 - **@hookform/resolvers** - Validation library integrations
 
+### Infrastructure & Deployment
+
+- **OpenTofu** - Infrastructure as Code (Terraform alternative)
+- **AWS EC2** - Application servers with Auto Scaling Groups
+- **AWS RDS** - PostgreSQL database with automated backups
+- **Route53** - DNS management with health checks
+- **Let's Encrypt** - SSL certificates with DNS-01 challenge
+- **GitHub Actions** - CI/CD pipeline with blue/green deployment
+
 ### Development Tools
 
 - **TypeScript** - Static type checking
 - **ESLint** - Code linting with Next.js config
-- **GitHub Actions** - CI/CD pipeline
+- **Prettier** - Code formatting
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 20 or later
-- PostgreSQL database
+- Node.js 24 or later
+- PostgreSQL database (or use AWS RDS)
 - npm or yarn
+- AWS account (for production deployment)
+- OpenTofu/Terraform (for infrastructure management)
 
 ### Installation
 
@@ -143,18 +157,114 @@ The app uses a singleton connection pool pattern to efficiently manage PostgreSQ
 
 ## Deployment
 
-### Environment Setup
+This application uses a complete blue/green deployment strategy with Infrastructure as Code (OpenTofu) for zero-downtime deployments.
 
-1. Set production environment variables
-2. Configure PostgreSQL database
-3. Run database migrations
-4. Build and deploy the application
+### Architecture
 
-### CI/CD
+- **Blue/Green Environments**: Independent EC2 + RDS instances for seamless switching
+- **SSH Bastion**: Secure access to private application servers
+- **DNS-01 Challenge**: Let's Encrypt SSL certificates without port 80
+- **60-second TTL**: Fast rollback capability on DNS records
+- **Production Security**: Deletion protection, encrypted storage, automated backups
 
-GitHub Actions workflow automatically:
+### Quick Start (Production)
 
-- Runs TypeScript type checking
-- Performs ESLint validation
-- Builds the application
-- Tests for errors on every push
+1. **Set up AWS credentials** in GitHub Secrets:
+   - `AWS_ACCESS_KEY_ID`
+   - `AWS_SECRET_ACCESS_KEY`
+
+2. **Deploy infrastructure**:
+
+   ```bash
+   # Via GitHub Actions
+   Go to Actions → Infrastructure Deployment → Run workflow → Apply
+   ```
+
+3. **Deploy application**:
+   ```bash
+   # Via GitHub Actions
+   Go to Actions → Blue/Green Deployment → Run workflow
+   ```
+
+### Manual Deployment
+
+1. **Install OpenTofu**:
+
+   ```bash
+   # macOS
+   brew install opentofu
+
+   # Linux/Windows - see https://opentofu.org/docs/intro/install/
+   ```
+
+2. **Initialize infrastructure**:
+
+   ```bash
+   cd tofu/
+   tofu init
+   tofu plan
+   tofu apply
+   ```
+
+3. **Deploy application**:
+
+   ```bash
+   # Deploy to blue environment (staging)
+   ./scripts/deploy.sh blue staging
+
+   # Deploy to production
+   ./scripts/deploy.sh blue production
+   ```
+
+4. **Rollback if needed**:
+   ```bash
+   ./scripts/deploy.sh rollback
+   ```
+
+### Infrastructure Components
+
+- **VPC**: Multi-AZ setup with public/private subnets
+- **EC2**: t3.micro instances (free tier eligible)
+- **RDS**: PostgreSQL 14 with automated backups
+- **Route53**: DNS with health checks and fast TTL
+- **Security Groups**: Restrictive access controls
+- **IAM**: Least-privilege roles for all components
+- **CloudWatch**: Comprehensive logging and monitoring
+
+### Environment URLs
+
+- **Production**: https://spineline.dev
+- **Blue Staging**: https://blue.spineline.dev
+- **Green Staging**: https://green.spineline.dev
+- **SSH Bastion**: https://bastion.spineline.dev
+- **Health Check**: https://spineline.dev/api/health
+
+### CI/CD Workflows
+
+1. **Infrastructure Pipeline** (`infrastructure.yml`):
+   - Validates OpenTofu configurations
+   - Runs security scans with Checkov
+   - Applies infrastructure changes on main branch
+   - Manual trigger for apply/destroy operations
+
+2. **Application Pipeline** (`deploy.yml`):
+   - Builds and tests the application
+   - Deploys to blue/green environments
+   - Performs health checks and rollback
+   - Manual trigger for production deployments
+
+### Monitoring
+
+- **Application Logs**: CloudWatch logs for app and nginx
+- **Infrastructure Metrics**: CPU, memory, disk usage
+- **Health Checks**: Automated endpoint monitoring
+- **Database Monitoring**: RDS Performance Insights
+
+### Security Features
+
+- **SSH Bastion**: No direct SSH to application servers
+- **Private Subnets**: Database and app servers isolated
+- **Encrypted Storage**: All EBS volumes and RDS encrypted
+- **SSL Certificates**: Automatic Let's Encrypt with Route53
+- **IAM Policies**: Minimal required permissions
+- **Security Groups**: Port-specific access controls
