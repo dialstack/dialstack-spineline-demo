@@ -8,6 +8,9 @@ export interface Practice {
   password: string;
   created_at?: Date;
   updated_at?: Date;
+  changedPassword?: boolean;
+  businessName?: string;
+  setup?: boolean;
 }
 
 // Practice class with PostgreSQL methods
