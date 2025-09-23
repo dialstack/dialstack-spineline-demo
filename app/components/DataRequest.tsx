@@ -34,21 +34,6 @@ export const DataRequest = ({
       } else {
         console.error("Failed to fetch account info:", info.status);
       }
-
-      const res = await fetch("/api/setup_accounts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (res.ok) {
-        await update({
-          user: {
-            ...session?.user,
-            setup: true,
-          },
-        });
-      }
     };
     setTimeout(() => fetchData(), 10000);
   });
