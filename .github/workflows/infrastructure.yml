@@ -1,0 +1,142 @@
+name: Infrastructure Deployment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "tofu/**"
+      - ".github/workflows/infrastructure.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "tofu/**"
+
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Infrastructure action"
+        required: true
+        default: "plan"
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  TF_VERSION: "1.6.6"
+  AWS_REGION: us-east-1
+
+jobs:
+  infrastructure:
+    name: Infrastructure ${{ github.event.inputs.action || 'plan' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tofu
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TF_VERSION }}
+
+      - name: Create terraform.tfvars
+        run: |
+          cat > terraform.tfvars << EOF
+          # Blue/Green deployment configuration
+          project_name = "spineline"
+          domain_name = "spineline.dev"
+
+          # Environment deployment flags
+          deploy_blue = true
+          deploy_green = true
+
+          # Active environment (controls DNS routing)
+          active_environment = "blue"
+
+          # Infrastructure configuration
+          aws_region = "${{ env.AWS_REGION }}"
+          availability_zones = ["us-east-1a", "us-east-1b"]
+
+          # Instance configuration
+          instance_type = "t3.micro"
+          key_pair_name = "spineline-key"
+
+          # Database configuration
+          db_engine_version = "14.9"
+          db_instance_class = "db.t3.micro"
+          db_allocated_storage = 20
+          db_name = "spineline_production"
+          db_username = "app_user"
+
+          # Security configuration
+          allowed_cidr_blocks = ["0.0.0.0/0"]
+          ssh_allowed_cidr_blocks = ["0.0.0.0/0"]
+          EOF
+
+      - name: Initialize OpenTofu
+        run: tofu init
+
+      - name: Validate OpenTofu configuration
+        run: tofu validate
+
+      - name: Plan infrastructure changes
+        if: github.event.inputs.action != 'apply' && github.event.inputs.action != 'destroy'
+        run: tofu plan -detailed-exitcode -out=tfplan
+        continue-on-error: true
+
+      - name: Apply infrastructure changes
+        if: github.event.inputs.action == 'apply' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        run: |
+          if [[ "${{ github.event.inputs.action }}" == "apply" || "${{ github.event_name }}" == "push" ]]; then
+            tofu apply -auto-approve
+          fi
+
+      - name: Destroy infrastructure
+        if: github.event.inputs.action == 'destroy'
+        run: tofu destroy -auto-approve
+
+      - name: Output infrastructure information
+        if: github.event.inputs.action == 'apply' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        run: |
+          echo "## Infrastructure Outputs" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          tofu output >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Checkov security scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: tofu/
+          framework: terraform
+          soft_fail: true
+          output_format: sarif
+          output_file_path: reports/results.sarif
+
+      - name: Upload Checkov results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: reports/results.sarif
