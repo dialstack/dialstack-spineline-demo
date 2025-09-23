@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function AuthLayout({
   children,
@@ -20,7 +20,7 @@ export default function AuthLayout({
         </div>
         <div className="mt-8 flex w-full flex-col items-center gap-2">
           <p className="text-center text-sm text-subdued">
-            This site is a demo for{' '}
+            This site is a demo for{" "}
             <a
               className="border-b border-black/20 font-medium hover:hover-black/70"
               href="https://dialstack.ai/"

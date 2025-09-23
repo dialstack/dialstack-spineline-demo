@@ -14,6 +14,7 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
 ## Tech Stack
 
 ### Frontend
+
 - **Next.js 15** - React framework with App Router
 - **React 19** - Latest React with concurrent features
 - **Tailwind CSS** - Utility-first CSS framework
@@ -21,16 +22,19 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
 - **Lucide React** - Beautiful icons
 
 ### Authentication & Backend
+
 - **NextAuth.js** - Authentication solution
 - **PostgreSQL** - Primary database
 - **bcryptjs** - Password hashing
 
 ### Form Management & Validation
+
 - **React Hook Form** - Performant forms with minimal re-renders
 - **Zod** - TypeScript-first schema validation
 - **@hookform/resolvers** - Validation library integrations
 
 ### Development Tools
+
 - **TypeScript** - Static type checking
 - **ESLint** - Code linting with Next.js config
 - **GitHub Actions** - CI/CD pipeline
@@ -46,22 +50,26 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/your-username/dialstack-spineline-demo.git
    cd dialstack-spineline-demo
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env
    ```
 
    Update the `.env` file with your actual values:
+
    ```env
    DIALSTACK_SECRET_KEY="your_dialstack_secret_key"
    DIALSTACK_PUBLIC_KEY="your_dialstack_public_key"
@@ -70,6 +78,7 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
    ```
 
 4. **Set up the database**
+
    ```bash
    # Create the database
    psql postgres -c "CREATE DATABASE spineline_db;"
@@ -79,6 +88,7 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
    ```
 
 5. **Run the development server**
+
    ```bash
    npm run dev
    ```
@@ -99,6 +109,7 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
 The application uses PostgreSQL with the following main tables:
 
 ### practices
+
 - `id` - Primary key (serial)
 - `email` - User email (unique)
 - `password` - Hashed password
@@ -142,6 +153,7 @@ The app uses a singleton connection pool pattern to efficiently manage PostgreSQ
 ### CI/CD
 
 GitHub Actions workflow automatically:
+
 - Runs TypeScript type checking
 - Performs ESLint validation
 - Builds the application

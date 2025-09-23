@@ -1,5 +1,5 @@
-import bcrypt from 'bcryptjs';
-import dbConnect from '@/lib/dbConnect';
+import bcrypt from "bcryptjs";
+import dbConnect from "@/lib/dbConnect";
 
 // Practice interface for TypeScript typing
 export interface Practice {
@@ -13,7 +13,9 @@ export interface Practice {
 // Practice class with PostgreSQL methods
 class PracticeModel {
   // Create a new practice
-  static async create(practiceData: Omit<Practice, 'id' | 'created_at' | 'updated_at'>): Promise<Practice> {
+  static async create(
+    practiceData: Omit<Practice, "id" | "created_at" | "updated_at">,
+  ): Promise<Practice> {
     const pool = await dbConnect();
 
     try {
@@ -21,8 +23,8 @@ class PracticeModel {
       const hashedPassword = await bcrypt.hash(practiceData.password, 12);
 
       const result = await pool.query(
-        'INSERT INTO practices (email, password, created_at, updated_at) VALUES ($1, $2, NOW(), NOW()) RETURNING *',
-        [practiceData.email, hashedPassword]
+        "INSERT INTO practices (email, password, created_at, updated_at) VALUES ($1, $2, NOW(), NOW()) RETURNING *",
+        [practiceData.email, hashedPassword],
       );
 
       return result.rows[0];
@@ -37,8 +39,8 @@ class PracticeModel {
 
     try {
       const result = await pool.query(
-        'SELECT * FROM practices WHERE email = $1',
-        [email]
+        "SELECT * FROM practices WHERE email = $1",
+        [email],
       );
 
       return result.rows[0] || null;
@@ -52,10 +54,9 @@ class PracticeModel {
     const pool = await dbConnect();
 
     try {
-      const result = await pool.query(
-        'SELECT * FROM practices WHERE id = $1',
-        [id]
-      );
+      const result = await pool.query("SELECT * FROM practices WHERE id = $1", [
+        id,
+      ]);
 
       return result.rows[0] || null;
     } catch (error) {
@@ -64,7 +65,10 @@ class PracticeModel {
   }
 
   // Validate password
-  static async validatePassword(practice: Practice, password: string): Promise<boolean> {
+  static async validatePassword(
+    practice: Practice,
+    password: string,
+  ): Promise<boolean> {
     try {
       return await bcrypt.compare(password, practice.password);
     } catch (error) {
@@ -73,19 +77,22 @@ class PracticeModel {
   }
 
   // Update practice password
-  static async updatePassword(id: number, newPassword: string): Promise<Practice> {
+  static async updatePassword(
+    id: number,
+    newPassword: string,
+  ): Promise<Practice> {
     const pool = await dbConnect();
 
     try {
       const hashedPassword = await bcrypt.hash(newPassword, 12);
 
       const result = await pool.query(
-        'UPDATE practices SET password = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
-        [hashedPassword, id]
+        "UPDATE practices SET password = $1, updated_at = NOW() WHERE id = $2 RETURNING *",
+        [hashedPassword, id],
       );
 
       if (result.rows.length === 0) {
-        throw new Error('Practice not found');
+        throw new Error("Practice not found");
       }
 
       return result.rows[0];
@@ -100,8 +107,8 @@ class PracticeModel {
 
     try {
       const result = await pool.query(
-        'SELECT COUNT(*) FROM practices WHERE email = $1',
-        [email]
+        "SELECT COUNT(*) FROM practices WHERE email = $1",
+        [email],
       );
 
       return parseInt(result.rows[0].count) > 0;

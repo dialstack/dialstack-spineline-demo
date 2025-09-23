@@ -17,9 +17,9 @@ export default async function Login() {
       </div>
       <div className="flex flex-col gap-y[24x]">
         <Form />
-        <div className="text-secondary">
+        <div>
           New user?{" "}
-          <Link href="/signup" className="font-medium text-accent">
+          <Link href="/signup" className="font-medium">
             Create an account{" "}
           </Link>
         </div>

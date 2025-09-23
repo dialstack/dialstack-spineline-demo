@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -28,10 +28,11 @@ export default function LandingPage() {
       <div className="fixed bottom-5 right-[50%] flex translate-x-2/4 bg-gradient-to-tr from-[#9160F1] to-[#11DFD4] py-3 shadow-xl rounded-lg px-6 w-[1000px]">
         <div className="flex flex-1 flex-col">
           <p className="text-sm text-white">
-            This site is a demo for{' '}
+            This site is a demo for{" "}
             <a
               className="border-b border-white/60"
-              href="https://dialstack.ai/">
+              href="https://dialstack.ai/"
+            >
               DialStack embedded telephony
             </a>
             . Spineline is not a real product.

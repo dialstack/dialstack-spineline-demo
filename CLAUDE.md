@@ -21,23 +21,27 @@ This application is a vertical SaaS platform for chiropractors that showcases Di
 ## Architecture Overview
 
 ### Authentication Flow
+
 - Uses NextAuth.js with custom credentials providers for both login and signup
 - Two providers configured: 'login' and 'signup' (both CredentialsProvider)
 - JWT session strategy with custom callbacks for session/token management
 - Passwords hashed with bcryptjs using 12 salt rounds
 
 ### Database Architecture
+
 - **Connection Pooling**: Uses singleton pattern in `lib/dbConnect.ts` with cached PostgreSQL pool
 - **Model Pattern**: `app/models/practice.ts` contains static methods for database operations
 - **Schema**: Single `practices` table with auto-updating timestamps via triggers
 - **Important**: All database operations use the shared connection pool, never create new connections
 
 ### Form Management
+
 - React Hook Form with Zod validation via `@hookform/resolvers`
 - Form schemas defined in `lib/forms.ts` (currently `UserFormSchema`)
 - shadcn/ui form components in `components/ui/form.tsx` with custom validation display
 
 ### UI Components
+
 - Built on shadcn/ui foundation with Tailwind CSS
 - Core components: Button, Input, Label, Form (all in `components/ui/`)
 - Next.js 15 App Router with route groups: `app/(auth)/` for authentication pages
