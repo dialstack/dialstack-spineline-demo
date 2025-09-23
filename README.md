@@ -173,17 +173,24 @@ This application uses a complete blue/green deployment strategy with Infrastruct
    - `AWS_ACCESS_KEY_ID`
    - `AWS_SECRET_ACCESS_KEY`
 
-2. **Deploy infrastructure**:
+2. **Deploy infrastructure** (manual only):
 
    ```bash
    # Via GitHub Actions
-   Go to Actions → Infrastructure Deployment → Run workflow → Apply
+   Go to Actions → Infrastructure Deployment → Run workflow → Select "apply"
    ```
 
-3. **Deploy application**:
+3. **Deploy to staging** (automatic on push):
+
+   ```bash
+   # Push to main branch auto-deploys to staging (inactive environment)
+   git push origin main
+   ```
+
+4. **Promote to production** (manual only):
    ```bash
    # Via GitHub Actions
-   Go to Actions → Blue/Green Deployment → Run workflow
+   Go to Actions → Blue/Green Deployment → Run workflow → Select "deploy-production"
    ```
 
 ### Manual Deployment
@@ -209,11 +216,16 @@ This application uses a complete blue/green deployment strategy with Infrastruct
 3. **Deploy application**:
 
    ```bash
-   # Deploy to blue environment (staging)
-   ./scripts/deploy.sh blue staging
+   # Deploy to staging (inactive environment)
+   ACTIVE_ENV=$(cd tofu && tofu output -raw active_environment)
+   if [[ "$ACTIVE_ENV" == "blue" ]]; then
+     ./scripts/deploy.sh green staging
+   else
+     ./scripts/deploy.sh blue staging
+   fi
 
-   # Deploy to production
-   ./scripts/deploy.sh blue production
+   # Promote staging to production
+   ./scripts/deploy.sh green production  # if green was staging
    ```
 
 4. **Rollback if needed**:
@@ -233,25 +245,33 @@ This application uses a complete blue/green deployment strategy with Infrastruct
 
 ### Environment URLs
 
-- **Production**: https://spineline.dev
-- **Blue Staging**: https://blue.spineline.dev
-- **Green Staging**: https://green.spineline.dev
+- **Production**: https://spineline.dev (points to active environment)
+- **Blue Environment**: https://blue.spineline.dev
+- **Green Environment**: https://green.spineline.dev
 - **SSH Bastion**: https://bastion.spineline.dev
 - **Health Check**: https://spineline.dev/api/health
+
+### Deployment Flow
+
+1. **Code Push**: Push to main → Auto-deploys to staging (inactive environment)
+2. **Test Staging**: Verify changes at `https://[inactive-env].spineline.dev`
+3. **Promote**: Manual trigger switches DNS to make staging → production
+4. **Result**: Previous production becomes new staging for next deployment
 
 ### CI/CD Workflows
 
 1. **Infrastructure Pipeline** (`infrastructure.yml`):
-   - Validates OpenTofu configurations
-   - Runs security scans with Checkov
-   - Applies infrastructure changes on main branch
-   - Manual trigger for apply/destroy operations
+   - **PR validation**: Runs `tofu plan` and security scans on pull requests
+   - **Manual deployment**: Only applies changes via manual workflow trigger
+   - **Security scanning**: Runs Checkov to catch configuration issues
+   - **No auto-apply**: Infrastructure changes require explicit approval
 
 2. **Application Pipeline** (`deploy.yml`):
-   - Builds and tests the application
-   - Deploys to blue/green environments
-   - Performs health checks and rollback
-   - Manual trigger for production deployments
+   - **Auto staging**: Push to main auto-deploys to inactive environment (staging)
+   - **Manual production**: Requires manual trigger to promote staging → production
+   - **Smart targeting**: Automatically detects which environment is active/inactive
+   - **Health checks**: Validates deployment before completing
+   - **Rollback capability**: One-click rollback to previous environment
 
 ### Monitoring
 

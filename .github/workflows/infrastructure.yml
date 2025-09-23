@@ -1,12 +1,6 @@
 name: Infrastructure Deployment
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "tofu/**"
-      - ".github/workflows/infrastructure.yml"
   pull_request:
     branches:
       - main
@@ -99,18 +93,15 @@ jobs:
         continue-on-error: true
 
       - name: Apply infrastructure changes
-        if: github.event.inputs.action == 'apply' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-        run: |
-          if [[ "${{ github.event.inputs.action }}" == "apply" || "${{ github.event_name }}" == "push" ]]; then
-            tofu apply -auto-approve
-          fi
+        if: github.event.inputs.action == 'apply'
+        run: tofu apply -auto-approve
 
       - name: Destroy infrastructure
         if: github.event.inputs.action == 'destroy'
         run: tofu destroy -auto-approve
 
       - name: Output infrastructure information
-        if: github.event.inputs.action == 'apply' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        if: github.event.inputs.action == 'apply'
         run: |
           echo "## Infrastructure Outputs" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
