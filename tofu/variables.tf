@@ -34,25 +34,35 @@ variable "active_environment" {
     condition     = contains(["blue", "green"], var.active_environment)
     error_message = "Active environment must be either 'blue' or 'green'."
   }
+
+  validation {
+    condition     = contains(var.deployed_environments, var.active_environment)
+    error_message = "The active environment must be included in the deployed environments list."
+  }
 }
 
-variable "deploy_blue" {
-  description = "Whether to deploy blue environment"
-  type        = bool
-  default     = true
-}
+variable "deployed_environments" {
+  description = "List of environments to deploy (blue, green, or both)"
+  type        = list(string)
+  default     = ["blue"]
 
-variable "deploy_green" {
-  description = "Whether to deploy green environment"
-  type        = bool
-  default     = false
+  validation {
+    condition     = length(var.deployed_environments) > 0 && length(var.deployed_environments) <= 2
+    error_message = "Must deploy at least one environment and at most two environments."
+  }
+
+  validation {
+    condition     = length(setintersection(var.deployed_environments, ["blue", "green"])) == length(var.deployed_environments)
+    error_message = "All deployed environments must be either 'blue' or 'green'."
+  }
+
 }
 
 # Instance Configuration
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t3.micro"  # Free tier eligible
+  default     = "t3.micro" # Free tier eligible
 }
 
 variable "key_pair_name" {
@@ -65,7 +75,7 @@ variable "key_pair_name" {
 variable "db_instance_class" {
   description = "RDS instance class"
   type        = string
-  default     = "db.t3.micro"  # Free tier eligible
+  default     = "db.t3.micro" # Free tier eligible
 }
 
 variable "db_engine_version" {
@@ -77,7 +87,7 @@ variable "db_engine_version" {
 variable "db_allocated_storage" {
   description = "RDS allocated storage in GB"
   type        = number
-  default     = 20  # Free tier eligible
+  default     = 20 # Free tier eligible
 }
 
 variable "db_name" {
@@ -96,13 +106,13 @@ variable "db_username" {
 variable "allowed_cidr_blocks" {
   description = "CIDR blocks allowed to access the application via HTTPS"
   type        = list(string)
-  default     = ["0.0.0.0/0"]  # Allow from anywhere - restrict in production as needed
+  default     = ["0.0.0.0/0"] # Allow from anywhere - restrict in production as needed
 }
 
 variable "ssh_allowed_cidr_blocks" {
   description = "CIDR blocks allowed SSH access"
   type        = list(string)
-  default     = ["0.0.0.0/0"]  # Restrict this to your IP in production
+  default     = ["0.0.0.0/0"] # Restrict this to your IP in production
 }
 
 # Availability Zones

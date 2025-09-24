@@ -52,6 +52,14 @@ get_infrastructure_output() {
     tofu output -raw "$output_name" 2>/dev/null || echo ""
 }
 
+# Get environment-specific output from dynamic outputs
+get_environment_output() {
+    local environment="$1"
+    local output_type="$2"
+    cd "$ROOT_DIR/tofu"
+    tofu output -json "environment_${output_type}" 2>/dev/null | jq -r ".${environment} // empty" || echo ""
+}
+
 # Health check function
 health_check() {
     local url="$1"
@@ -79,7 +87,7 @@ wait_for_deployment() {
     local environment="$1"
     local instance_ip
 
-    instance_ip=$(get_infrastructure_output "${environment}_public_ip")
+    instance_ip=$(get_environment_output "$environment" "public_ips")
 
     if [[ -z "$instance_ip" ]]; then
         error "Could not get IP address for $environment environment"
@@ -112,7 +120,7 @@ deploy_to_environment() {
     local environment="$1"
     local instance_ip
 
-    instance_ip=$(get_infrastructure_output "${environment}_public_ip")
+    instance_ip=$(get_environment_output "$environment" "public_ips")
 
     if [[ -z "$instance_ip" ]]; then
         error "Could not get IP address for $environment environment"
@@ -170,8 +178,8 @@ switch_dns() {
     cat > terraform.tfvars << EOF
 # Only override values that differ from defaults
 
-# Environment deployment flags (override default: deploy_green = false)
-deploy_green = true
+# Environment deployment configuration (override default: ["blue"])
+deployed_environments = ["blue", "green"]
 
 # Active environment (controls DNS routing)
 active_environment = "$new_environment"

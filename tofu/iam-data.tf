@@ -7,6 +7,6 @@ data "aws_caller_identity" "current" {}
 locals {
   # IAM resource names and ARNs calculated from known naming patterns
   app_instance_profile_name = "${var.project_name}-app-profile"
-  app_role_arn             = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.project_name}-app-role"
-  rds_monitoring_role_arn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.project_name}-rds-monitoring"
+  app_role_arn              = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.project_name}-app-role"
+  rds_monitoring_role_arn   = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.project_name}-rds-monitoring"
 }

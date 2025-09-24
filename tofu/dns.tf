@@ -15,13 +15,12 @@ resource "aws_route53_record" "main" {
   zone_id = aws_route53_zone.main.zone_id
   name    = var.domain_name
   type    = "A"
-  ttl     = 60  # Fast rollback capability
+  ttl     = 60 # Fast rollback capability
 
   # Point to the active environment's public IP
   records = [
-    var.active_environment == "blue" ?
-      (var.deploy_blue ? aws_eip.blue[0].public_ip : "") :
-      (var.deploy_green ? aws_eip.green[0].public_ip : "")
+    contains(var.deployed_environments, var.active_environment) ?
+    aws_eip.main[var.active_environment].public_ip : ""
   ]
 }
 
@@ -30,38 +29,25 @@ resource "aws_route53_record" "www" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "www.${var.domain_name}"
   type    = "A"
-  ttl     = 300  # Standard TTL for www redirect
+  ttl     = 300 # Standard TTL for www redirect
 
   # Point to the same active environment
   records = [
-    var.active_environment == "blue" ?
-      (var.deploy_blue ? aws_eip.blue[0].public_ip : "") :
-      (var.deploy_green ? aws_eip.green[0].public_ip : "")
+    contains(var.deployed_environments, var.active_environment) ?
+    aws_eip.main[var.active_environment].public_ip : ""
   ]
 }
 
-# Blue environment specific record (for testing/staging)
-resource "aws_route53_record" "blue" {
-  count = var.deploy_blue ? 1 : 0
+# Dynamic environment-specific records (for testing/staging)
+resource "aws_route53_record" "environments" {
+  for_each = local.environments
 
   zone_id = aws_route53_zone.main.zone_id
-  name    = "blue.${var.domain_name}"
+  name    = "${each.key}.${var.domain_name}"
   type    = "A"
   ttl     = 300
 
-  records = [aws_eip.blue[0].public_ip]
-}
-
-# Green environment specific record (for testing/staging)
-resource "aws_route53_record" "green" {
-  count = var.deploy_green ? 1 : 0
-
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "green.${var.domain_name}"
-  type    = "A"
-  ttl     = 300
-
-  records = [aws_eip.green[0].public_ip]
+  records = [aws_eip.main[each.key].public_ip]
 }
 
 # Bastion host record for SSH access

@@ -1,5 +1,24 @@
 # Output values from the blue/green infrastructure
 
+locals {
+  # Create outputs for each deployed environment
+  environment_outputs = {
+    for env in local.environments : env => {
+      instance_id       = aws_instance.main[env].id
+      public_ip         = aws_eip.main[env].public_ip
+      database_endpoint = can(aws_db_instance.main[env]) ? aws_db_instance.main[env].endpoint : null
+      database_name     = can(aws_db_instance.main[env]) ? aws_db_instance.main[env].db_name : null
+      database_password = can(random_password.db_password[env]) ? random_password.db_password[env].result : null
+      database_username = can(aws_db_instance.main[env]) ? aws_db_instance.main[env].username : null
+    }
+  }
+
+  # Calculate active/inactive environment information
+  active_env_output    = local.environment_outputs[var.active_environment]
+  inactive_environment = var.active_environment == "blue" ? "green" : "blue"
+  inactive_env_output  = local.environment_outputs[local.inactive_environment]
+}
+
 # VPC Information
 output "vpc_id" {
   description = "ID of the VPC"
@@ -13,7 +32,7 @@ output "public_subnet_ids" {
 
 output "private_subnet_ids" {
   description = "IDs of the private subnets"
-  value       = [
+  value = [
     aws_subnet.private_app_a.id,
     aws_subnet.private_app_b.id,
     aws_subnet.private_db_a.id,
@@ -21,49 +40,35 @@ output "private_subnet_ids" {
   ]
 }
 
-# Blue Environment Outputs
-output "blue_instance_id" {
-  description = "ID of the blue EC2 instance"
-  value       = var.deploy_blue ? aws_instance.blue[0].id : null
+output "environment_instance_ids" {
+  description = "EC2 instance IDs for each deployed environment"
+  value = {
+    for env, config in local.environment_outputs : env => config != null ? config.instance_id : null
+  }
 }
 
-output "blue_public_ip" {
-  description = "Public IP address of the blue environment"
-  value       = var.deploy_blue ? aws_eip.blue[0].public_ip : null
+output "environment_public_ips" {
+  description = "Public IP addresses for each deployed environment"
+  value = {
+    for env, config in local.environment_outputs : env => config != null ? config.public_ip : null
+  }
 }
 
-output "blue_database_endpoint" {
-  description = "Blue RDS instance endpoint"
-  value       = var.deploy_blue ? aws_db_instance.blue[0].endpoint : null
-  sensitive   = true
+output "environment_database_endpoints" {
+  description = "RDS instance endpoints for each deployed environment"
+  value = {
+    for env, config in local.environment_outputs : env => config != null ? config.database_endpoint : null
+  }
+  sensitive = true
 }
 
-output "blue_database_name" {
-  description = "Blue database name"
-  value       = var.deploy_blue ? aws_db_instance.blue[0].db_name : null
+output "environment_database_names" {
+  description = "Database names for each deployed environment"
+  value = {
+    for env, config in local.environment_outputs : env => config != null ? config.database_name : null
+  }
 }
 
-# Green Environment Outputs
-output "green_instance_id" {
-  description = "ID of the green EC2 instance"
-  value       = var.deploy_green ? aws_instance.green[0].id : null
-}
-
-output "green_public_ip" {
-  description = "Public IP address of the green environment"
-  value       = var.deploy_green ? aws_eip.green[0].public_ip : null
-}
-
-output "green_database_endpoint" {
-  description = "Green RDS instance endpoint"
-  value       = var.deploy_green ? aws_db_instance.green[0].endpoint : null
-  sensitive   = true
-}
-
-output "green_database_name" {
-  description = "Green database name"
-  value       = var.deploy_green ? aws_db_instance.green[0].db_name : null
-}
 
 # Active Environment Information
 output "active_environment" {
@@ -73,17 +78,17 @@ output "active_environment" {
 
 output "active_public_ip" {
   description = "Public IP of the currently active environment"
-  value       = var.active_environment == "blue" ? (var.deploy_blue ? aws_eip.blue[0].public_ip : null) : (var.deploy_green ? aws_eip.green[0].public_ip : null)
+  value       = local.active_env_output != null ? local.active_env_output.public_ip : null
 }
 
 output "inactive_environment" {
   description = "Currently inactive environment"
-  value       = var.active_environment == "blue" ? "green" : "blue"
+  value       = local.inactive_environment
 }
 
 output "inactive_public_ip" {
   description = "Public IP of the currently inactive environment"
-  value       = var.active_environment == "blue" ? (var.deploy_green ? aws_eip.green[0].public_ip : null) : (var.deploy_blue ? aws_eip.blue[0].public_ip : null)
+  value       = local.inactive_env_output != null ? local.inactive_env_output.public_ip : null
 }
 
 # DNS Configuration
@@ -108,41 +113,34 @@ output "ssh_key_name" {
   value       = aws_key_pair.deployer.key_name
 }
 
-# Database Passwords (sensitive)
-output "blue_database_password" {
-  description = "Blue database password"
-  value       = var.deploy_blue ? random_password.blue_db_password[0].result : null
-  sensitive   = true
+# Dynamic Environment Database Passwords
+output "environment_database_passwords" {
+  description = "Database passwords for each deployed environment"
+  value = {
+    for env, config in local.environment_outputs : env => config != null ? config.database_password : null
+  }
+  sensitive = true
 }
 
-output "green_database_password" {
-  description = "Green database password"
-  value       = var.deploy_green ? random_password.green_db_password[0].result : null
-  sensitive   = true
-}
 
 # Connection Information for Deployments
 output "deployment_info" {
   description = "Information needed for deployments"
-  value = {
-    blue = var.deploy_blue ? {
-      instance_ip       = aws_eip.blue[0].public_ip
-      database_endpoint = aws_db_instance.blue[0].endpoint
-      database_name     = aws_db_instance.blue[0].db_name
-      database_username = aws_db_instance.blue[0].username
-    } : null
-
-    green = var.deploy_green ? {
-      instance_ip       = aws_eip.green[0].public_ip
-      database_endpoint = aws_db_instance.green[0].endpoint
-      database_name     = aws_db_instance.green[0].db_name
-      database_username = aws_db_instance.green[0].username
-    } : null
-
-    active_environment   = var.active_environment
-    ssh_user            = "ec2-user"
-    ssh_key_name        = aws_key_pair.deployer.key_name
-    domain_name         = var.domain_name
-  }
+  value = merge(
+    {
+      for env, config in local.environment_outputs : env => config != null ? {
+        instance_ip       = config.public_ip
+        database_endpoint = config.database_endpoint
+        database_name     = config.database_name
+        database_username = config.database_username
+      } : null
+    },
+    {
+      active_environment = var.active_environment
+      ssh_user           = "ec2-user"
+      ssh_key_name       = aws_key_pair.deployer.key_name
+      domain_name        = var.domain_name
+    }
+  )
   sensitive = true
 }

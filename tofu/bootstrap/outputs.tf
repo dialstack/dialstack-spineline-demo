@@ -17,7 +17,7 @@ output "dynamodb_table_name" {
 
 output "backend_configuration" {
   description = "Backend configuration block for main OpenTofu configuration"
-  value = <<EOF
+  value       = <<EOF
 backend "s3" {
   bucket         = "${aws_s3_bucket.tofu_state.bucket}"
   key            = "infrastructure/tofu.tfstate"

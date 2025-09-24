@@ -52,8 +52,8 @@ jobs:
           cat > terraform.tfvars << EOF
           # Only override values that differ from defaults
 
-          # Environment deployment flags (override default: deploy_green = false)
-          deploy_green = true
+          # Environment deployment configuration (override default: ["blue"])
+          deployed_environments = ["blue", "green"]
 
           # Infrastructure configuration
           aws_region = "${{ env.AWS_REGION }}"
