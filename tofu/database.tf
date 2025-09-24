@@ -77,7 +77,7 @@ resource "aws_db_instance" "blue" {
   # Performance and monitoring
   performance_insights_enabled = true
   monitoring_interval         = 60
-  monitoring_role_arn        = data.aws_iam_role.rds_monitoring.arn
+  monitoring_role_arn        = local.rds_monitoring_role_arn
 
   # Production safety settings
   deletion_protection = true   # Prevent accidental deletion
@@ -132,7 +132,7 @@ resource "aws_db_instance" "green" {
   # Performance and monitoring
   performance_insights_enabled = true
   monitoring_interval         = 60
-  monitoring_role_arn        = data.aws_iam_role.rds_monitoring.arn
+  monitoring_role_arn        = local.rds_monitoring_role_arn
 
   # Production safety settings
   deletion_protection = true   # Prevent accidental deletion
