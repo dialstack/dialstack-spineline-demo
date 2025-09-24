@@ -196,6 +196,15 @@ resource "aws_iam_policy" "github_actions" {
         Resource = [
           "arn:aws:logs:${var.aws_region}:*:log-group:/aws/ec2/${var.project_name}/*"
         ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:PassRole"
+        ]
+        Resource = [
+          "arn:aws:iam::*:role/${var.project_name}-*"
+        ]
       }
     ]
   })
