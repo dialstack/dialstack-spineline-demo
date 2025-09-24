@@ -69,7 +69,7 @@ resource "aws_db_instance" "main" {
   # Production safety settings
   deletion_protection       = true  # Prevent accidental deletion
   skip_final_snapshot       = false # Always take final snapshot
-  final_snapshot_identifier = "${var.project_name}-${each.key}-final-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
+  final_snapshot_identifier = "${var.project_name}-${each.key}-final-snapshot"
 
   # Parameter group for PostgreSQL optimization
   parameter_group_name = aws_db_parameter_group.postgres.name
