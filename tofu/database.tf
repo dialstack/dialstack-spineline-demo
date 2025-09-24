@@ -4,15 +4,17 @@
 resource "random_password" "blue_db_password" {
   count = var.deploy_blue ? 1 : 0
 
-  length  = 32
-  special = true
+  length      = 32
+  special     = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"  # Exclude /, @, ", and space
 }
 
 resource "random_password" "green_db_password" {
   count = var.deploy_green ? 1 : 0
 
-  length  = 32
-  special = true
+  length      = 32
+  special     = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"  # Exclude /, @, ", and space
 }
 
 # Store database passwords in Systems Manager
