@@ -113,7 +113,7 @@ resource "aws_instance" "blue" {
   # Root volume configuration
   root_block_device {
     volume_type = "gp3"
-    volume_size = 20  # Free tier eligible
+    volume_size = 30  # Free tier eligible (AMI snapshot minimum)
     encrypted   = true
 
     tags = {
@@ -159,7 +159,7 @@ resource "aws_instance" "green" {
   # Root volume configuration
   root_block_device {
     volume_type = "gp3"
-    volume_size = 20  # Free tier eligible
+    volume_size = 30  # Free tier eligible (AMI snapshot minimum)
     encrypted   = true
 
     tags = {
