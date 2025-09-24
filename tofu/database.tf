@@ -154,8 +154,8 @@ resource "aws_db_instance" "green" {
 
 # PostgreSQL parameter group for performance optimization
 resource "aws_db_parameter_group" "postgres" {
-  family = "postgres14"
-  name   = "${var.project_name}-postgres14"
+  family = "postgres17"
+  name   = "${var.project_name}-postgres17"
 
   # Basic PostgreSQL optimizations for t3.micro
   parameter {
