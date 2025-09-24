@@ -33,3 +33,10 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# OpenTofu/Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/*.tfplan

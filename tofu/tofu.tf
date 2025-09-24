@@ -18,15 +18,14 @@ terraform {
     }
   }
 
-  # Backend configuration - will be filled in after bootstrap
-  # Uncomment and update after running bootstrap
-  # backend "s3" {
-  #   bucket         = "spineline-tofu-state-xxxxxxxx"
-  #   key            = "infrastructure/tofu.tfstate"
-  #   region         = "us-east-1"
-  #   dynamodb_table = "spineline-tofu-state-lock"
-  #   encrypt        = true
-  # }
+  # Backend configuration for S3 state storage
+  backend "s3" {
+    bucket         = "spineline-tofu-state-d99fd676d7305052"
+    key            = "infrastructure/tofu.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "spineline-tofu-state-lock"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
