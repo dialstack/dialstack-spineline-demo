@@ -168,35 +168,20 @@ switch_dns() {
 
     # Create terraform.tfvars with new active environment
     cat > terraform.tfvars << EOF
-# Blue/Green deployment configuration
-project_name = "$PROJECT_NAME"
-domain_name = "${PROJECT_NAME}.dev"
+# Only override values that differ from defaults
 
-# Environment deployment flags
-deploy_blue = true
+# Environment deployment flags (override default: deploy_green = false)
 deploy_green = true
 
 # Active environment (controls DNS routing)
 active_environment = "$new_environment"
 
-# Infrastructure configuration
-aws_region = "us-east-1"
-availability_zones = ["us-east-1a", "us-east-1b"]
-
-# Instance configuration
-instance_type = "t3.micro"
+# Instance configuration (override default key name)
 key_pair_name = "${PROJECT_NAME}-key"
 
-# Database configuration
-db_engine_version = "14.9"
-db_instance_class = "db.t3.micro"
-db_allocated_storage = 20
+# Database configuration (override default db name and username)
 db_name = "${PROJECT_NAME}_production"
 db_username = "app_user"
-
-# Security configuration
-allowed_cidr_blocks = ["0.0.0.0/0"]
-ssh_allowed_cidr_blocks = ["0.0.0.0/0"]
 EOF
 
     # Apply the change
