@@ -91,7 +91,7 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: "1.6.6"
+          tofu_version: "1.10.6"
 
       - name: Download build artifacts
         if: github.event.inputs.action != 'rollback'
