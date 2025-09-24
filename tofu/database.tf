@@ -18,9 +18,10 @@ resource "random_password" "db_password" {
 resource "aws_ssm_parameter" "db_password" {
   for_each = local.environments
 
-  name  = "/${var.project_name}/${each.key}/database_password"
-  type  = "SecureString"
-  value = random_password.db_password[each.key].result
+  name      = "/${var.project_name}/${each.key}/database_password"
+  type      = "SecureString"
+  value     = random_password.db_password[each.key].result
+  overwrite = true
 
   tags = {
     Name        = "${var.project_name}-${each.key}-db-password"
@@ -66,8 +67,9 @@ resource "aws_db_instance" "main" {
   monitoring_role_arn          = local.rds_monitoring_role_arn
 
   # Production safety settings
-  deletion_protection = true  # Prevent accidental deletion
-  skip_final_snapshot = false # Always take final snapshot
+  deletion_protection       = true  # Prevent accidental deletion
+  skip_final_snapshot       = false # Always take final snapshot
+  final_snapshot_identifier = "${var.project_name}-${each.key}-final-snapshot-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
 
   # Parameter group for PostgreSQL optimization
   parameter_group_name = aws_db_parameter_group.postgres.name
@@ -115,9 +117,10 @@ resource "aws_db_parameter_group" "postgres" {
 resource "aws_ssm_parameter" "database_url" {
   for_each = local.environments
 
-  name  = "/${var.project_name}/${each.key}/database_url"
-  type  = "SecureString"
-  value = "postgresql://${var.db_username}:${random_password.db_password[each.key].result}@${aws_db_instance.main[each.key].endpoint}/${var.db_name}"
+  name      = "/${var.project_name}/${each.key}/database_url"
+  type      = "SecureString"
+  value     = "postgresql://${var.db_username}:${random_password.db_password[each.key].result}@${aws_db_instance.main[each.key].endpoint}/${var.db_name}"
+  overwrite = true
 
   tags = {
     Name        = "${var.project_name}-${each.key}-database-url"
