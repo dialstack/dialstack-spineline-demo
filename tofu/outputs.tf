@@ -1,22 +1,28 @@
 # Output values from the blue/green infrastructure
 
 locals {
-  # Create outputs for each deployed environment
-  environment_outputs = {
+  # Non-sensitive environment outputs
+  environment_info = {
     for env in local.environments : env => {
       instance_id       = aws_instance.main[env].id
       public_ip         = aws_eip.main[env].public_ip
       database_endpoint = can(aws_db_instance.main[env]) ? aws_db_instance.main[env].endpoint : null
       database_name     = can(aws_db_instance.main[env]) ? aws_db_instance.main[env].db_name : null
-      database_password = can(random_password.db_password[env]) ? random_password.db_password[env].result : null
       database_username = can(aws_db_instance.main[env]) ? aws_db_instance.main[env].username : null
     }
   }
 
+  # Sensitive environment outputs
+  environment_secrets = {
+    for env in local.environments : env => {
+      database_password = can(random_password.db_password[env]) ? random_password.db_password[env].result : null
+    }
+  }
+
   # Calculate active/inactive environment information
-  active_env_output    = local.environment_outputs[var.active_environment]
+  active_env_info      = local.environment_info[var.active_environment]
   inactive_environment = var.active_environment == "blue" ? "green" : "blue"
-  inactive_env_output  = local.environment_outputs[local.inactive_environment]
+  inactive_env_info    = local.environment_info[local.inactive_environment]
 }
 
 # VPC Information
@@ -43,21 +49,21 @@ output "private_subnet_ids" {
 output "environment_instance_ids" {
   description = "EC2 instance IDs for each deployed environment"
   value = {
-    for env, config in local.environment_outputs : env => config != null ? config.instance_id : null
+    for env, config in local.environment_info : env => config.instance_id
   }
 }
 
 output "environment_public_ips" {
   description = "Public IP addresses for each deployed environment"
   value = {
-    for env, config in local.environment_outputs : env => config != null ? config.public_ip : null
+    for env, config in local.environment_info : env => config.public_ip
   }
 }
 
 output "environment_database_endpoints" {
   description = "RDS instance endpoints for each deployed environment"
   value = {
-    for env, config in local.environment_outputs : env => config != null ? config.database_endpoint : null
+    for env, config in local.environment_info : env => config.database_endpoint
   }
   sensitive = true
 }
@@ -65,7 +71,7 @@ output "environment_database_endpoints" {
 output "environment_database_names" {
   description = "Database names for each deployed environment"
   value = {
-    for env, config in local.environment_outputs : env => config != null ? config.database_name : null
+    for env, config in local.environment_info : env => config.database_name
   }
 }
 
@@ -78,7 +84,7 @@ output "active_environment" {
 
 output "active_public_ip" {
   description = "Public IP of the currently active environment"
-  value       = local.active_env_output != null ? local.active_env_output.public_ip : null
+  value       = local.active_env_info != null ? local.active_env_info.public_ip : null
 }
 
 output "inactive_environment" {
@@ -88,7 +94,7 @@ output "inactive_environment" {
 
 output "inactive_public_ip" {
   description = "Public IP of the currently inactive environment"
-  value       = local.inactive_env_output != null ? local.inactive_env_output.public_ip : null
+  value       = local.inactive_env_info != null ? local.inactive_env_info.public_ip : null
 }
 
 # DNS Configuration
@@ -117,7 +123,7 @@ output "ssh_key_name" {
 output "environment_database_passwords" {
   description = "Database passwords for each deployed environment"
   value = {
-    for env, config in local.environment_outputs : env => config != null ? config.database_password : null
+    for env, config in local.environment_secrets : env => config.database_password
   }
   sensitive = true
 }
@@ -128,12 +134,12 @@ output "deployment_info" {
   description = "Information needed for deployments"
   value = merge(
     {
-      for env, config in local.environment_outputs : env => config != null ? {
+      for env, config in local.environment_info : env => {
         instance_ip       = config.public_ip
         database_endpoint = config.database_endpoint
         database_name     = config.database_name
         database_username = config.database_username
-      } : null
+      }
     },
     {
       active_environment = var.active_environment
