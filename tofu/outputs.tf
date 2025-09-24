@@ -13,7 +13,12 @@ output "public_subnet_ids" {
 
 output "private_subnet_ids" {
   description = "IDs of the private subnets"
-  value       = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  value       = [
+    aws_subnet.private_app_a.id,
+    aws_subnet.private_app_b.id,
+    aws_subnet.private_db_a.id,
+    aws_subnet.private_db_b.id,
+  ]
 }
 
 # Blue Environment Outputs

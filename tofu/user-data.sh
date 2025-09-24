@@ -13,7 +13,7 @@ ROUTE53_ZONE_ID="${route53_zone_id}"
 # Log everything
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
-echo "Starting user data script for ${PROJECT_NAME} ${ENVIRONMENT} environment"
+echo "Starting user data script for $${PROJECT_NAME} $${ENVIRONMENT} environment"
 
 # Update system packages
 yum update -y
@@ -39,12 +39,12 @@ yum install -y certbot python3-certbot-dns-route53
 useradd -r -s /bin/bash -m app
 
 # Create application directory
-mkdir -p /opt/${PROJECT_NAME}
-chown app:app /opt/${PROJECT_NAME}
+mkdir -p /opt/$${PROJECT_NAME}
+chown app:app /opt/$${PROJECT_NAME}
 
 # Create logs directory
-mkdir -p /var/log/${PROJECT_NAME}
-chown app:app /var/log/${PROJECT_NAME}
+mkdir -p /var/log/$${PROJECT_NAME}
+chown app:app /var/log/$${PROJECT_NAME}
 
 # Configure nginx
 cat > /etc/nginx/nginx.conf << 'EOF'
@@ -101,10 +101,10 @@ http {
 EOF
 
 # Create nginx site configuration for the application
-cat > /etc/nginx/conf.d/${PROJECT_NAME}.conf << EOF
+cat > /etc/nginx/conf.d/$${PROJECT_NAME}.conf << EOF
 server {
     listen 80;
-    server_name ${DOMAIN_NAME} www.${DOMAIN_NAME} ${ENVIRONMENT}.${DOMAIN_NAME};
+    server_name $${DOMAIN_NAME} www.$${DOMAIN_NAME} $${ENVIRONMENT}.$${DOMAIN_NAME};
 
     # Redirect all HTTP to HTTPS
     return 301 https://\$server_name\$request_uri;
@@ -112,11 +112,11 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name ${DOMAIN_NAME} www.${DOMAIN_NAME} ${ENVIRONMENT}.${DOMAIN_NAME};
+    server_name $${DOMAIN_NAME} www.$${DOMAIN_NAME} $${ENVIRONMENT}.$${DOMAIN_NAME};
 
     # SSL certificates (will be configured after Let's Encrypt setup)
-    ssl_certificate /etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN_NAME}/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/$${DOMAIN_NAME}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$${DOMAIN_NAME}/privkey.pem;
 
     # Modern SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -152,25 +152,25 @@ server {
 EOF
 
 # Create systemd service for the application
-cat > /etc/systemd/system/${PROJECT_NAME}.service << EOF
+cat > /etc/systemd/system/$${PROJECT_NAME}.service << EOF
 [Unit]
-Description=${PROJECT_NAME} Next.js Application (${ENVIRONMENT})
+Description=$${PROJECT_NAME} Next.js Application ($${ENVIRONMENT})
 After=network.target
 
 [Service]
 Type=simple
 User=app
 Group=app
-WorkingDirectory=/opt/${PROJECT_NAME}
+WorkingDirectory=/opt/$${PROJECT_NAME}
 Environment=NODE_ENV=production
-Environment=ENVIRONMENT=${ENVIRONMENT}
+Environment=ENVIRONMENT=$${ENVIRONMENT}
 ExecStart=/usr/bin/npm start
 Restart=always
 RestartSec=10
 
 # Logging
-StandardOutput=append:/var/log/${PROJECT_NAME}/app.log
-StandardError=append:/var/log/${PROJECT_NAME}/error.log
+StandardOutput=append:/var/log/$${PROJECT_NAME}/app.log
+StandardError=append:/var/log/$${PROJECT_NAME}/error.log
 
 [Install]
 WantedBy=multi-user.target
@@ -186,10 +186,10 @@ cat > /opt/setup-ssl.sh << EOF
 certbot certonly \
     --dns-route53 \
     --dns-route53-propagation-seconds 30 \
-    -d ${DOMAIN_NAME} \
-    -d www.${DOMAIN_NAME} \
-    -d ${ENVIRONMENT}.${DOMAIN_NAME} \
-    --email admin@${DOMAIN_NAME} \
+    -d $${DOMAIN_NAME} \
+    -d www.$${DOMAIN_NAME} \
+    -d $${ENVIRONMENT}.$${DOMAIN_NAME} \
+    --email admin@$${DOMAIN_NAME} \
     --agree-tos \
     --non-interactive
 
@@ -210,31 +210,31 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << EOF
             "files": {
                 "collect_list": [
                     {
-                        "file_path": "/var/log/${PROJECT_NAME}/app.log",
-                        "log_group_name": "/aws/ec2/${PROJECT_NAME}/app",
-                        "log_stream_name": "${ENVIRONMENT}-{instance_id}"
+                        "file_path": "/var/log/$${PROJECT_NAME}/app.log",
+                        "log_group_name": "/aws/ec2/$${PROJECT_NAME}/app",
+                        "log_stream_name": "$${ENVIRONMENT}-{instance_id}"
                     },
                     {
-                        "file_path": "/var/log/${PROJECT_NAME}/error.log",
-                        "log_group_name": "/aws/ec2/${PROJECT_NAME}/error",
-                        "log_stream_name": "${ENVIRONMENT}-{instance_id}"
+                        "file_path": "/var/log/$${PROJECT_NAME}/error.log",
+                        "log_group_name": "/aws/ec2/$${PROJECT_NAME}/error",
+                        "log_stream_name": "$${ENVIRONMENT}-{instance_id}"
                     },
                     {
                         "file_path": "/var/log/nginx/access.log",
-                        "log_group_name": "/aws/ec2/${PROJECT_NAME}/nginx-access",
-                        "log_stream_name": "${ENVIRONMENT}-{instance_id}"
+                        "log_group_name": "/aws/ec2/$${PROJECT_NAME}/nginx-access",
+                        "log_stream_name": "$${ENVIRONMENT}-{instance_id}"
                     },
                     {
                         "file_path": "/var/log/nginx/error.log",
-                        "log_group_name": "/aws/ec2/${PROJECT_NAME}/nginx-error",
-                        "log_stream_name": "${ENVIRONMENT}-{instance_id}"
+                        "log_group_name": "/aws/ec2/$${PROJECT_NAME}/nginx-error",
+                        "log_stream_name": "$${ENVIRONMENT}-{instance_id}"
                     }
                 ]
             }
         }
     },
     "metrics": {
-        "namespace": "${PROJECT_NAME}",
+        "namespace": "$${PROJECT_NAME}",
         "metrics_collected": {
             "cpu": {
                 "measurement": [
@@ -268,7 +268,7 @@ EOF
 # Start and enable services
 systemctl enable nginx
 systemctl enable amazon-cloudwatch-agent
-systemctl enable ${PROJECT_NAME}
+systemctl enable $${PROJECT_NAME}
 
 # Start CloudWatch agent
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
@@ -283,23 +283,23 @@ cat > /opt/deploy.sh << 'EOF'
 # Deployment script for GitHub Actions
 set -e
 
-APP_DIR="/opt/${PROJECT_NAME}"
+APP_DIR="/opt/$${PROJECT_NAME}"
 REPO_URL="$1"
 BRANCH="$2"
 
-echo "Deploying ${PROJECT_NAME} from ${REPO_URL} (${BRANCH})"
+echo "Deploying $${PROJECT_NAME} from $${REPO_URL} ($${BRANCH})"
 
 # Stop the application
-systemctl stop ${PROJECT_NAME} || true
+systemctl stop $${PROJECT_NAME} || true
 
 # Backup current version if exists
-if [ -d "${APP_DIR}" ]; then
-    mv "${APP_DIR}" "${APP_DIR}.backup.$(date +%s)"
+if [ -d "$${APP_DIR}" ]; then
+    mv "$${APP_DIR}" "$${APP_DIR}.backup.$(date +%s)"
 fi
 
 # Clone the repository
-git clone -b "${BRANCH}" "${REPO_URL}" "${APP_DIR}"
-cd "${APP_DIR}"
+git clone -b "$${BRANCH}" "$${REPO_URL}" "$${APP_DIR}"
+cd "$${APP_DIR}"
 
 # Install dependencies
 npm ci --only=production
@@ -308,11 +308,11 @@ npm ci --only=production
 npm run build
 
 # Set proper ownership
-chown -R app:app "${APP_DIR}"
+chown -R app:app "$${APP_DIR}"
 
 # Start the application
-systemctl start ${PROJECT_NAME}
-systemctl status ${PROJECT_NAME}
+systemctl start $${PROJECT_NAME}
+systemctl status $${PROJECT_NAME}
 
 echo "Deployment completed successfully"
 EOF
@@ -320,7 +320,7 @@ EOF
 chmod +x /opt/deploy.sh
 
 echo "User data script completed successfully"
-echo "Server initialized for ${PROJECT_NAME} ${ENVIRONMENT} environment"
+echo "Server initialized for $${PROJECT_NAME} $${ENVIRONMENT} environment"
 echo "Next steps:"
 echo "1. Deploy application code using /opt/deploy.sh"
 echo "2. Run /opt/setup-ssl.sh to configure SSL certificates"
