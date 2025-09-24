@@ -39,7 +39,7 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
 ### Infrastructure & Deployment
 
 - **OpenTofu** - Infrastructure as Code (Terraform alternative)
-- **AWS EC2** - Application servers with Auto Scaling Groups
+- **AWS EC2** - Blue/green application servers
 - **AWS RDS** - PostgreSQL database with automated backups
 - **Route53** - DNS management with health checks
 - **Let's Encrypt** - SSL certificates with DNS-01 challenge
@@ -237,7 +237,7 @@ This application uses a complete blue/green deployment strategy with Infrastruct
 
 - **VPC**: Multi-AZ setup with public/private subnets
 - **EC2**: t3.micro instances (free tier eligible)
-- **RDS**: PostgreSQL 14 with automated backups
+- **RDS**: PostgreSQL 17 with automated backups
 - **Route53**: DNS with health checks and fast TTL
 - **Security Groups**: Restrictive access controls
 - **IAM**: Least-privilege roles for all components
