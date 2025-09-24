@@ -1,4 +1,6 @@
-# IAM roles and policies for blue/green deployment
+# IAM roles and policies for application infrastructure
+# This file contains all IAM resources that need elevated permissions to create
+# Run this bootstrap configuration manually with admin credentials
 
 # IAM role for EC2 instances (Route53 access for Let's Encrypt DNS-01)
 resource "aws_iam_role" "app" {
@@ -19,6 +21,28 @@ resource "aws_iam_role" "app" {
 
   tags = {
     Name = "${var.project_name}-app-role"
+  }
+}
+
+# IAM role for RDS monitoring
+resource "aws_iam_role" "rds_monitoring" {
+  name = "${var.project_name}-rds-monitoring"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "monitoring.rds.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "${var.project_name}-rds-monitoring"
   }
 }
 
@@ -43,7 +67,7 @@ resource "aws_iam_policy" "route53_letsencrypt" {
         Action = [
           "route53:ChangeResourceRecordSets"
         ]
-        Resource = "arn:aws:route53:::hostedzone/${aws_route53_zone.main.zone_id}"
+        Resource = "arn:aws:route53:::hostedzone/${var.hosted_zone_id}"
       }
     ]
   })
@@ -120,45 +144,10 @@ resource "aws_iam_policy" "cloudwatch_logs" {
   }
 }
 
-# Attach policies to the app role
-resource "aws_iam_role_policy_attachment" "app_route53" {
-  role       = aws_iam_role.app.name
-  policy_arn = aws_iam_policy.route53_letsencrypt.arn
-}
-
-resource "aws_iam_role_policy_attachment" "app_ssm" {
-  role       = aws_iam_role.app.name
-  policy_arn = aws_iam_policy.ssm_access.arn
-}
-
-resource "aws_iam_role_policy_attachment" "app_cloudwatch" {
-  role       = aws_iam_role.app.name
-  policy_arn = aws_iam_policy.cloudwatch_logs.arn
-}
-
-# Instance profile for EC2 instances
-resource "aws_iam_instance_profile" "app" {
-  name = "${var.project_name}-app-profile"
-  role = aws_iam_role.app.name
-
-  tags = {
-    Name = "${var.project_name}-app-profile"
-  }
-}
-
-# IAM user for GitHub Actions (deployment automation)
-resource "aws_iam_user" "github_actions" {
-  name = "${var.project_name}-github-actions"
-
-  tags = {
-    Name = "${var.project_name}-github-actions"
-  }
-}
-
-# IAM policy for GitHub Actions (deployment permissions)
+# IAM policy for GitHub Actions (deployment permissions only - no IAM access)
 resource "aws_iam_policy" "github_actions" {
   name        = "${var.project_name}-github-actions"
-  description = "Permissions for GitHub Actions deployment"
+  description = "Minimal permissions for GitHub Actions deployment (no IAM access)"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -183,7 +172,7 @@ resource "aws_iam_policy" "github_actions" {
           "route53:ListResourceRecordSets"
         ]
         Resource = [
-          "arn:aws:route53:::hostedzone/${aws_route53_zone.main.zone_id}",
+          "arn:aws:route53:::hostedzone/${var.hosted_zone_id}",
           "arn:aws:route53:::change/*"
         ]
       },
@@ -216,6 +205,47 @@ resource "aws_iam_policy" "github_actions" {
   }
 }
 
+# Attach policies to the app role
+resource "aws_iam_role_policy_attachment" "app_route53" {
+  role       = aws_iam_role.app.name
+  policy_arn = aws_iam_policy.route53_letsencrypt.arn
+}
+
+resource "aws_iam_role_policy_attachment" "app_ssm" {
+  role       = aws_iam_role.app.name
+  policy_arn = aws_iam_policy.ssm_access.arn
+}
+
+resource "aws_iam_role_policy_attachment" "app_cloudwatch" {
+  role       = aws_iam_role.app.name
+  policy_arn = aws_iam_policy.cloudwatch_logs.arn
+}
+
+# Attach AWS managed policy to RDS monitoring role
+resource "aws_iam_role_policy_attachment" "rds_monitoring" {
+  role       = aws_iam_role.rds_monitoring.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+}
+
+# Instance profile for EC2 instances
+resource "aws_iam_instance_profile" "app" {
+  name = "${var.project_name}-app-profile"
+  role = aws_iam_role.app.name
+
+  tags = {
+    Name = "${var.project_name}-app-profile"
+  }
+}
+
+# IAM user for GitHub Actions (deployment automation)
+resource "aws_iam_user" "github_actions" {
+  name = "${var.project_name}-github-actions"
+
+  tags = {
+    Name = "${var.project_name}-github-actions"
+  }
+}
+
 # Attach policy to GitHub Actions user
 resource "aws_iam_user_policy_attachment" "github_actions" {
   user       = aws_iam_user.github_actions.name
@@ -226,7 +256,6 @@ resource "aws_iam_user_policy_attachment" "github_actions" {
 resource "aws_iam_access_key" "github_actions" {
   user = aws_iam_user.github_actions.name
 
-  # Store in Systems Manager for secure access
   depends_on = [aws_iam_user.github_actions]
 }
 

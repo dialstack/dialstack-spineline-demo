@@ -1,0 +1,6 @@
+# Example terraform.tfvars for IAM bootstrap
+# Copy this to terraform.tfvars and fill in your values
+
+project_name      = "spineline"
+aws_region       = "us-east-1"
+hosted_zone_id   = "Z05847379J3ZDOLDQIFD"  # Replace with your actual hosted zone ID

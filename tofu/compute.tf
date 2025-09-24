@@ -105,7 +105,7 @@ resource "aws_instance" "blue" {
   }))
 
   # Instance profile with Route53 permissions for Let's Encrypt DNS-01
-  iam_instance_profile = aws_iam_instance_profile.app.name
+  iam_instance_profile = data.aws_iam_instance_profile.app.name
 
   # Enable detailed monitoring for production
   monitoring = true
@@ -151,7 +151,7 @@ resource "aws_instance" "green" {
   }))
 
   # Instance profile with Route53 permissions for Let's Encrypt DNS-01
-  iam_instance_profile = aws_iam_instance_profile.app.name
+  iam_instance_profile = data.aws_iam_instance_profile.app.name
 
   # Enable detailed monitoring for production
   monitoring = true

@@ -77,7 +77,7 @@ resource "aws_db_instance" "blue" {
   # Performance and monitoring
   performance_insights_enabled = true
   monitoring_interval         = 60
-  monitoring_role_arn        = aws_iam_role.rds_monitoring.arn
+  monitoring_role_arn        = data.aws_iam_role.rds_monitoring.arn
 
   # Production safety settings
   deletion_protection = true   # Prevent accidental deletion
@@ -132,7 +132,7 @@ resource "aws_db_instance" "green" {
   # Performance and monitoring
   performance_insights_enabled = true
   monitoring_interval         = 60
-  monitoring_role_arn        = aws_iam_role.rds_monitoring.arn
+  monitoring_role_arn        = data.aws_iam_role.rds_monitoring.arn
 
   # Production safety settings
   deletion_protection = true   # Prevent accidental deletion
@@ -178,33 +178,6 @@ resource "aws_db_parameter_group" "postgres" {
   }
 }
 
-# IAM role for RDS monitoring
-resource "aws_iam_role" "rds_monitoring" {
-  name = "${var.project_name}-rds-monitoring"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "monitoring.rds.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = {
-    Name = "${var.project_name}-rds-monitoring"
-  }
-}
-
-# Attach AWS managed policy for RDS monitoring
-resource "aws_iam_role_policy_attachment" "rds_monitoring" {
-  role       = aws_iam_role.rds_monitoring.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
-}
 
 # Store database connection strings in Systems Manager
 resource "aws_ssm_parameter" "blue_database_url" {
