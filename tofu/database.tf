@@ -6,9 +6,9 @@ locals {
 
   # Common SSM parameter configuration to avoid repetition
   common_ssm_config = {
-    type      = "SecureString"              # Security: All parameters encrypted
-    key_id    = aws_kms_key.ssm.key_id     # Security: Use CMK for encryption
-    overwrite = true                        # Allow updates to existing parameters
+    type      = "SecureString"         # Security: All parameters encrypted
+    key_id    = aws_kms_key.ssm.key_id # Security: Use CMK for encryption
+    overwrite = true                   # Allow updates to existing parameters
   }
 
   # All SSM parameters defined in one place
@@ -41,17 +41,17 @@ locals {
   postgres_parameters = [
     {
       name         = "shared_preload_libraries"
-      value        = "pg_stat_statements"     # Performance: Enable query statistics
+      value        = "pg_stat_statements" # Performance: Enable query statistics
       apply_method = "pending-reboot"
     },
     {
       name         = "log_statement"
-      value        = "all"                    # Monitoring: Log all SQL statements
+      value        = "all" # Monitoring: Log all SQL statements
       apply_method = null
     },
     {
       name         = "log_min_duration_statement"
-      value        = "1000"                   # Monitoring: Log slow queries (>1s)
+      value        = "1000" # Monitoring: Log slow queries (>1s)
       apply_method = null
     }
   ]
@@ -113,10 +113,24 @@ resource "aws_db_instance" "main" {
   backup_window           = "03:00-04:00"         # UTC
   maintenance_window      = "Sun:04:00-Sun:05:00" # UTC
 
+  # Security: Enable automatic minor version upgrades
+  auto_minor_version_upgrade = true
+
+  # Security: Enable Multi-AZ for high availability and automatic failover
+  multi_az = true
+
+  # Security: Enable IAM database authentication
+  iam_database_authentication_enabled = true
+
+  # Security: Enable database logging
+  enabled_cloudwatch_logs_exports = ["postgresql"]
+
   # Performance and monitoring
-  performance_insights_enabled = true
-  monitoring_interval          = 60
-  monitoring_role_arn          = local.rds_monitoring_role_arn
+  performance_insights_enabled          = true
+  performance_insights_kms_key_id       = aws_kms_key.ssm.arn  # Security: Encrypt Performance Insights
+  performance_insights_retention_period = 7                    # Minimum retention for encrypted insights
+  monitoring_interval                   = 60
+  monitoring_role_arn                   = local.rds_monitoring_role_arn
 
   # Production safety settings
   deletion_protection       = true  # Prevent accidental deletion
