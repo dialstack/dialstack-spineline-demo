@@ -6,9 +6,9 @@ locals {
 
   # Common SSM parameter configuration to avoid repetition
   common_ssm_config = {
-    type      = "SecureString"         # Security: All parameters encrypted
-    key_id    = aws_kms_key.ssm.key_id # Security: Use CMK for encryption
-    overwrite = true                   # Allow updates to existing parameters
+    type       = "SecureString"         # Security: All parameters encrypted
+    kms_key_id = aws_kms_key.ssm.key_id # Security: Use CMK for encryption
+    overwrite  = true                   # Allow updates to existing parameters
   }
 
   # All SSM parameters defined in one place
@@ -76,9 +76,9 @@ resource "aws_ssm_parameter" "all" {
   tags  = each.value.tags
 
   # Common configuration applied to all SSM parameters
-  type      = local.common_ssm_config.type
-  key_id    = local.common_ssm_config.key_id
-  overwrite = local.common_ssm_config.overwrite
+  type       = local.common_ssm_config.type
+  kms_key_id = local.common_ssm_config.kms_key_id
+  overwrite  = local.common_ssm_config.overwrite
 }
 
 # RDS Database Instances (Blue/Green)
@@ -136,7 +136,7 @@ resource "aws_db_instance" "main" {
   deletion_protection       = true  # Prevent accidental deletion
   skip_final_snapshot       = false # Always take final snapshot
   final_snapshot_identifier = "${var.project_name}-${each.key}-final-snapshot"
-  copy_tags_to_snapshot     = true  # Security: Copy tags to snapshots
+  copy_tags_to_snapshot     = true # Security: Copy tags to snapshots
 
   # Parameter group for PostgreSQL optimization
   parameter_group_name = aws_db_parameter_group.postgres.name

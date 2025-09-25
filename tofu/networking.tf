@@ -247,7 +247,7 @@ resource "aws_security_group" "app" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = ["10.0.20.0/24", "10.0.21.0/24"]  # Private DB subnets
+    cidr_blocks = ["10.0.20.0/24", "10.0.21.0/24"] # Private DB subnets
   }
 
   # DNS queries to VPC resolver (for RDS hostname resolution)
@@ -256,7 +256,7 @@ resource "aws_security_group" "app" {
     from_port   = 53
     to_port     = 53
     protocol    = "udp"
-    cidr_blocks = ["10.0.0.2/32"]  # VPC DNS resolver
+    cidr_blocks = ["10.0.0.2/32"] # VPC DNS resolver
   }
 
   tags = {

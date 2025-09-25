@@ -139,10 +139,10 @@ resource "aws_key_pair" "deployer" {
 
 # Store private key in AWS Systems Manager for secure access
 resource "aws_ssm_parameter" "private_key" {
-  name   = "/${var.project_name}/ssh/private_key"
-  type   = "SecureString"
-  value  = tls_private_key.deployer.private_key_pem
-  key_id = aws_kms_key.ssm.key_id
+  name       = "/${var.project_name}/ssh/private_key"
+  type       = "SecureString"
+  value      = tls_private_key.deployer.private_key_pem
+  kms_key_id = aws_kms_key.ssm.key_id
 
   tags = {
     Name = "${var.project_name}-ssh-private-key"
