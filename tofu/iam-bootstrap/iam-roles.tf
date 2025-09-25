@@ -2,6 +2,73 @@
 # This file contains all IAM resources that need elevated permissions to create
 # Run this bootstrap configuration manually with admin credentials
 
+# KMS key for encrypting bootstrap SSM parameters
+resource "aws_kms_key" "bootstrap" {
+  description             = "KMS key for bootstrap SSM parameter encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Enable key management by root"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action = [
+          "kms:Create*",
+          "kms:Describe*",
+          "kms:Enable*",
+          "kms:List*",
+          "kms:Put*",
+          "kms:Update*",
+          "kms:Revoke*",
+          "kms:Disable*",
+          "kms:Get*",
+          "kms:Delete*",
+          "kms:ScheduleKeyDeletion",
+          "kms:CancelKeyDeletion"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow SSM service to use the key"
+        Effect = "Allow"
+        Principal = {
+          Service = "ssm.amazonaws.com"
+        }
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "kms:ViaService" = "ssm.${var.aws_region}.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "${var.project_name}-bootstrap-kms-key"
+  }
+}
+
+resource "aws_kms_alias" "bootstrap" {
+  name          = "alias/${var.project_name}-bootstrap"
+  target_key_id = aws_kms_key.bootstrap.key_id
+}
+
+# Data source for current AWS caller identity
+data "aws_caller_identity" "current" {}
+
 # IAM role for EC2 instances (Route53 access for Let's Encrypt DNS-01)
 resource "aws_iam_role" "app" {
   name = "${var.project_name}-app-role"
@@ -270,9 +337,10 @@ resource "aws_iam_access_key" "github_actions" {
 
 # Store GitHub Actions credentials in Systems Manager
 resource "aws_ssm_parameter" "github_actions_access_key" {
-  name  = "/${var.project_name}/github/aws_access_key_id"
-  type  = "SecureString"
-  value = aws_iam_access_key.github_actions.id
+  name   = "/${var.project_name}/github/aws_access_key_id"
+  type   = "SecureString"
+  value  = aws_iam_access_key.github_actions.id
+  key_id = aws_kms_key.bootstrap.arn
 
   tags = {
     Name = "${var.project_name}-github-access-key"
@@ -280,9 +348,10 @@ resource "aws_ssm_parameter" "github_actions_access_key" {
 }
 
 resource "aws_ssm_parameter" "github_actions_secret_key" {
-  name  = "/${var.project_name}/github/aws_secret_access_key"
-  type  = "SecureString"
-  value = aws_iam_access_key.github_actions.secret
+  name   = "/${var.project_name}/github/aws_secret_access_key"
+  type   = "SecureString"
+  value  = aws_iam_access_key.github_actions.secret
+  key_id = aws_kms_key.bootstrap.arn
 
   tags = {
     Name = "${var.project_name}-github-secret-key"
