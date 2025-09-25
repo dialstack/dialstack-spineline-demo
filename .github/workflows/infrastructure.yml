@@ -96,7 +96,7 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event.inputs.action == 'plan'
 
     steps:
       - name: Checkout code
