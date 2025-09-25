@@ -6,9 +6,9 @@ locals {
 
   # Common SSM parameter configuration to avoid repetition
   common_ssm_config = {
-    type       = "SecureString"         # Security: All parameters encrypted
-    kms_key_id = aws_kms_key.ssm.key_id # Security: Use CMK for encryption
-    overwrite  = true                   # Allow updates to existing parameters
+    type      = "SecureString"      # Security: All parameters encrypted
+    key_id    = aws_kms_key.ssm.arn # Security: Use CMK for encryption
+    overwrite = true                # Allow updates to existing parameters
   }
 
   # All SSM parameters defined in one place
@@ -76,9 +76,9 @@ resource "aws_ssm_parameter" "all" {
   tags  = each.value.tags
 
   # Common configuration applied to all SSM parameters
-  type       = local.common_ssm_config.type
-  kms_key_id = local.common_ssm_config.kms_key_id
-  overwrite  = local.common_ssm_config.overwrite
+  type      = local.common_ssm_config.type
+  key_id    = local.common_ssm_config.key_id
+  overwrite = local.common_ssm_config.overwrite
 }
 
 # RDS Database Instances (Blue/Green)
