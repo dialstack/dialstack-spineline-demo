@@ -196,7 +196,7 @@ resource "aws_security_group" "bastion" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["10.0.10.0/24", "10.0.11.0/24"]  # Private app subnets
+    cidr_blocks = ["10.0.10.0/24", "10.0.11.0/24"] # Private app subnets
   }
 
   # DNS queries to VPC resolver only
@@ -205,7 +205,7 @@ resource "aws_security_group" "bastion" {
     from_port   = 53
     to_port     = 53
     protocol    = "udp"
-    cidr_blocks = ["10.0.0.2/32"]  # VPC DNS resolver
+    cidr_blocks = ["10.0.0.2/32"] # VPC DNS resolver
   }
 
   tags = {
@@ -241,13 +241,22 @@ resource "aws_security_group" "app" {
     security_groups = [aws_security_group.bastion.id]
   }
 
-  # All outbound traffic (needed for package updates, DNS queries, etc.)
+  # Database connections to RDS in private subnets
   egress {
-    description = "All outbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    description = "PostgreSQL to RDS"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.20.0/24", "10.0.21.0/24"]  # Private DB subnets
+  }
+
+  # DNS queries to VPC resolver (for RDS hostname resolution)
+  egress {
+    description = "DNS queries to VPC resolver"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = ["10.0.0.2/32"]  # VPC DNS resolver
   }
 
   tags = {

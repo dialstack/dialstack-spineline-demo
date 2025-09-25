@@ -1,5 +1,15 @@
 # DNS configuration for blue/green deployment with Route53
 
+# CloudWatch log group for DNS query logging
+resource "aws_cloudwatch_log_group" "dns_query_log" {
+  name              = "/aws/route53/${var.domain_name}"
+  retention_in_days = 14 # Security: Retain DNS query logs for 2 weeks
+
+  tags = {
+    Name = "${var.project_name}-dns-query-log"
+  }
+}
+
 # Route53 hosted zone for the domain
 resource "aws_route53_zone" "main" {
   name = var.domain_name
@@ -7,6 +17,14 @@ resource "aws_route53_zone" "main" {
   tags = {
     Name = "${var.project_name}-zone"
   }
+}
+
+# Security: Enable DNS query logging
+resource "aws_route53_query_log" "main" {
+  depends_on = [aws_cloudwatch_log_group.dns_query_log]
+
+  cloudwatch_log_group_arn = aws_cloudwatch_log_group.dns_query_log.arn
+  zone_id                  = aws_route53_zone.main.zone_id
 }
 
 # Main A record that switches between blue and green environments

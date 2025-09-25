@@ -127,8 +127,8 @@ resource "aws_db_instance" "main" {
 
   # Performance and monitoring
   performance_insights_enabled          = true
-  performance_insights_kms_key_id       = aws_kms_key.ssm.arn  # Security: Encrypt Performance Insights
-  performance_insights_retention_period = 7                    # Minimum retention for encrypted insights
+  performance_insights_kms_key_id       = aws_kms_key.ssm.arn # Security: Encrypt Performance Insights
+  performance_insights_retention_period = 7                   # Minimum retention for encrypted insights
   monitoring_interval                   = 60
   monitoring_role_arn                   = local.rds_monitoring_role_arn
 
@@ -136,6 +136,7 @@ resource "aws_db_instance" "main" {
   deletion_protection       = true  # Prevent accidental deletion
   skip_final_snapshot       = false # Always take final snapshot
   final_snapshot_identifier = "${var.project_name}-${each.key}-final-snapshot"
+  copy_tags_to_snapshot     = true  # Security: Copy tags to snapshots
 
   # Parameter group for PostgreSQL optimization
   parameter_group_name = aws_db_parameter_group.postgres.name
