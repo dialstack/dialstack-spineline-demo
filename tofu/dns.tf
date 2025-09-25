@@ -3,7 +3,8 @@
 # CloudWatch log group for DNS query logging
 resource "aws_cloudwatch_log_group" "dns_query_log" {
   name              = "/aws/route53/${var.domain_name}"
-  retention_in_days = 14 # Security: Retain DNS query logs for 2 weeks
+  retention_in_days = 365 # Security: Retain DNS query logs for 1 year (Checkov requirement)
+  kms_key_id        = aws_kms_key.ssm.arn # Security: Encrypt logs with KMS CMK
 
   tags = {
     Name = "${var.project_name}-dns-query-log"
