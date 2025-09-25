@@ -26,7 +26,7 @@ resource "aws_subnet" "public_a" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = var.availability_zones[0]
-  map_public_ip_on_launch = false  # Security: Don't auto-assign public IPs, use Elastic IPs instead
+  map_public_ip_on_launch = false # Security: Don't auto-assign public IPs, use Elastic IPs instead
 
   tags = {
     Name = "${var.project_name}-public-a"
@@ -38,7 +38,7 @@ resource "aws_subnet" "public_b" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = var.availability_zones[1]
-  map_public_ip_on_launch = false  # Security: Don't auto-assign public IPs, use Elastic IPs instead
+  map_public_ip_on_launch = false # Security: Don't auto-assign public IPs, use Elastic IPs instead
 
   tags = {
     Name = "${var.project_name}-public-b"
@@ -190,13 +190,22 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = var.ssh_allowed_cidr_blocks
   }
 
-  # All outbound traffic
+  # SSH to private subnets only (bastion's primary function)
   egress {
-    description = "All outbound"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    description = "SSH to private subnets"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.10.0/24", "10.0.11.0/24"]  # Private app subnets
+  }
+
+  # DNS queries to VPC resolver only
+  egress {
+    description = "DNS queries to VPC resolver"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = ["10.0.0.2/32"]  # VPC DNS resolver
   }
 
   tags = {

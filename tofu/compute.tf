@@ -6,6 +6,60 @@ resource "aws_kms_key" "ssm" {
   deletion_window_in_days = 7
   enable_key_rotation     = true
 
+  # Security: Define least-privilege key policy
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Enable key management by root"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action = [
+          "kms:Create*",
+          "kms:Describe*",
+          "kms:Enable*",
+          "kms:List*",
+          "kms:Put*",
+          "kms:Update*",
+          "kms:Revoke*",
+          "kms:Disable*",
+          "kms:Get*",
+          "kms:Delete*",
+          "kms:ScheduleKeyDeletion",
+          "kms:CancelKeyDeletion"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "kms:KeyId" = "$${aws:SourceArn}"
+          }
+        }
+      },
+      {
+        Sid    = "Allow SSM service to use the key"
+        Effect = "Allow"
+        Principal = {
+          Service = "ssm.amazonaws.com"
+        }
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "kms:ViaService" = "ssm.${var.aws_region}.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+
   tags = {
     Name = "${var.project_name}-ssm-key"
   }
@@ -29,15 +83,13 @@ locals {
         subnet_id              = aws_subnet.public_a.id
         vpc_security_group_ids = [aws_security_group.bastion.id]
         iam_instance_profile   = null
-        # Minimal user data for bastion - just essential updates
+        # Minimal user data for bastion - immutable infrastructure approach
         user_data = base64encode(<<-EOF
           #!/bin/bash
-          yum update -y
-          # Install PostgreSQL client for database admin access
-          yum install -y postgresql15
           # Create a welcome message
           echo "SSH Bastion Host for ${var.project_name}" > /etc/motd
           echo "Use this host to access private resources securely" >> /etc/motd
+          echo "Immutable infrastructure - no package updates performed" >> /etc/motd
         EOF
         )
         root_volume_size = null
@@ -53,7 +105,7 @@ locals {
         subnet_id              = env == "blue" ? aws_subnet.private_app_a.id : aws_subnet.private_app_b.id
         vpc_security_group_ids = [aws_security_group.app.id]
         # Instance profile with Route53 permissions for Let's Encrypt DNS-01
-        iam_instance_profile   = local.app_instance_profile_name
+        iam_instance_profile = local.app_instance_profile_name
         # Enhanced user data with Route53 permissions for DNS-01 challenge
         user_data = base64encode(templatefile("${path.module}/user-data.sh", {
           environment     = env
@@ -136,7 +188,7 @@ resource "aws_instance" "all" {
   # Security: Configure Instance Metadata Service v2 only
   metadata_options {
     http_endpoint               = "enabled"
-    http_tokens                 = "required"  # Require IMDSv2
+    http_tokens                 = "required" # Require IMDSv2
     http_put_response_hop_limit = 1
   }
 
@@ -153,8 +205,8 @@ resource "aws_instance" "all" {
       Name = "${var.project_name}-${each.key}"
     },
     each.key == "bastion" ? { Role = "bastion" } : {
-      Environment = split("-", each.key)[1]
-      Role        = "app-server"
+      Environment                  = split("-", each.key)[1]
+      Role                         = "app-server"
     }
   )
 
