@@ -4,7 +4,7 @@ locals {
   # Non-sensitive environment outputs
   environment_info = {
     for env in local.environments : env => {
-      instance_id       = aws_instance.main[env].id
+      instance_id       = aws_instance.all["main-${env}"].id
       public_ip         = aws_eip.main[env].public_ip
       database_endpoint = can(aws_db_instance.main[env]) ? aws_db_instance.main[env].endpoint : null
       database_name     = can(aws_db_instance.main[env]) ? aws_db_instance.main[env].db_name : null

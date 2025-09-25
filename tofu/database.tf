@@ -1,8 +1,60 @@
 # RDS PostgreSQL databases for blue/green deployment (independent instances)
 
-# Local value to determine which environments to deploy
+# Local values to eliminate repetition
 locals {
   environments = toset(var.deployed_environments)
+
+  # Common SSM parameter configuration to avoid repetition
+  common_ssm_config = {
+    type      = "SecureString"              # Security: All parameters encrypted
+    key_id    = aws_kms_key.ssm.key_id     # Security: Use CMK for encryption
+    overwrite = true                        # Allow updates to existing parameters
+  }
+
+  # All SSM parameters defined in one place
+  ssm_parameters = merge(
+    # Database passwords
+    {
+      for env in var.deployed_environments : "${env}_db_password" => {
+        name  = "/${var.project_name}/${env}/database_password"
+        value = random_password.db_password[env].result
+        tags = {
+          Name        = "${var.project_name}-${env}-db-password"
+          Environment = env
+        }
+      }
+    },
+    # Database connection URLs
+    {
+      for env in var.deployed_environments : "${env}_database_url" => {
+        name  = "/${var.project_name}/${env}/database_url"
+        value = "postgresql://${var.db_username}:${random_password.db_password[env].result}@${aws_db_instance.main[env].endpoint}/${var.db_name}"
+        tags = {
+          Name        = "${var.project_name}-${env}-database-url"
+          Environment = env
+        }
+      }
+    }
+  )
+
+  # PostgreSQL parameters to eliminate repeated parameter blocks
+  postgres_parameters = [
+    {
+      name         = "shared_preload_libraries"
+      value        = "pg_stat_statements"     # Performance: Enable query statistics
+      apply_method = "pending-reboot"
+    },
+    {
+      name         = "log_statement"
+      value        = "all"                    # Monitoring: Log all SQL statements
+      apply_method = null
+    },
+    {
+      name         = "log_min_duration_statement"
+      value        = "1000"                   # Monitoring: Log slow queries (>1s)
+      apply_method = null
+    }
+  ]
 }
 
 # Generate random passwords for database instances
@@ -14,19 +66,19 @@ resource "random_password" "db_password" {
   override_special = "!#$%&*()-_=+[]{}<>:?" # Exclude /, @, ", and space
 }
 
-# Store database passwords in Systems Manager
-resource "aws_ssm_parameter" "db_password" {
-  for_each = local.environments
+# Unified SSM parameters (passwords + connection URLs)
+resource "aws_ssm_parameter" "all" {
+  for_each = local.ssm_parameters
 
-  name      = "/${var.project_name}/${each.key}/database_password"
-  type      = "SecureString"
-  value     = random_password.db_password[each.key].result
-  overwrite = true
+  # Parameter-specific configuration from locals
+  name  = each.value.name
+  value = each.value.value
+  tags  = each.value.tags
 
-  tags = {
-    Name        = "${var.project_name}-${each.key}-db-password"
-    Environment = each.key
-  }
+  # Common configuration applied to all SSM parameters
+  type      = local.common_ssm_config.type
+  key_id    = local.common_ssm_config.key_id
+  overwrite = local.common_ssm_config.overwrite
 }
 
 # RDS Database Instances (Blue/Green)
@@ -90,21 +142,14 @@ resource "aws_db_parameter_group" "postgres" {
   family = "postgres17"
   name   = "${var.project_name}-postgres17"
 
-  # Basic PostgreSQL optimizations for t3.micro
-  parameter {
-    name         = "shared_preload_libraries"
-    value        = "pg_stat_statements"
-    apply_method = "pending-reboot"
-  }
-
-  parameter {
-    name  = "log_statement"
-    value = "all"
-  }
-
-  parameter {
-    name  = "log_min_duration_statement"
-    value = "1000" # Log queries taking longer than 1 second
+  # Dynamic PostgreSQL parameters from locals (eliminates repeated parameter blocks)
+  dynamic "parameter" {
+    for_each = local.postgres_parameters
+    content {
+      name         = parameter.value.name
+      value        = parameter.value.value
+      apply_method = parameter.value.apply_method
+    }
   }
 
   tags = {
@@ -112,18 +157,3 @@ resource "aws_db_parameter_group" "postgres" {
   }
 }
 
-
-# Store database connection strings in Systems Manager
-resource "aws_ssm_parameter" "database_url" {
-  for_each = local.environments
-
-  name      = "/${var.project_name}/${each.key}/database_url"
-  type      = "SecureString"
-  value     = "postgresql://${var.db_username}:${random_password.db_password[each.key].result}@${aws_db_instance.main[each.key].endpoint}/${var.db_name}"
-  overwrite = true
-
-  tags = {
-    Name        = "${var.project_name}-${each.key}-database-url"
-    Environment = each.key
-  }
-}
