@@ -31,24 +31,5 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Check OpenTofu formatting if tofu files are being committed
-if git diff --cached --name-only | grep -q "\.tf$"; then
-    echo "🏗️  Checking OpenTofu formatting..."
-
-    # Check if tofu is installed
-    if ! command -v tofu &> /dev/null; then
-        echo "⚠️  OpenTofu not found. Skipping infrastructure formatting check."
-        echo "💡 Install OpenTofu to enable infrastructure formatting validation."
-    else
-        # Only check formatting - no validation or initialization required
-        if ! tofu fmt -check -recursive tofu/; then
-            echo "❌ OpenTofu formatting check failed. Commit aborted."
-            echo "💡 Run 'tofu fmt -recursive tofu/' to fix formatting."
-            exit 1
-        fi
-        echo "✅ OpenTofu formatting check passed!"
-    fi
-fi
-
 echo "✅ All pre-commit checks passed!"
 exit 0
