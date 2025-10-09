@@ -5,25 +5,30 @@ let pool: Pool | null = null;
 
 /**
  * RDS-managed secret format from AWS Secrets Manager
+ * Only contains username and password - host/port/dbname come from environment variables
  */
 interface RDSSecret {
   username: string;
   password: string;
-  host: string;
-  port: number;
-  dbname: string;
 }
 
 export default async function dbConnect(): Promise<Pool> {
   if (!pool) {
     const databaseSecret = process.env.DATABASE_SECRET;
+    const dbHost = process.env.DB_HOST;
+    const dbPort = process.env.DB_PORT || "5432";
+    const dbName = process.env.DB_NAME;
+
     if (!databaseSecret) {
       throw new Error("DATABASE_SECRET environment variable is not set");
     }
+    if (!dbHost || !dbName) {
+      throw new Error("DB_HOST and DB_NAME environment variables must be set");
+    }
 
-    // Parse RDS-managed secret JSON and construct connection string
+    // Parse RDS-managed secret JSON (contains only username and password)
     const secret: RDSSecret = JSON.parse(databaseSecret);
-    const connectionString = `postgresql://${secret.username}:${secret.password}@${secret.host}:${secret.port}/${secret.dbname}`;
+    const connectionString = `postgresql://${secret.username}:${secret.password}@${dbHost}:${dbPort}/${dbName}`;
 
     pool = new Pool({
       connectionString,

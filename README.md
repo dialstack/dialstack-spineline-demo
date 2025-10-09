@@ -88,10 +88,13 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
    DIALSTACK_SECRET_KEY="your_dialstack_secret_key"
    DIALSTACK_PUBLIC_KEY="your_dialstack_public_key"
    NEXTAUTH_URL="http://localhost:3000"
-   DATABASE_SECRET='{"username":"your_user","password":"your_password","host":"localhost","port":5432,"dbname":"spineline_db"}'
+   DATABASE_SECRET='{"username":"your_user","password":"your_password"}'
+   DB_HOST="localhost"
+   DB_PORT="5432"
+   DB_NAME="spineline_db"
    ```
 
-   **Note**: `DATABASE_SECRET` uses RDS-managed secret format (JSON). In production, this is automatically injected from AWS Secrets Manager.
+   **Note**: `DATABASE_SECRET` uses RDS-managed secret format (JSON with username/password only). Connection details (`DB_HOST`, `DB_PORT`, `DB_NAME`) are passed as separate environment variables. In production, `DATABASE_SECRET` is automatically injected from AWS Secrets Manager.
 
 4. **Set up the database**
 
