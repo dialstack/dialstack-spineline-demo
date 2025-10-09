@@ -3,24 +3,14 @@ import pino from "pino";
 /**
  * Configured pino logger for structured JSON logging
  *
- * In production, outputs JSON logs that can be parsed by Fluent Bit
- * In development, uses pino-pretty for human-readable output
+ * Outputs JSON logs in all environments for consistency and compatibility with log aggregation
+ *
+ * For human-readable logs in development, pipe through pino-pretty:
+ *   npm run dev 2>&1 | npx pino-pretty
  */
 const logger = pino({
   level: process.env.LOG_LEVEL || "info",
-  // In production, output JSON for log aggregation
-  // In development, use pretty printing
-  transport:
-    process.env.NODE_ENV !== "production"
-      ? {
-          target: "pino-pretty",
-          options: {
-            colorize: true,
-            translateTime: "HH:MM:ss Z",
-            ignore: "pid,hostname",
-          },
-        }
-      : undefined,
+  // Always output JSON (no transport/worker threads to avoid Next.js conflicts)
   // Base configuration for all logs
   base: {
     pid: process.pid,
