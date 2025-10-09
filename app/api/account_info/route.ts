@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import Practice from "@/app/models/practice";
 import dbConnect from "@/lib/dbConnect";
 import { getToken } from "next-auth/jwt";
+import logger from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (error: unknown) {
-    console.error("An error occurred when retrieving account info", error);
+    logger.error({ error }, "An error occurred when retrieving account info");
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";
     return new Response(message, { status: 500 });

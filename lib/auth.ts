@@ -2,6 +2,7 @@ import Practice from "../app/models/practice";
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/dbConnect";
+import logger from "@/lib/logger";
 
 export const authOptions: AuthOptions = {
   session: {
@@ -15,21 +16,21 @@ export const authOptions: AuthOptions = {
 
   callbacks: {
     async signIn({ user }) {
-      console.log("Signing in user", user);
+      logger.info({ user }, "Signing in user");
       return true;
     },
 
     async session({ session, token }) {
       session.user.email = token.email;
 
-      console.log(`Got session for user ${token.email}`);
+      logger.info({ email: token.email }, "Got session for user");
 
       return session;
     },
 
     async jwt({ token, trigger, session, user }) {
       if (trigger === "update") {
-        console.log("Updating session", session);
+        logger.info({ session }, "Updating session");
       }
       if (user) {
         token.user = Object.assign(token.user || {}, user);
@@ -53,7 +54,7 @@ export const authOptions: AuthOptions = {
           const email = credentials?.email;
           const password = credentials?.password;
           if (!email) {
-            console.log("Could not find an email for provider");
+            logger.info("Could not find an email for provider");
             return null;
           }
 
@@ -67,7 +68,7 @@ export const authOptions: AuthOptions = {
             return null;
           }
         } catch (err) {
-          console.warn("Got an error authorizing a user during login", err);
+          logger.warn({ err }, "Got an error authorizing a user during login");
           return null;
         }
 
@@ -86,12 +87,12 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         await dbConnect();
-        console.log("Signing up");
+        logger.info("Signing up");
 
         const email = credentials?.email;
         const password = credentials?.password;
         if (!email) {
-          console.log("Could not find an email for aurhotization");
+          logger.info("Could not find an email for authorization");
           return null;
         }
 
@@ -100,20 +101,20 @@ export const authOptions: AuthOptions = {
           // Look for existing user.
           user = await Practice.findByEmail(email);
           if (user) {
-            console.log("Found an existing user, cannot sign up again");
+            logger.info("Found an existing user, cannot sign up again");
             return null;
           }
 
-          console.log("Creating Practice...");
+          logger.info("Creating Practice...");
           user = await Practice.create({
             email,
             password,
           });
-          console.log("Practice was created");
+          logger.info("Practice was created");
         } catch (error: unknown) {
-          console.log(
+          logger.error(
+            { error },
             "Got an error authorizing and creating a user during signup",
-            error,
           );
           return null;
         }

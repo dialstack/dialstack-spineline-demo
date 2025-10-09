@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import logger from "@/lib/logger";
 
 let pool: Pool | null = null;
 
@@ -14,7 +15,7 @@ export default async function dbConnect(): Promise<Pool> {
 
     // Handle pool errors
     pool.on("error", (err) => {
-      console.error("Unexpected error on idle client", err);
+      logger.error({ err }, "Unexpected error on idle client");
     });
   }
 
