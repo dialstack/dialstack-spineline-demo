@@ -98,12 +98,67 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
 
 4. **Set up the database**
 
-   ```bash
-   # Create the database
-   psql postgres -c "CREATE DATABASE spineline_db;"
+   **Option A: Local PostgreSQL**
 
-   # Run migrations to initialize schema
+   Install PostgreSQL:
+
+   ```bash
+   # macOS (via Homebrew)
+   brew install postgresql@17
+
+   # Ubuntu/Debian
+   sudo apt update
+   sudo apt install postgresql postgresql-contrib
+
+   # Windows
+   # Download installer from https://www.postgresql.org/download/windows/
+   # Or use Chocolatey: choco install postgresql
+   ```
+
+   Initialize and run PostgreSQL in the foreground:
+
+   ```bash
+   # Create a local data directory for this project
+   mkdir -p .pgdata
+
+   # Initialize the database cluster (only needed once)
+   initdb -D .pgdata
+
+   # Start PostgreSQL in the foreground
+   # Run this in a dedicated terminal - it will stay running
+   postgres -D .pgdata -p 5432
+
+   # In a separate terminal, create the database and run migrations
+   psql -h localhost -p 5432 -d postgres -c "CREATE DATABASE spineline_db;"
    npm run migrate
+
+   # Stop PostgreSQL by pressing Ctrl+C in the postgres terminal
+   ```
+
+   **Note**: Add `.pgdata/` to your `.gitignore` to avoid committing database files.
+
+   **Option B: Docker**
+
+   Run PostgreSQL in a container:
+
+   ```bash
+   # Start PostgreSQL container
+   docker run -d \
+     --name spineline-postgres \
+     -e POSTGRES_DB=spineline_db \
+     -e POSTGRES_USER=postgres \
+     -e POSTGRES_PASSWORD=postgres \
+     -p 5432:5432 \
+     postgres:17
+
+   # Run migrations
+   npm run migrate
+
+   # Stop container when done
+   docker stop spineline-postgres
+
+   # Start existing container
+   docker start spineline-postgres
    ```
 
    **Note**: Migrations run automatically in production when the container starts (via `start:migrate` script). For development, run migrations manually with `npm run migrate`.
