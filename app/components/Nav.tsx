@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home as HomeIcon,
+  Users as PatientsIcon,
   Settings as SettingsIcon,
   Menu as MenuIcon,
   Sparkles as SparklesIcon,
@@ -20,6 +21,12 @@ const navigationMenuItems = [
     label: "Home",
     href: "/home",
     icon: HomeIcon,
+    paths: [],
+  },
+  {
+    label: "Patients",
+    href: "/patients",
+    icon: PatientsIcon,
     paths: [],
   },
   {

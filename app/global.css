@@ -4,31 +4,47 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: 0 0% 100%;
+  --foreground: 0 0% 100%;
+
+  --dialog-background: rgba(197, 197, 197, 0.7);
+  --dialog-content: white;
+
+  --screen-background: white;
+  --screen-foreground: white;
+
+  --embedded-component: #7f81fa;
+  --embedded-component-hover: #6c6ee6;
+
+  --offset: #f5f6f8;
+
+  --accent: #27ae60;
+  --accent-foreground: #f4f4f5;
+  --accent-subdued: #e9f7ef;
+
+  --primary: #353a44;
+  --subdued: #596171;
+
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: 145 63.4% 41.8%;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -37,28 +53,46 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --success: #d6fce6;
+  --success-border: #94d5af;
+  --success-foreground: #1e884b;
+
+  --tools-background: white;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
+  --background: 220 18.37% 9.61%;
+  --foreground: 220 16.67% 14.12%;
+
+  --screen-background: #1b1e25;
+  --screen-foreground: #1e222a;
+
+  --dialog-content: 220, 18.37%, 9.61%;
+  --dialog-background: rgba(0, 0, 0, 0.7);
+
+  --offset: #1e222a;
+  --accent: #27ae60;
+  --accent-foreground: #14171d;
+  --accent-subdued: rgba(39, 174, 96, 0.1);
+
+  --primary: #c9ced8;
+  --subdued: #8c99ad;
+
   --card: oklch(0.145 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.145 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
   --border: oklch(0.269 0 0);
   --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  --ring: 145 63.4% 41.8%;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -72,6 +106,12 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+
+  --success: #0c4223;
+  --success-border: #156236;
+  --success-foreground: #27ae60;
+
+  --tools-background: #1b1e25;
 }
 
 @theme inline {
@@ -111,13 +151,35 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-accent-subdued: var(--accent-subdued);
+  --color-subdued: var(--subdued);
+  --color-screen-background: var(--screen-background);
+  --color-screen-foreground: var(--screen-foreground);
+  --color-offset: var(--offset);
 }
 
 @layer base {
+  *,
+  ::before,
+  ::after {
+    @apply dark:border-neutral-700;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-primary;
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }
