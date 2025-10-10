@@ -119,6 +119,64 @@ class PracticeModel {
       throw new Error(`Failed to check email existence: ${error}`);
     }
   }
+
+  // Update practice email
+  static async updateEmail(
+    currentEmail: string,
+    newEmail: string,
+  ): Promise<Practice> {
+    const pool = await dbConnect();
+
+    try {
+      const result = await pool.query(
+        "UPDATE practices SET email = $1, updated_at = NOW() WHERE email = $2 RETURNING *",
+        [newEmail, currentEmail],
+      );
+
+      if (result.rows.length === 0) {
+        throw new Error("Practice not found");
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      throw new Error(`Failed to update email: ${error}`);
+    }
+  }
+
+  // Generic update method for practice fields
+  static async update(
+    email: string,
+    updates: Partial<Omit<Practice, "id" | "created_at" | "updated_at">>,
+  ): Promise<Practice> {
+    const pool = await dbConnect();
+
+    try {
+      const fields = Object.keys(updates);
+      const values = Object.values(updates);
+
+      if (fields.length === 0) {
+        throw new Error("No fields to update");
+      }
+
+      // Build SET clause dynamically
+      const setClause = fields
+        .map((field, index) => `${field} = $${index + 1}`)
+        .join(", ");
+
+      const result = await pool.query(
+        `UPDATE practices SET ${setClause}, updated_at = NOW() WHERE email = $${fields.length + 1} RETURNING *`,
+        [...values, email],
+      );
+
+      if (result.rows.length === 0) {
+        throw new Error("Practice not found");
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      throw new Error(`Failed to update practice: ${error}`);
+    }
+  }
 }
 
 export default PracticeModel;

@@ -41,6 +41,53 @@ export const authOptions: AuthOptions = {
 
   providers: [
     CredentialsProvider({
+      id: "updateemail",
+      name: "Email",
+      credentials: {
+        email: {},
+        password: {},
+      },
+      async authorize(credentials) {
+        await dbConnect();
+        let user = null;
+        try {
+          const email = credentials?.email;
+          if (!email) {
+            logger.info("Could not find an email for provider");
+            return null;
+          }
+
+          user = await Practice.findByEmail(email);
+          if (!user) {
+            return null;
+          }
+
+          const password = credentials?.password;
+          if (!password) {
+            logger.info("Could not find a password");
+            return null;
+          }
+
+          const isValid = await Practice.validatePassword(user, password);
+          if (!isValid) {
+            logger.info("Invalid password");
+            return null;
+          }
+        } catch (err) {
+          logger.warn(
+            { err },
+            "Got an error authorizing a user during email update",
+          );
+          return null;
+        }
+
+        return {
+          id: user.id?.toString(),
+          email: user.email,
+        };
+      },
+    }),
+    CredentialsProvider({
       id: "login",
       name: "Email & Password",
       credentials: {
