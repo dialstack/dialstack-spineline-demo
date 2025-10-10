@@ -47,8 +47,8 @@ async function runDatabaseMigrations() {
       );
     }
 
-    // Construct database URL (encode username and password to handle special characters)
-    const databaseUrl = `postgresql://${encodeURIComponent(secret.username)}:${encodeURIComponent(secret.password)}@${dbHost}:${dbPort}/${dbName}`;
+    // Construct database URL with SSL parameter (encode username and password to handle special characters)
+    const databaseUrl = `postgresql://${encodeURIComponent(secret.username)}:${encodeURIComponent(secret.password)}@${dbHost}:${dbPort}/${dbName}?sslmode=require`;
 
     logger.info(
       {
@@ -70,7 +70,7 @@ async function runDatabaseMigrations() {
       log: (msg) => {
         logger.info(msg);
       },
-      // SSL configuration for RDS
+      // SSL configuration for RDS - passed via connection object config
       databaseUrlConfig: {
         ssl: {
           rejectUnauthorized: false, // RDS certificates are valid but may not be in system trust store

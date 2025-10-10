@@ -55,9 +55,10 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 
-# Copy migrations and scripts for database initialization
+# Copy migrations, scripts, and lib for database initialization
 COPY --from=builder /app/migrations ./migrations
 COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/lib ./lib
 
 # Copy Next.js configuration files if they exist
 COPY --from=builder /app/next.config* ./
