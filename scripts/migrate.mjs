@@ -58,16 +58,22 @@ async function runDatabaseMigrations() {
       "Running database migrations",
     );
 
-    // Create a custom pg client with SSL configuration for RDS
+    // SSL is enabled by default - set DB_SSL_ENABLED=false to disable
+    const sslEnabled = process.env.DB_SSL_ENABLED !== "false";
+
+    // Create a custom pg client with optional SSL configuration
     const dbClient = new pg.Client({
       host: dbHost,
       port: parseInt(dbPort, 10),
       database: dbName,
       user: secret.username,
       password: secret.password,
-      ssl: {
-        rejectUnauthorized: false, // RDS certificates are valid but may not be in system trust store
-      },
+      // SSL configuration (optional, enabled via DB_SSL_ENABLED=true)
+      ssl: sslEnabled
+        ? {
+            rejectUnauthorized: false, // RDS certificates are valid but may not be in system trust store
+          }
+        : false,
     });
 
     // Connect to the database

@@ -31,16 +31,21 @@ export default async function dbConnect(): Promise<Pool> {
     // Encode username and password to handle special characters
     const connectionString = `postgresql://${encodeURIComponent(secret.username)}:${encodeURIComponent(secret.password)}@${dbHost}:${dbPort}/${dbName}`;
 
+    // SSL is enabled by default - set DB_SSL_ENABLED=false to disable
+    const sslEnabled = process.env.DB_SSL_ENABLED !== "false";
+
     pool = new Pool({
       connectionString,
       // Connection pool configuration
       max: 20, // Maximum number of clients in the pool
       idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
       connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
-      // SSL configuration for RDS
-      ssl: {
-        rejectUnauthorized: false, // RDS certificates are valid but may not be in system trust store
-      },
+      // SSL configuration (optional, enabled via DB_SSL_ENABLED=true)
+      ssl: sslEnabled
+        ? {
+            rejectUnauthorized: false, // RDS certificates are valid but may not be in system trust store
+          }
+        : false,
     });
 
     // Handle pool errors
