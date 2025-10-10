@@ -37,7 +37,7 @@ const LocaleSelector = ({ localeUpdated }: LocaleProps) => {
 
   return (
     <Select value={locale.locale} onValueChange={setLocale}>
-      <SelectTrigger className="w-[162px] text-xs">
+      <SelectTrigger className="w-[200px] text-xs">
         <SelectValue className="text-xs" placeholder="Locale">
           {locale.label}
         </SelectValue>

@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { File as FileIcon, PanelLeftClose, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -13,6 +14,7 @@ import LocaleSelector from "./Tools/LocaleSelector";
 import ThemePicker from "./Tools/ThemePicker";
 import BrandSettingsModal from "./BrandSettingsModal";
 import CreateTestPatientsButton from "./testdata/CreateTestPatientsButton";
+import SpinelineLogo from "@/public/spineline_logo.png";
 
 const ToolsPanel = () => {
   const pathname = usePathname();
@@ -59,7 +61,6 @@ const ToolsPanel = () => {
             Component outlines
           </Label>
           <Switch
-            className="data-[state=checked]:bg-accent data-[state=unchecked]:bg-[#EBEEF1]"
             id="outline"
             checked={border}
             onCheckedChange={() => handleEnableBorderChange(!border)}
@@ -111,8 +112,9 @@ const ToolsPanel = () => {
         <CustomTools />
       </div>
       <div className="hidden justify-between md:flex">
+        <Image src={SpinelineLogo} alt="Spineline logo" height={24} />
         <Button
-          variant="secondary"
+          variant="ghost"
           className="gap-1.5 px-3 py-2 text-sm"
           onClick={() => handleOpenChange(false)}
         >
