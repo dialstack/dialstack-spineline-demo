@@ -6,6 +6,7 @@
  */
 
 import migrate from "node-pg-migrate";
+import pg from "pg";
 import pino from "pino";
 
 const logger = pino({
@@ -47,9 +48,6 @@ async function runDatabaseMigrations() {
       );
     }
 
-    // Construct database URL with SSL parameter (encode username and password to handle special characters)
-    const databaseUrl = `postgresql://${encodeURIComponent(secret.username)}:${encodeURIComponent(secret.password)}@${dbHost}:${dbPort}/${dbName}?sslmode=require`;
-
     logger.info(
       {
         host: dbHost,
@@ -60,21 +58,27 @@ async function runDatabaseMigrations() {
       "Running database migrations",
     );
 
-    // Run migrations
+    // Create a custom pg client with SSL configuration for RDS
+    const dbClient = new pg.Client({
+      host: dbHost,
+      port: parseInt(dbPort, 10),
+      database: dbName,
+      user: secret.username,
+      password: secret.password,
+      ssl: {
+        rejectUnauthorized: false, // RDS certificates are valid but may not be in system trust store
+      },
+    });
+
+    // Run migrations using the custom client
     const migrations = await migrate({
-      databaseUrl,
+      dbClient,
       dir: "migrations",
       direction: "up",
       migrationsTable: "pgmigrations",
       verbose: true,
       log: (msg) => {
         logger.info(msg);
-      },
-      // SSL configuration for RDS - passed via connection object config
-      databaseUrlConfig: {
-        ssl: {
-          rejectUnauthorized: false, // RDS certificates are valid but may not be in system trust store
-        },
       },
     });
 
