@@ -11,6 +11,7 @@ import QueryProvider from "@/app/providers/QueryProvider";
 
 const fontSans = FontSans({
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
   variable: "--font-sans",
 });
 
