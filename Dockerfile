@@ -24,6 +24,8 @@ COPY components/ ./components/
 COPY lib/ ./lib/
 COPY types/ ./types/
 COPY public/ ./public/
+COPY migrations/ ./migrations/
+COPY scripts/ ./scripts/
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 COPY tsconfig.json ./
@@ -53,6 +55,10 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 
+# Copy migrations and scripts for database initialization
+COPY --from=builder /app/migrations ./migrations
+COPY --from=builder /app/scripts ./scripts
+
 # Copy Next.js configuration files if they exist
 COPY --from=builder /app/next.config* ./
 
@@ -71,5 +77,5 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application (runs migrations first via start:migrate script)
+CMD ["npm", "run", "start:migrate"]

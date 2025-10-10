@@ -102,9 +102,11 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
    # Create the database
    psql postgres -c "CREATE DATABASE spineline_db;"
 
-   # Initialize with schema
-   psql spineline_db -f database/init.sql
+   # Run migrations to initialize schema
+   npm run migrate
    ```
+
+   **Note**: Migrations run automatically in production when the container starts (via `start:migrate` script). For development, run migrations manually with `npm run migrate`.
 
 5. **Run the development server**
 
@@ -119,7 +121,12 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
-- `npm start` - Start production server
+- `npm start` - Start production server (without migrations)
+- `npm run start:migrate` - Run migrations then start server (used in production)
+- `npm run migrate` - Run pending database migrations
+- `npm run migrate:up` - Run all pending migrations (same as migrate)
+- `npm run migrate:down` - Rollback last migration
+- `npm run migrate:create <name>` - Create a new migration file
 - `npm run lint` - Run ESLint
 - `npm run typecheck` - Run TypeScript type checking
 
@@ -134,6 +141,62 @@ The application uses PostgreSQL with the following main tables:
 - `password` - Hashed password
 - `created_at` - Account creation timestamp
 - `updated_at` - Last update timestamp
+
+**Note**: Database schema is managed via migrations in the `migrations/` directory using `node-pg-migrate`. Never modify the database schema manually.
+
+## Database Migrations
+
+The application uses `node-pg-migrate` for database schema management. Migrations are automatically run on container startup in production.
+
+### Creating Migrations
+
+```bash
+# Create a new migration file
+npm run migrate:create add-new-table
+
+# This creates: migrations/TIMESTAMP_add-new-table.js
+```
+
+Edit the generated file to add your schema changes:
+
+```javascript
+exports.up = (pgm) => {
+  pgm.createTable("new_table", {
+    id: { type: "serial", primaryKey: true },
+    name: { type: "varchar(255)", notNull: true },
+  });
+};
+
+exports.down = (pgm) => {
+  pgm.dropTable("new_table");
+};
+```
+
+### Running Migrations
+
+```bash
+# Development: Run pending migrations
+npm run migrate
+
+# Production: Migrations run automatically on container start
+npm run start:migrate
+```
+
+### Migration Files
+
+- Located in `migrations/` directory
+- Named with timestamp prefix: `TIMESTAMP_description.js`
+- Each migration has `up()` and `down()` functions for apply/rollback
+- Migration state tracked in `pgmigrations` table
+
+### Rollback
+
+```bash
+# Rollback the last migration
+npm run migrate:down
+```
+
+**Warning**: Be careful with rollbacks in production. They can result in data loss.
 
 ## Authentication
 
