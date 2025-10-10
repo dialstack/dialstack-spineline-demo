@@ -28,7 +28,8 @@ export default async function dbConnect(): Promise<Pool> {
 
     // Parse RDS-managed secret JSON (contains only username and password)
     const secret: RDSSecret = JSON.parse(databaseSecret);
-    const connectionString = `postgresql://${secret.username}:${secret.password}@${dbHost}:${dbPort}/${dbName}`;
+    // Encode username and password to handle special characters
+    const connectionString = `postgresql://${encodeURIComponent(secret.username)}:${encodeURIComponent(secret.password)}@${dbHost}:${dbPort}/${dbName}`;
 
     pool = new Pool({
       connectionString,

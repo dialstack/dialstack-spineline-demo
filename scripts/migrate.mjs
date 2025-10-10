@@ -47,8 +47,8 @@ async function runDatabaseMigrations() {
       );
     }
 
-    // Construct database URL
-    const databaseUrl = `postgresql://${secret.username}:${secret.password}@${dbHost}:${dbPort}/${dbName}`;
+    // Construct database URL (encode username and password to handle special characters)
+    const databaseUrl = `postgresql://${encodeURIComponent(secret.username)}:${encodeURIComponent(secret.password)}@${dbHost}:${dbPort}/${dbName}`;
 
     logger.info(
       {
