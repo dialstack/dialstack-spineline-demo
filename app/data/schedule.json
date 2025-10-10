@@ -1,0 +1,120 @@
+[
+  {
+    "id": "1",
+    "provider": "Dr. Martinez",
+    "sessions": [
+      {
+        "id": 1,
+        "name": "New patient spinal assessment and X-rays",
+        "startTime": "9:30am",
+        "endTime": "10:30am",
+        "startTimeMinutes": 30,
+        "endTimeMinutes": 90,
+        "patient_id": 2,
+        "appointmentType": "initial"
+      },
+      {
+        "id": 2,
+        "name": "Lower back adjustment and mobility work",
+        "startTime": "11:00am",
+        "endTime": "12:00pm",
+        "startTimeMinutes": 120,
+        "endTimeMinutes": 180,
+        "patient_id": 8,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 3,
+        "name": "Post-injury rehabilitation exercises",
+        "startTime": "2:00pm",
+        "endTime": "3:00pm",
+        "startTimeMinutes": 300,
+        "endTimeMinutes": 360,
+        "patient_id": 6,
+        "appointmentType": "therapy"
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "provider": "Dr. Chen",
+    "sessions": [
+      {
+        "id": 1,
+        "name": "Cervical spine adjustment for headaches",
+        "startTime": "9:00am",
+        "endTime": "10:00am",
+        "startTimeMinutes": 0,
+        "endTimeMinutes": 60,
+        "patient_id": 7,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 2,
+        "name": "Comprehensive intake and treatment plan",
+        "startTime": "10:45am",
+        "endTime": "11:45am",
+        "startTimeMinutes": 105,
+        "endTimeMinutes": 165,
+        "patient_id": 4,
+        "appointmentType": "initial"
+      },
+      {
+        "id": 3,
+        "name": "Progress check after 4 weeks of treatment",
+        "startTime": "1:15pm",
+        "endTime": "2:15pm",
+        "startTimeMinutes": 255,
+        "endTimeMinutes": 315,
+        "patient_id": 1,
+        "appointmentType": "followup"
+      },
+      {
+        "id": 4,
+        "name": "Acute lower back pain consultation",
+        "startTime": "3:30pm",
+        "endTime": "4:30pm",
+        "startTimeMinutes": 390,
+        "endTimeMinutes": 450,
+        "patient_id": 3,
+        "appointmentType": "walkin"
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "provider": "Dr. Johnson",
+    "sessions": [
+      {
+        "id": 1,
+        "name": "Therapeutic massage and soft tissue work",
+        "startTime": "10:00am",
+        "endTime": "11:00am",
+        "startTimeMinutes": 60,
+        "endTimeMinutes": 120,
+        "patient_id": 5,
+        "appointmentType": "therapy"
+      },
+      {
+        "id": 2,
+        "name": "First-time patient evaluation and history",
+        "startTime": "12:30pm",
+        "endTime": "1:30pm",
+        "startTimeMinutes": 210,
+        "endTimeMinutes": 270,
+        "patient_id": 10,
+        "appointmentType": "initial"
+      },
+      {
+        "id": 3,
+        "name": "Review treatment outcomes and adjust plan",
+        "startTime": "2:45pm",
+        "endTime": "3:45pm",
+        "startTimeMinutes": 345,
+        "endTimeMinutes": 405,
+        "patient_id": 9,
+        "appointmentType": "followup"
+      }
+    ]
+  }
+]
