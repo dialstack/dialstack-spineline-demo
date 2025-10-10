@@ -12,12 +12,6 @@ This application is a vertical SaaS platform for chiropractors that showcases Di
 - `npm run lint` - Run ESLint with Next.js configuration
 - `npm run typecheck` - Run TypeScript type checking without emitting files
 
-## Database Commands
-
-- `psql postgres -c "CREATE DATABASE spineline_db;"` - Create database
-- `psql spineline_db -f database/init.sql` - Initialize database schema
-- Database URL format: `postgresql://username:password@localhost:5432/spineline_db`
-
 ## Architecture Overview
 
 ### Authentication Flow
@@ -52,7 +46,6 @@ This application is a vertical SaaS platform for chiropractors that showcases Di
 - `app/models/practice.ts` - Practice model with CRUD operations
 - `lib/auth.ts` - NextAuth configuration with dual credential providers
 - `lib/forms.ts` - Zod validation schemas
-- `database/init.sql` - Database initialization script
 - `.github/workflows/ci.yml` - CI pipeline (typecheck, lint, build)
 
 ## Technology Stack
