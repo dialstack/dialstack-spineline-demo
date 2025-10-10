@@ -70,6 +70,12 @@ async function runDatabaseMigrations() {
       log: (msg) => {
         logger.info(msg);
       },
+      // SSL configuration for RDS
+      databaseUrlConfig: {
+        ssl: {
+          rejectUnauthorized: false, // RDS certificates are valid but may not be in system trust store
+        },
+      },
     });
 
     if (migrations.length === 0) {

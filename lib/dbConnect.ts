@@ -37,6 +37,10 @@ export default async function dbConnect(): Promise<Pool> {
       max: 20, // Maximum number of clients in the pool
       idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
       connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
+      // SSL configuration for RDS
+      ssl: {
+        rejectUnauthorized: false, // RDS certificates are valid but may not be in system trust store
+      },
     });
 
     // Handle pool errors
