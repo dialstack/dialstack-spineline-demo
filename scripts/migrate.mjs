@@ -70,25 +70,35 @@ async function runDatabaseMigrations() {
       },
     });
 
-    // Run migrations using the custom client
-    const migrations = await migrate({
-      dbClient,
-      dir: "migrations",
-      direction: "up",
-      migrationsTable: "pgmigrations",
-      verbose: true,
-      log: (msg) => {
-        logger.info(msg);
-      },
-    });
+    // Connect to the database
+    await dbClient.connect();
+    logger.info("Connected to database");
 
-    if (migrations.length === 0) {
-      logger.info("No new migrations to run - database is up to date");
-    } else {
-      logger.info(
-        { migrations },
-        `Successfully ran ${migrations.length} migration(s)`,
-      );
+    try {
+      // Run migrations using the custom client
+      const migrations = await migrate({
+        dbClient,
+        dir: "migrations",
+        direction: "up",
+        migrationsTable: "pgmigrations",
+        verbose: true,
+        log: (msg) => {
+          logger.info(msg);
+        },
+      });
+
+      if (migrations.length === 0) {
+        logger.info("No new migrations to run - database is up to date");
+      } else {
+        logger.info(
+          { migrations },
+          `Successfully ran ${migrations.length} migration(s)`,
+        );
+      }
+    } finally {
+      // Always close the connection
+      await dbClient.end();
+      logger.info("Closed database connection");
     }
 
     process.exit(0);
