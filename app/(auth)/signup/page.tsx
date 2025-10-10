@@ -44,7 +44,7 @@ export default function Signup() {
           message: "The email is already in use.",
         });
       } else if (result?.ok) {
-        router.push("/business");
+        router.push("/home");
       }
     } catch (error: unknown) {
       console.error("An error occurred when signing in", error);
