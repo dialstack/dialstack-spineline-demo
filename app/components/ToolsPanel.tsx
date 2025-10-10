@@ -12,6 +12,7 @@ import * as React from "react";
 import LocaleSelector from "./Tools/LocaleSelector";
 import ThemePicker from "./Tools/ThemePicker";
 import BrandSettingsModal from "./BrandSettingsModal";
+import CreateTestPatientsButton from "./testdata/CreateTestPatientsButton";
 
 const ToolsPanel = () => {
   const pathname = usePathname();
@@ -21,7 +22,13 @@ const ToolsPanel = () => {
   const { handleOpenChange } = useToolsContext();
   const [border, setBorder] = React.useState(true);
 
-  const actions = [];
+  const actions = [
+    {
+      description: "Create test patients",
+      href: "/patients",
+      component: CreateTestPatientsButton,
+    },
+  ];
 
   const CustomTools = () => {
     return (

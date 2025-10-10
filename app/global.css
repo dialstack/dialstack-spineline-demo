@@ -156,6 +156,8 @@
   --color-screen-background: var(--screen-background);
   --color-screen-foreground: var(--screen-foreground);
   --color-offset: var(--offset);
+  --color-dialog-background: var(--dialog-background);
+  --color-dialog-content: var(--dialog-content);
 }
 
 @layer base {
