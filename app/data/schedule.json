@@ -6,32 +6,152 @@
       {
         "id": 1,
         "name": "New patient spinal assessment and X-rays",
-        "startTime": "9:30am",
-        "endTime": "10:30am",
-        "startTimeMinutes": 30,
-        "endTimeMinutes": 90,
-        "patient_id": 2,
+        "startTime": "9:00am",
+        "endTime": "9:30am",
+        "startTimeMinutes": 0,
+        "endTimeMinutes": 30,
+        "patient_id": 3,
         "appointmentType": "initial"
       },
       {
         "id": 2,
         "name": "Lower back adjustment and mobility work",
-        "startTime": "11:00am",
-        "endTime": "12:00pm",
-        "startTimeMinutes": 120,
-        "endTimeMinutes": 180,
-        "patient_id": 8,
+        "startTime": "9:45am",
+        "endTime": "10:00am",
+        "startTimeMinutes": 45,
+        "endTimeMinutes": 60,
+        "patient_id": 7,
         "appointmentType": "adjustment"
       },
       {
         "id": 3,
+        "name": "Quick cervical adjustment",
+        "startTime": "10:15am",
+        "endTime": "10:25am",
+        "startTimeMinutes": 75,
+        "endTimeMinutes": 85,
+        "patient_id": 12,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 4,
+        "name": "Thoracic spine alignment and adjustment",
+        "startTime": "10:30am",
+        "endTime": "10:45am",
+        "startTimeMinutes": 90,
+        "endTimeMinutes": 105,
+        "patient_id": 1,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 5,
         "name": "Post-injury rehabilitation exercises",
         "startTime": "2:00pm",
-        "endTime": "3:00pm",
+        "endTime": "2:30pm",
         "startTimeMinutes": 300,
-        "endTimeMinutes": 360,
-        "patient_id": 6,
+        "endTimeMinutes": 330,
+        "patient_id": 15,
         "appointmentType": "therapy"
+      },
+      {
+        "id": 6,
+        "name": "Progress check and treatment review",
+        "startTime": "3:00pm",
+        "endTime": "3:15pm",
+        "startTimeMinutes": 360,
+        "endTimeMinutes": 375,
+        "patient_id": 9,
+        "appointmentType": "followup"
+      },
+      {
+        "id": 7,
+        "name": "Quick adjustment for posture correction",
+        "startTime": "11:00am",
+        "endTime": "11:10am",
+        "startTimeMinutes": 120,
+        "endTimeMinutes": 130,
+        "patient_id": 19,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 8,
+        "name": "Neck and shoulder tension relief",
+        "startTime": "11:15am",
+        "endTime": "11:30am",
+        "startTimeMinutes": 135,
+        "endTimeMinutes": 150,
+        "patient_id": 22,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 9,
+        "name": "Sports injury assessment",
+        "startTime": "11:45am",
+        "endTime": "12:15pm",
+        "startTimeMinutes": 165,
+        "endTimeMinutes": 195,
+        "patient_id": 27,
+        "appointmentType": "initial"
+      },
+      {
+        "id": 10,
+        "name": "Express spinal alignment",
+        "startTime": "4:00pm",
+        "endTime": "4:10pm",
+        "startTimeMinutes": 420,
+        "endTimeMinutes": 430,
+        "patient_id": 31,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 11,
+        "name": "Hip and pelvis adjustment",
+        "startTime": "4:15pm",
+        "endTime": "4:30pm",
+        "startTimeMinutes": 435,
+        "endTimeMinutes": 450,
+        "patient_id": 24,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 12,
+        "name": "Migraine relief treatment",
+        "startTime": "3:30pm",
+        "endTime": "3:50pm",
+        "startTimeMinutes": 390,
+        "endTimeMinutes": 410,
+        "patient_id": 35,
+        "appointmentType": "therapy"
+      },
+      {
+        "id": 13,
+        "name": "Quick posture check",
+        "startTime": "9:30am",
+        "endTime": "9:40am",
+        "startTimeMinutes": 30,
+        "endTimeMinutes": 40,
+        "patient_id": 37,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 14,
+        "name": "Rib cage alignment",
+        "startTime": "10:45am",
+        "endTime": "11:00am",
+        "startTimeMinutes": 105,
+        "endTimeMinutes": 120,
+        "patient_id": 38,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 15,
+        "name": "Wellness check and adjustment",
+        "startTime": "1:30pm",
+        "endTime": "1:50pm",
+        "startTimeMinutes": 270,
+        "endTimeMinutes": 290,
+        "patient_id": 39,
+        "appointmentType": "followup"
       }
     ]
   },
@@ -41,43 +161,163 @@
     "sessions": [
       {
         "id": 1,
-        "name": "Cervical spine adjustment for headaches",
+        "name": "Quick adjustment for neck stiffness",
         "startTime": "9:00am",
-        "endTime": "10:00am",
+        "endTime": "9:10am",
         "startTimeMinutes": 0,
-        "endTimeMinutes": 60,
-        "patient_id": 7,
+        "endTimeMinutes": 10,
+        "patient_id": 14,
         "appointmentType": "adjustment"
       },
       {
         "id": 2,
-        "name": "Comprehensive intake and treatment plan",
-        "startTime": "10:45am",
-        "endTime": "11:45am",
-        "startTimeMinutes": 105,
-        "endTimeMinutes": 165,
-        "patient_id": 4,
-        "appointmentType": "initial"
+        "name": "Lower back and hip adjustment",
+        "startTime": "9:15am",
+        "endTime": "9:30am",
+        "startTimeMinutes": 15,
+        "endTimeMinutes": 30,
+        "patient_id": 6,
+        "appointmentType": "adjustment"
       },
       {
         "id": 3,
-        "name": "Progress check after 4 weeks of treatment",
-        "startTime": "1:15pm",
-        "endTime": "2:15pm",
-        "startTimeMinutes": 255,
-        "endTimeMinutes": 315,
-        "patient_id": 1,
-        "appointmentType": "followup"
+        "name": "Comprehensive intake and treatment plan",
+        "startTime": "10:10am",
+        "endTime": "10:40am",
+        "startTimeMinutes": 70,
+        "endTimeMinutes": 100,
+        "patient_id": 11,
+        "appointmentType": "initial"
       },
       {
         "id": 4,
+        "name": "Therapeutic massage and soft tissue work",
+        "startTime": "11:10am",
+        "endTime": "11:30am",
+        "startTimeMinutes": 130,
+        "endTimeMinutes": 150,
+        "patient_id": 2,
+        "appointmentType": "therapy"
+      },
+      {
+        "id": 5,
         "name": "Acute lower back pain consultation",
-        "startTime": "3:30pm",
-        "endTime": "4:30pm",
-        "startTimeMinutes": 390,
-        "endTimeMinutes": 450,
-        "patient_id": 3,
+        "startTime": "4:00pm",
+        "endTime": "4:15pm",
+        "startTimeMinutes": 420,
+        "endTimeMinutes": 435,
+        "patient_id": 17,
         "appointmentType": "walkin"
+      },
+      {
+        "id": 6,
+        "name": "Follow-up adjustment and assessment",
+        "startTime": "2:00pm",
+        "endTime": "2:15pm",
+        "startTimeMinutes": 300,
+        "endTimeMinutes": 315,
+        "patient_id": 8,
+        "appointmentType": "followup"
+      },
+      {
+        "id": 7,
+        "name": "Mid-back pain relief",
+        "startTime": "11:35am",
+        "endTime": "11:50am",
+        "startTimeMinutes": 155,
+        "endTimeMinutes": 170,
+        "patient_id": 20,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 8,
+        "name": "Sciatica treatment session",
+        "startTime": "10:45am",
+        "endTime": "11:05am",
+        "startTimeMinutes": 105,
+        "endTimeMinutes": 125,
+        "patient_id": 26,
+        "appointmentType": "therapy"
+      },
+      {
+        "id": 9,
+        "name": "Quick realignment",
+        "startTime": "4:20pm",
+        "endTime": "4:30pm",
+        "startTimeMinutes": 440,
+        "endTimeMinutes": 450,
+        "patient_id": 29,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 10,
+        "name": "Preventative maintenance adjustment",
+        "startTime": "2:40pm",
+        "endTime": "2:55pm",
+        "startTimeMinutes": 340,
+        "endTimeMinutes": 355,
+        "patient_id": 33,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 11,
+        "name": "Shoulder impingement treatment",
+        "startTime": "3:00pm",
+        "endTime": "3:20pm",
+        "startTimeMinutes": 360,
+        "endTimeMinutes": 380,
+        "patient_id": 21,
+        "appointmentType": "therapy"
+      },
+      {
+        "id": 12,
+        "name": "Whiplash follow-up care",
+        "startTime": "3:30pm",
+        "endTime": "3:45pm",
+        "startTimeMinutes": 390,
+        "endTimeMinutes": 405,
+        "patient_id": 36,
+        "appointmentType": "followup"
+      },
+      {
+        "id": 13,
+        "name": "Foot and ankle adjustment",
+        "startTime": "4:35pm",
+        "endTime": "4:50pm",
+        "startTimeMinutes": 455,
+        "endTimeMinutes": 470,
+        "patient_id": 40,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 14,
+        "name": "Pinched nerve evaluation",
+        "startTime": "9:35am",
+        "endTime": "10:05am",
+        "startTimeMinutes": 35,
+        "endTimeMinutes": 65,
+        "patient_id": 41,
+        "appointmentType": "initial"
+      },
+      {
+        "id": 15,
+        "name": "Scoliosis management session",
+        "startTime": "2:20pm",
+        "endTime": "2:35pm",
+        "startTimeMinutes": 320,
+        "endTimeMinutes": 335,
+        "patient_id": 42,
+        "appointmentType": "therapy"
+      },
+      {
+        "id": 16,
+        "name": "Lumbar spine adjustment",
+        "startTime": "4:55pm",
+        "endTime": "5:10pm",
+        "startTimeMinutes": 475,
+        "endTimeMinutes": 490,
+        "patient_id": 43,
+        "appointmentType": "adjustment"
       }
     ]
   },
@@ -87,33 +327,153 @@
     "sessions": [
       {
         "id": 1,
-        "name": "Therapeutic massage and soft tissue work",
+        "name": "Quick spinal adjustment",
         "startTime": "10:00am",
-        "endTime": "11:00am",
+        "endTime": "10:10am",
         "startTimeMinutes": 60,
-        "endTimeMinutes": 120,
+        "endTimeMinutes": 70,
         "patient_id": 5,
-        "appointmentType": "therapy"
+        "appointmentType": "adjustment"
       },
       {
         "id": 2,
-        "name": "First-time patient evaluation and history",
-        "startTime": "12:30pm",
-        "endTime": "1:30pm",
-        "startTimeMinutes": 210,
-        "endTimeMinutes": 270,
-        "patient_id": 10,
-        "appointmentType": "initial"
+        "name": "Corrective exercises and stretching",
+        "startTime": "10:30am",
+        "endTime": "10:50am",
+        "startTimeMinutes": 90,
+        "endTimeMinutes": 110,
+        "patient_id": 13,
+        "appointmentType": "therapy"
       },
       {
         "id": 3,
-        "name": "Review treatment outcomes and adjust plan",
-        "startTime": "2:45pm",
+        "name": "First-time patient evaluation and history",
+        "startTime": "11:00am",
+        "endTime": "11:30am",
+        "startTimeMinutes": 120,
+        "endTimeMinutes": 150,
+        "patient_id": 4,
+        "appointmentType": "initial"
+      },
+      {
+        "id": 4,
+        "name": "Shoulder and upper back adjustment",
+        "startTime": "1:30pm",
+        "endTime": "1:45pm",
+        "startTimeMinutes": 270,
+        "endTimeMinutes": 285,
+        "patient_id": 10,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 5,
+        "name": "Express adjustment",
+        "startTime": "2:00pm",
+        "endTime": "2:10pm",
+        "startTimeMinutes": 300,
+        "endTimeMinutes": 310,
+        "patient_id": 18,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 6,
+        "name": "Therapeutic stretching and mobility work",
+        "startTime": "3:00pm",
+        "endTime": "3:20pm",
+        "startTimeMinutes": 360,
+        "endTimeMinutes": 380,
+        "patient_id": 16,
+        "appointmentType": "therapy"
+      },
+      {
+        "id": 7,
+        "name": "Express alignment check",
+        "startTime": "9:00am",
+        "endTime": "9:10am",
+        "startTimeMinutes": 0,
+        "endTimeMinutes": 10,
+        "patient_id": 23,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 8,
+        "name": "Pregnancy-related back pain care",
+        "startTime": "9:20am",
+        "endTime": "9:40am",
+        "startTimeMinutes": 20,
+        "endTimeMinutes": 40,
+        "patient_id": 28,
+        "appointmentType": "therapy"
+      },
+      {
+        "id": 9,
+        "name": "New patient consultation and exam",
+        "startTime": "11:45am",
+        "endTime": "12:15pm",
+        "startTimeMinutes": 165,
+        "endTimeMinutes": 195,
+        "patient_id": 30,
+        "appointmentType": "initial"
+      },
+      {
+        "id": 10,
+        "name": "Carpal tunnel syndrome adjustment",
+        "startTime": "4:00pm",
+        "endTime": "4:15pm",
+        "startTimeMinutes": 420,
+        "endTimeMinutes": 435,
+        "patient_id": 25,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 11,
+        "name": "TMJ disorder treatment",
+        "startTime": "2:20pm",
+        "endTime": "2:40pm",
+        "startTimeMinutes": 320,
+        "endTimeMinutes": 340,
+        "patient_id": 32,
+        "appointmentType": "therapy"
+      },
+      {
+        "id": 12,
+        "name": "Knee and leg alignment",
+        "startTime": "3:30pm",
         "endTime": "3:45pm",
-        "startTimeMinutes": 345,
+        "startTimeMinutes": 390,
         "endTimeMinutes": 405,
-        "patient_id": 9,
-        "appointmentType": "followup"
+        "patient_id": 34,
+        "appointmentType": "adjustment"
+      },
+      {
+        "id": 13,
+        "name": "Plantar fasciitis treatment",
+        "startTime": "9:45am",
+        "endTime": "10:00am",
+        "startTimeMinutes": 45,
+        "endTimeMinutes": 60,
+        "patient_id": 44,
+        "appointmentType": "therapy"
+      },
+      {
+        "id": 14,
+        "name": "Herniated disc consultation",
+        "startTime": "11:30am",
+        "endTime": "12:00pm",
+        "startTimeMinutes": 150,
+        "endTimeMinutes": 180,
+        "patient_id": 45,
+        "appointmentType": "initial"
+      },
+      {
+        "id": 15,
+        "name": "Tennis elbow adjustment",
+        "startTime": "2:45pm",
+        "endTime": "3:00pm",
+        "startTimeMinutes": 345,
+        "endTimeMinutes": 360,
+        "patient_id": 46,
+        "appointmentType": "adjustment"
       }
     ]
   }

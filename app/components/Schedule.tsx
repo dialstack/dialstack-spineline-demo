@@ -115,12 +115,20 @@ const Schedule = () => {
     });
   }
 
-  // Create a mapping from schedule patient_id (1-5) to actual patient IDs
+  // Count total appointments in the schedule
+  const totalAppointments = schedule.reduce(
+    (total, provider) => total + provider.sessions.length,
+    0,
+  );
+
+  // Create a mapping from schedule patient_id to actual patient IDs
   const scheduleToActualPatientMap = new Map<number, Patient>();
   if (patients && patients.length > 0) {
-    for (let i = 0; i < Math.min(patients.length, 10); i++) {
-      const scheduleId = i + 1; // 1-10
-      const actualPatient = patients[i % patients.length]; // Cycle through available patients
+    // Only map up to the number of available patients (no cycling/reuse)
+    const mappingCount = Math.min(totalAppointments, patients.length);
+    for (let i = 0; i < mappingCount; i++) {
+      const scheduleId = i + 1;
+      const actualPatient = patients[i];
       scheduleToActualPatientMap.set(scheduleId, actualPatient);
     }
   }
@@ -204,10 +212,16 @@ const Schedule = () => {
                           ) : appointmentType === "walkin" ? (
                             <Badge variant="red">Walk-in</Badge>
                           ) : null;
+
+                        const duration = endTimeMinutes - startTimeMinutes;
+                        const isShort = duration < 20;
+                        const padding = isShort ? "p-2" : "p-3";
+                        const spacing = isShort ? "space-y-1" : "space-y-2";
+
                         return (
                           <div
                             key={sessionId}
-                            className="hover:z-100 absolute flex w-full cursor-pointer flex-col justify-between space-y-2 rounded-md border bg-offset bg-screen-background p-3 text-primary transition duration-150 hover:scale-[1.01] hover:bg-screen-foreground hover:shadow-md"
+                            className={`group absolute flex w-full cursor-pointer flex-col overflow-hidden rounded-md border bg-offset bg-screen-background ${padding} ${spacing} text-primary transition-all duration-150 hover:z-[100] hover:scale-[1.01] hover:bg-screen-foreground hover:shadow-md hover:!h-auto hover:min-h-[100px]`}
                             style={{
                               height: `${Math.round(
                                 (SCHEDULE_HEIGHT *
@@ -220,19 +234,25 @@ const Schedule = () => {
                               )}px`,
                             }}
                           >
-                            <div>
-                              <div className="text-md font-medium text-accent">
-                                {startTime} - {endTime}
+                            {badge && (
+                              <div className="absolute top-2 right-2">
+                                {badge}
                               </div>
-                              <div className="text-md truncate font-medium">
+                            )}
+                            <div>
+                              <div className="text-sm font-medium flex items-center gap-2">
+                                <span className="text-accent">
+                                  {startTime} - {endTime}
+                                </span>
+                                <span className="font-semibold truncate group-hover:whitespace-normal">
+                                  {patient.first_name} {patient.last_name}
+                                </span>
+                              </div>
+                              <div
+                                className={`text-sm text-subdued ${isShort ? "hidden group-hover:block" : "truncate group-hover:whitespace-normal"}`}
+                              >
                                 {name}
                               </div>
-                            </div>
-                            <div className="text-md flex items-end gap-2">
-                              <div className="relative flex flex-1 items-center gap-2 font-medium">
-                                {patient.first_name} {patient.last_name}
-                              </div>
-                              {badge}
                             </div>
                           </div>
                         );
