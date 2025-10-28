@@ -71,7 +71,7 @@ jobs:
 
   # Build and push Docker image with layer caching
   docker-build-push:
-    runs-on: ubuntu-24.04-arm
+    runs-on: [self-hosted, ARM64]
     needs: [quality-checks, build]
 
     steps:
