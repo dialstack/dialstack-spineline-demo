@@ -22,6 +22,7 @@ export const authOptions: AuthOptions = {
 
     async session({ session, token }) {
       session.user.email = token.email;
+      session.user.dialstackAccountId = token.user.dialstackAccountId;
 
       logger.info({ email: token.email }, "Got session for user");
 
@@ -33,7 +34,7 @@ export const authOptions: AuthOptions = {
         logger.info({ session }, "Updating session");
       }
       if (user) {
-        token.user = Object.assign(token.user || {}, user);
+        token.user = { ...token.user, ...user };
       }
       return token;
     },
@@ -84,6 +85,7 @@ export const authOptions: AuthOptions = {
         return {
           id: user.id?.toString(),
           email: user.email,
+          dialstackAccountId: user.id?.toString(),
         };
       },
     }),
@@ -122,6 +124,7 @@ export const authOptions: AuthOptions = {
         return {
           id: user.id?.toString(),
           email: user.email,
+          dialstackAccountId: user.id?.toString(),
         };
       },
     }),
@@ -169,6 +172,7 @@ export const authOptions: AuthOptions = {
         return {
           id: user!.id?.toString(),
           email: user!.email,
+          dialstackAccountId: user!.id?.toString(),
         };
       },
     }),

@@ -6,6 +6,8 @@ declare module "next-auth" {
    */
   interface Session {
     user: {
+      /** The user's DialStack account ID. */
+      dialstackAccountId: string;
       businessName?: string | null;
       password?: string | null;
       setup?: boolean | null;
@@ -27,6 +29,7 @@ declare module "next-auth/jwt" {
       email?: string | null;
       image?: string | null;
       setup?: boolean | null;
+      dialstackAccountId: string;
       primaryColor?: string | null;
       companyName?: string | null;
       companyLogoUrl?: string | null;
