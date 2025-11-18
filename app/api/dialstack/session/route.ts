@@ -16,20 +16,8 @@ export async function POST() {
     }
 
     const accountId = session.user.dialstackAccountId;
-    const platformId = process.env.DIALSTACK_PLATFORM_ID;
-
-    if (!platformId) {
-      console.error("Missing DIALSTACK_PLATFORM_ID environment variable");
-      return new Response(
-        JSON.stringify({
-          error: "DialStack configuration missing",
-        }),
-        { status: 500 },
-      );
-    }
 
     const dialstackSession = await dialstack.sessions.create({
-      platform_id: platformId,
       account_id: accountId,
     });
 

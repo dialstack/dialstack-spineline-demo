@@ -42,3 +42,4 @@ yarn-error.log*
 **/terraform.tfstate.backup
 **/*.tfplan
 **/terraform.tfvars
+.yalc/
