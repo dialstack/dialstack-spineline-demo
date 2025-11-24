@@ -3,6 +3,7 @@ import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/dbConnect";
 import logger from "@/lib/logger";
+import { dialstack } from "@/lib/dialstack";
 
 export const authOptions: AuthOptions = {
   session: {
@@ -85,7 +86,7 @@ export const authOptions: AuthOptions = {
         return {
           id: user.id?.toString(),
           email: user.email,
-          dialstackAccountId: user.id?.toString(),
+          dialstackAccountId: user.dialstack_account_id,
         };
       },
     }),
@@ -124,7 +125,7 @@ export const authOptions: AuthOptions = {
         return {
           id: user.id?.toString(),
           email: user.email,
-          dialstackAccountId: user.id?.toString(),
+          dialstackAccountId: user.dialstack_account_id,
         };
       },
     }),
@@ -161,6 +162,20 @@ export const authOptions: AuthOptions = {
             password,
           });
           logger.info("Practice was created");
+
+          // Create DialStack account
+          logger.info("Creating DialStack account...");
+          const account = await dialstack.accounts.create({ name: email });
+          logger.info({ accountId: account.id }, "DialStack account created");
+
+          // Store the DialStack account ID
+          await Practice.update(email, { dialstack_account_id: account.id });
+
+          return {
+            id: user!.id?.toString(),
+            email: user!.email,
+            dialstackAccountId: account.id,
+          };
         } catch (error: unknown) {
           logger.error(
             { error },
@@ -168,12 +183,6 @@ export const authOptions: AuthOptions = {
           );
           return null;
         }
-
-        return {
-          id: user!.id?.toString(),
-          email: user!.email,
-          dialstackAccountId: user!.id?.toString(),
-        };
       },
     }),
   ],

@@ -11,6 +11,7 @@ export interface Practice {
   changedPassword?: boolean;
   businessName?: string;
   setup?: boolean;
+  dialstack_account_id?: string;
 }
 
 // Practice class with PostgreSQL methods
