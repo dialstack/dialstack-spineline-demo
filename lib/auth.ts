@@ -165,7 +165,7 @@ export const authOptions: AuthOptions = {
 
           // Create DialStack account
           logger.info("Creating DialStack account...");
-          const account = await dialstack.accounts.create({ name: email });
+          const account = await dialstack.accounts.create({ email });
           logger.info({ accountId: account.id }, "DialStack account created");
 
           // Store the DialStack account ID
