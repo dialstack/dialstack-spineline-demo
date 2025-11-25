@@ -42,10 +42,8 @@ async function runDatabaseMigrations() {
       throw new Error(`Failed to parse DATABASE_SECRET: ${err.message}`);
     }
 
-    if (!secret.username || !secret.password) {
-      throw new Error(
-        "DATABASE_SECRET must contain username and password fields",
-      );
+    if (!secret.username) {
+      throw new Error("DATABASE_SECRET must contain a username field");
     }
 
     logger.info(
@@ -67,7 +65,7 @@ async function runDatabaseMigrations() {
       port: parseInt(dbPort, 10),
       database: dbName,
       user: secret.username,
-      password: secret.password,
+      password: secret.password || "",
       // SSL configuration (optional, enabled via DB_SSL_ENABLED=true)
       ssl: sslEnabled
         ? {

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "start:migrate": "node scripts/migrate.mjs && next start",
-    "migrate": "node scripts/migrate.mjs",
+    "migrate": "node --env-file=.env scripts/migrate.mjs",
     "migrate:up": "node-pg-migrate up",
     "migrate:down": "node-pg-migrate down",
     "migrate:create": "node-pg-migrate create",
