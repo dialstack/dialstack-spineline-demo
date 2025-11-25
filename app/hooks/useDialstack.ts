@@ -44,12 +44,13 @@ export const useDialstack = () => {
 
   useEffect(() => {
     if (!dialstackInstance) {
-      // Fetch the publishable key from the server, then initialize the SDK
+      // Fetch the publishable key and API URL from the server, then initialize the SDK
       fetch("/api/dialstack/config")
         .then((res) => res.json())
-        .then(({ publishableKey }) => {
+        .then(({ publishableKey, apiUrl }) => {
           return loadDialstackAndInitialize({
             publishableKey,
+            apiUrl,
             fetchClientSecret: async () => {
               return await fetchClientSecret();
             },
