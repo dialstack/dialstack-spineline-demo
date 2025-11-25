@@ -44,7 +44,7 @@ export const useDialstack = () => {
   useEffect(() => {
     if (!dialstackInstance) {
       loadDialstackAndInitialize({
-        publishableKey: process.env.NEXT_PUBLIC_DIALSTACK_PUBLISHABLE_KEY!,
+        publishableKey: process.env.NEXT_PUBLIC_DIALSTACK_PUBLIC_KEY!,
         fetchClientSecret: async () => {
           return await fetchClientSecret();
         },
