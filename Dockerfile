@@ -2,13 +2,25 @@
 
 # Multi-stage Docker build for Next.js 15 production deployment
 # Uses standalone output for smaller, more cacheable layers
+#
+# Layer optimization: Dependencies are split into two stages so that
+# frequent @dialstack/sdk updates don't invalidate the large stable deps layer.
 
-# Stage 1: Install dependencies
-FROM node:24-alpine AS deps
+# Stage 1a: Install stable dependencies (rarely changes)
+FROM node:24-alpine AS deps-stable
 WORKDIR /app
+COPY package.json ./
+RUN --mount=type=cache,target=/root/.npm \
+    apk add --no-cache jq && \
+    jq 'del(.dependencies["@dialstack/sdk"])' package.json > package-stable.json && \
+    mv package-stable.json package.json && \
+    npm install --ignore-scripts
+
+# Stage 1b: Add @dialstack/sdk (changes more frequently)
+FROM deps-stable AS deps
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci
+    npm install @dialstack/sdk
 
 # Stage 2: Build application
 FROM node:24-alpine AS builder
