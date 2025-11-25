@@ -17,8 +17,8 @@ export async function POST() {
 
     const accountId = session.user.dialstackAccountId;
 
-    const dialstackSession = await dialstack.sessions.create({
-      account_id: accountId,
+    const dialstackSession = await dialstack.accountSessions.create({
+      account: accountId,
     });
 
     return new Response(
