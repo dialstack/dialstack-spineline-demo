@@ -1,26 +1,29 @@
 import React, { createContext, useContext } from "react";
+import type { DialStackInstance } from "@dialstack/sdk";
 
-type IConnectJSContext = {
-  connectInstance?: null;
+type IDialstackContext = {
+  dialstackInstance: DialStackInstance | null;
 };
 
-const ConnectJSContext = createContext<IConnectJSContext>({});
+const DialstackContext = createContext<IDialstackContext>({
+  dialstackInstance: null,
+});
 
-export const useConnectJSContext = () => {
-  const context = useContext(ConnectJSContext);
+export const useDialstackContext = () => {
+  const context = useContext(DialstackContext);
   return context;
 };
 
 export const EmbeddedComponentProvider = ({
   children,
-  connectInstance,
+  dialstackInstance,
 }: {
   children: React.ReactNode;
-  connectInstance?: null;
+  dialstackInstance: DialStackInstance | null;
 }) => {
   return (
-    <ConnectJSContext.Provider value={{ connectInstance }}>
+    <DialstackContext.Provider value={{ dialstackInstance }}>
       {children}
-    </ConnectJSContext.Provider>
+    </DialstackContext.Provider>
   );
 };

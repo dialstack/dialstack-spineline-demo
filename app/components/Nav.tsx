@@ -10,6 +10,7 @@ import {
   Settings as SettingsIcon,
   Menu as MenuIcon,
   Sparkles as SparklesIcon,
+  Phone as PhoneIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SpinelineLogo from "@/public/spineline_logo.png";
@@ -27,6 +28,12 @@ const navigationMenuItems = [
     label: "Patients",
     href: "/patients",
     icon: PatientsIcon,
+    paths: [],
+  },
+  {
+    label: "PBX",
+    href: "/pbx",
+    icon: PhoneIcon,
     paths: [],
   },
   {
