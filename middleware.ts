@@ -2,22 +2,29 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import logger from "./lib/logger";
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
 /**
  * Next.js middleware for request logging
  *
  * Logs all incoming requests with method, path, and duration
  * Similar to pino-http middleware in Express
+ *
+ * Access logs are disabled in development to reduce noise.
  */
 export function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+
+  // Skip access logs in development
+  if (isDevelopment) {
+    return response;
+  }
+
   const startTime = Date.now();
   const { method, url, headers } = request;
   const pathname = new URL(url).pathname;
 
-  // Clone the response so we can log it
-  const response = NextResponse.next();
-
   // Log the request asynchronously (don't block the response)
-  // Using setImmediate equivalent in Next.js edge runtime
   Promise.resolve().then(() => {
     const duration = Date.now() - startTime;
 
