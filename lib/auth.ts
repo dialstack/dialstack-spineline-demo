@@ -178,7 +178,10 @@ export const authOptions: AuthOptions = {
           };
         } catch (error: unknown) {
           logger.error(
-            { error },
+            {
+              err: error,
+              message: error instanceof Error ? error.message : String(error),
+            },
             "Got an error authorizing and creating a user during signup",
           );
           return null;
