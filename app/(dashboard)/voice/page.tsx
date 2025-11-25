@@ -70,7 +70,7 @@ const pendingCallbacks = [
   },
 ];
 
-export default function PBXPage() {
+export default function VoicePage() {
   const { data: session } = useSession();
 
   if (!session) {
@@ -79,7 +79,7 @@ export default function PBXPage() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold">Phone System</h1>
+      <h1 className="text-3xl font-bold">Voice</h1>
 
       {/* Practice Insights - Native Spineline Content */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -1,0 +1,10 @@
+{
+  "version": "v1",
+  "packages": {
+    "@dialstack/sdk": {
+      "signature": "c4f582a28b1a2a64201ee4573a16f1dd",
+      "file": true,
+      "replaced": "^0.2.2-alpha.3"
+    }
+  }
+}

@@ -31,8 +31,8 @@ const navigationMenuItems = [
     paths: [],
   },
   {
-    label: "PBX",
-    href: "/pbx",
+    label: "Voice",
+    href: "/voice",
     icon: PhoneIcon,
     paths: [],
   },
