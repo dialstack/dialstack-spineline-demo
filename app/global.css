@@ -13,8 +13,8 @@
   --screen-background: white;
   --screen-foreground: white;
 
-  --embedded-component: #7f81fa;
-  --embedded-component-hover: #6c6ee6;
+  --embedded-component: #6366f1;
+  --embedded-component-hover: #4f46e5;
 
   --offset: #f5f6f8;
 
@@ -158,6 +158,8 @@
   --color-offset: var(--offset);
   --color-dialog-background: var(--dialog-background);
   --color-dialog-content: var(--dialog-content);
+  --color-component: var(--embedded-component);
+  --color-component-hover: var(--embedded-component-hover);
 }
 
 @layer base {
