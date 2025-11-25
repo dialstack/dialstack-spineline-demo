@@ -8,6 +8,7 @@ import {
  * Hook to initialize and manage DialStack SDK instance
  *
  * This hook handles:
+ * - Fetching the publishable key from the server
  * - Fetching client secrets from the proxy API
  * - Initializing the DialStack SDK instance
  * - Managing instance state
@@ -43,14 +44,24 @@ export const useDialstack = () => {
 
   useEffect(() => {
     if (!dialstackInstance) {
-      loadDialstackAndInitialize({
-        publishableKey: process.env.NEXT_PUBLIC_DIALSTACK_PUBLIC_KEY!,
-        fetchClientSecret: async () => {
-          return await fetchClientSecret();
-        },
-      }).then((instance) => {
-        setDialstackInstance(instance);
-      });
+      // Fetch the publishable key from the server, then initialize the SDK
+      fetch("/api/dialstack/config")
+        .then((res) => res.json())
+        .then(({ publishableKey }) => {
+          return loadDialstackAndInitialize({
+            publishableKey,
+            fetchClientSecret: async () => {
+              return await fetchClientSecret();
+            },
+          });
+        })
+        .then((instance) => {
+          setDialstackInstance(instance);
+        })
+        .catch((error) => {
+          console.error("Failed to initialize DialStack:", error);
+          setHasError(true);
+        });
     }
   }, [dialstackInstance, fetchClientSecret]);
 
