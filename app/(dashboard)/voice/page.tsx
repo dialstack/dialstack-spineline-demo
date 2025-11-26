@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import Container from "@/app/components/Container";
 import EmbeddedComponentContainer from "@/app/components/EmbeddedComponentContainer";
-import { CallLogs } from "@dialstack/sdk";
+import { CallLogs, Voicemails } from "@dialstack/sdk";
 import {
   CalendarCheck,
   UserPlus,
@@ -72,6 +73,25 @@ const pendingCallbacks = [
 
 export default function VoicePage() {
   const { data: session } = useSession();
+  const [dialstackUserId, setDialstackUserId] = useState<string | null>(null);
+
+  // Fetch the DialStack user ID on mount
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const response = await fetch("/api/dialstack/user");
+        if (response.ok) {
+          const user = await response.json();
+          setDialstackUserId(user.id);
+        }
+      } catch (error) {
+        console.error("Failed to fetch DialStack user:", error);
+      }
+    }
+    if (session) {
+      fetchUser();
+    }
+  }, [session]);
 
   if (!session) {
     redirect("/");
@@ -139,6 +159,20 @@ export default function VoicePage() {
           </EmbeddedComponentContainer>
         </Container>
       </div>
+
+      {/* Voicemails - Embedded DialStack Component */}
+      <Container className="p-5">
+        <h2 className="text-lg font-semibold mb-4">Voicemails</h2>
+        <EmbeddedComponentContainer>
+          {dialstackUserId ? (
+            <Voicemails userId={dialstackUserId} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Loading voicemails...
+            </p>
+          )}
+        </EmbeddedComponentContainer>
+      </Container>
     </>
   );
 }
