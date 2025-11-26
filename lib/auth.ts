@@ -3,7 +3,7 @@ import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/dbConnect";
 import logger from "@/lib/logger";
-import { dialstack } from "@/lib/dialstack";
+import { getDialstack } from "@/lib/dialstack";
 
 export const authOptions: AuthOptions = {
   session: {
@@ -165,7 +165,7 @@ export const authOptions: AuthOptions = {
 
           // Create DialStack account
           logger.info("Creating DialStack account...");
-          const account = await dialstack.accounts.create({ email });
+          const account = await getDialstack().accounts.create({ email });
           logger.info({ accountId: account.id }, "DialStack account created");
 
           // Store the DialStack account ID (user created on-demand when needed)

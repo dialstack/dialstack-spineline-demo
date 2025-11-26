@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { dialstack } from "@/lib/dialstack";
+import { getDialstack } from "@/lib/dialstack";
 
 export async function POST() {
   try {
@@ -17,7 +17,7 @@ export async function POST() {
 
     const accountId = session.user.dialstackAccountId;
 
-    const dialstackSession = await dialstack.accountSessions.create({
+    const dialstackSession = await getDialstack().accountSessions.create({
       account: accountId,
     });
 
