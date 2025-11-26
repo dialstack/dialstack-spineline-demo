@@ -154,7 +154,7 @@ export default function VoicePage() {
         {/* Call History - Embedded DialStack Component */}
         <Container className="p-5 lg:col-span-3">
           <h2 className="text-lg font-semibold mb-4">Call History</h2>
-          <EmbeddedComponentContainer>
+          <EmbeddedComponentContainer componentName="CallLogs">
             <CallLogs />
           </EmbeddedComponentContainer>
         </Container>
@@ -163,7 +163,7 @@ export default function VoicePage() {
       {/* Voicemails - Embedded DialStack Component */}
       <Container className="p-5">
         <h2 className="text-lg font-semibold mb-4">Voicemails</h2>
-        <EmbeddedComponentContainer>
+        <EmbeddedComponentContainer componentName="Voicemails">
           {dialstackUserId ? (
             <Voicemails userId={dialstackUserId} />
           ) : (

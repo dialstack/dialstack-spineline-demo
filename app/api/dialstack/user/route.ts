@@ -20,7 +20,7 @@ export async function GET() {
     const email = session.user.email;
 
     // Fetch users for this account
-    const { users } = await dialstack.users.list(accountId);
+    const { data: users } = await dialstack.users.list(accountId);
 
     // If no user exists, create one opportunistically
     if (users.length === 0) {
