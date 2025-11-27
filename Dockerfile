@@ -9,18 +9,18 @@
 # Stage 1a: Install stable dependencies (rarely changes)
 FROM node:24-alpine AS deps-stable
 WORKDIR /app
-COPY package.json ./
+COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
     apk add --no-cache jq && \
     jq 'del(.dependencies["@dialstack/sdk"])' package.json > package-stable.json && \
     mv package-stable.json package.json && \
-    npm install --ignore-scripts
+    npm ci --ignore-scripts
 
 # Stage 1b: Add @dialstack/sdk (changes more frequently)
 FROM deps-stable AS deps
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
-    npm install @dialstack/sdk
+    npm ci
 
 # Stage 2: Build application
 FROM node:24-alpine AS builder
@@ -55,10 +55,8 @@ WORKDIR /app
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
 
-# Install migration dependencies first (stable layer - only changes if deps change)
-# Copy package.json from deps stage (not builder) so this layer is stable
-# Use BuildKit cache mount to speed up npm install
-COPY --from=deps /app/package.json ./package.json
+# Install migration dependencies (stable layer)
+# These are runtime deps not in the standalone build
 RUN --mount=type=cache,target=/root/.npm \
     npm install --no-save node-pg-migrate pg pino pino-pretty
 
