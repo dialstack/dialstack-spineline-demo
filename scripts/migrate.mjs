@@ -5,7 +5,7 @@
  * Parses RDS-managed secret and runs node-pg-migrate
  */
 
-import migrate from "node-pg-migrate";
+import { runner as migrate } from "node-pg-migrate";
 import pg from "pg";
 import pino from "pino";
 
