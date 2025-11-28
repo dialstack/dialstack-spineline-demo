@@ -6,12 +6,15 @@ import { redirect } from "next/navigation";
 import Container from "@/app/components/Container";
 import EmbeddedComponentContainer from "@/app/components/EmbeddedComponentContainer";
 import { CallLogs, Voicemails } from "@dialstack/sdk";
+import { useDialstackContext } from "@/app/hooks/EmbeddedComponentProvider";
 import {
   CalendarCheck,
   UserPlus,
   PhoneForwarded,
   AlertCircle,
+  Phone,
 } from "lucide-react";
+import { formatPhoneNumber } from "@/lib/format-phone";
 
 // Practice-specific call insights (Spineline native content)
 const callInsights = [
@@ -71,9 +74,19 @@ const pendingCallbacks = [
   },
 ];
 
+interface PhoneNumber {
+  id: string;
+  phone_number: string;
+  status: string;
+  created_at: string;
+}
+
 export default function VoicePage() {
   const { data: session } = useSession();
+  const { dialstackInstance } = useDialstackContext();
   const [dialstackUserId, setDialstackUserId] = useState<string | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState<PhoneNumber | null>(null);
+  const [phoneNumberLoading, setPhoneNumberLoading] = useState(true);
 
   // Fetch the DialStack user ID on mount
   useEffect(() => {
@@ -88,10 +101,37 @@ export default function VoicePage() {
         console.error("Failed to fetch DialStack user:", error);
       }
     }
+
     if (session) {
       fetchUser();
     }
   }, [session]);
+
+  // Fetch phone number directly from DialStack API using SDK
+  useEffect(() => {
+    async function fetchPhoneNumber() {
+      if (!dialstackInstance) return;
+
+      try {
+        const response = await dialstackInstance.fetchApi(
+          "/v1/phone-numbers?limit=1&status=active",
+        );
+        if (response.ok) {
+          const data = await response.json();
+          // API returns a list, get the first item
+          setPhoneNumber(data.data?.[0] ?? null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch phone number:", error);
+      } finally {
+        setPhoneNumberLoading(false);
+      }
+    }
+
+    if (dialstackInstance) {
+      fetchPhoneNumber();
+    }
+  }, [dialstackInstance]);
 
   if (!session) {
     redirect("/");
@@ -99,7 +139,33 @@ export default function VoicePage() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold">Voice</h1>
+      {/* Header with Practice Phone Number */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Voice</h1>
+        <div className="flex items-center gap-3 px-4 py-2 bg-card border rounded-lg">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Phone className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground">
+              Your Practice Number
+            </p>
+            {phoneNumberLoading ? (
+              <p className="text-base font-semibold text-muted-foreground">
+                Loading...
+              </p>
+            ) : phoneNumber ? (
+              <p className="text-base font-semibold">
+                {formatPhoneNumber(phoneNumber.phone_number)}
+              </p>
+            ) : (
+              <p className="text-base font-semibold text-muted-foreground">
+                No number assigned
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Practice Insights - Native Spineline Content */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
