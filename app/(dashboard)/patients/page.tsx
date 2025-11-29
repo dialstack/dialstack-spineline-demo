@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Container from "@/app/components/Container";
+import { EditableCell } from "@/app/components/EditableCell";
 import {
   Table,
   TableBody,
@@ -42,14 +43,6 @@ const formatDate = (date: Date | string | undefined): string => {
     month: "short",
     day: "numeric",
   });
-};
-
-/**
- * Format phone number
- */
-const formatPhone = (phone: string | undefined): string => {
-  if (!phone) return "—";
-  return phone;
 };
 
 /**
@@ -100,11 +93,12 @@ export default function Patients() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>First Name</TableHead>
+                <TableHead>Last Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Date of Birth</TableHead>
-                <TableHead>Registration Date</TableHead>
+                <TableHead>Registered</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -112,22 +106,41 @@ export default function Patients() {
               {patients.map((patient) => (
                 <TableRow key={patient.id}>
                   <TableCell className="font-medium">
-                    {patient.first_name} {patient.last_name}
+                    <EditableCell patient={patient} field="first_name" />
                   </TableCell>
-                  <TableCell>{patient.email || "—"}</TableCell>
-                  <TableCell>{formatPhone(patient.phone)}</TableCell>
-                  <TableCell>{formatDate(patient.date_of_birth)}</TableCell>
-                  <TableCell>{formatDate(patient.registration_date)}</TableCell>
+                  <TableCell className="font-medium">
+                    <EditableCell patient={patient} field="last_name" />
+                  </TableCell>
                   <TableCell>
-                    <span
-                      className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                        patient.status === "active"
-                          ? "bg-success text-success-foreground"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {patient.status}
-                    </span>
+                    <EditableCell
+                      patient={patient}
+                      field="email"
+                      type="email"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <EditableCell patient={patient} field="phone" />
+                  </TableCell>
+                  <TableCell>
+                    <EditableCell
+                      patient={patient}
+                      field="date_of_birth"
+                      type="date"
+                    />
+                  </TableCell>
+                  <TableCell className="text-subdued">
+                    {formatDate(patient.registration_date)}
+                  </TableCell>
+                  <TableCell>
+                    <EditableCell
+                      patient={patient}
+                      field="status"
+                      type="select"
+                      options={[
+                        { value: "active", label: "Active" },
+                        { value: "inactive", label: "Inactive" },
+                      ]}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
