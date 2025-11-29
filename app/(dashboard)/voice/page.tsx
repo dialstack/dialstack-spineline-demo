@@ -14,7 +14,7 @@ import {
   AlertCircle,
   Phone,
 } from "lucide-react";
-import { formatPhoneNumber } from "@/lib/format-phone";
+import { formatPhone } from "@/lib/phone";
 
 // Practice-specific call insights (Spineline native content)
 const callInsights = [
@@ -156,7 +156,7 @@ export default function VoicePage() {
               </p>
             ) : phoneNumber ? (
               <p className="text-base font-semibold">
-                {formatPhoneNumber(phoneNumber.phone_number)}
+                {formatPhone(phoneNumber.phone_number)}
               </p>
             ) : (
               <p className="text-base font-semibold text-muted-foreground">

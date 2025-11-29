@@ -4,6 +4,7 @@ import Patient from "@/app/models/patient";
 import dbConnect from "@/lib/dbConnect";
 import { getToken } from "next-auth/jwt";
 import logger from "@/lib/logger";
+import { isValidPhone, normalizePhone } from "@/lib/phone";
 
 /**
  * PATCH /api/patients/[id]
@@ -60,6 +61,20 @@ export async function PATCH(
 
     if (Object.keys(updates).length === 0) {
       return new Response("No valid fields to update", { status: 400 });
+    }
+
+    // Validate and normalize phone number
+    if ("phone" in updates) {
+      const phoneValue = updates.phone as string | null;
+      if (phoneValue) {
+        if (!isValidPhone(phoneValue)) {
+          return new Response(
+            JSON.stringify({ error: "Invalid phone number" }),
+            { status: 400, headers: { "Content-Type": "application/json" } },
+          );
+        }
+        updates.phone = normalizePhone(phoneValue);
+      }
     }
 
     // Update the patient (ownership check is done in the model)

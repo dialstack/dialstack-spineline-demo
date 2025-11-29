@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { LoaderCircle } from "lucide-react";
 import type { Patient } from "@/app/models/patient";
+import { formatPhone } from "@/lib/phone";
 
 /**
  * Fetch patients from the API
@@ -119,7 +120,12 @@ export default function Patients() {
                     />
                   </TableCell>
                   <TableCell>
-                    <EditableCell patient={patient} field="phone" />
+                    <EditableCell
+                      patient={patient}
+                      field="phone"
+                      type="tel"
+                      formatDisplay={(v) => formatPhone(v as string)}
+                    />
                   </TableCell>
                   <TableCell>
                     <EditableCell

@@ -9,7 +9,7 @@ import type { Patient } from "@/app/models/patient";
 type EditableCellProps = {
   patient: Patient;
   field: keyof Patient;
-  type?: "text" | "email" | "date" | "select";
+  type?: "text" | "email" | "date" | "tel" | "select";
   options?: { value: string; label: string }[];
   formatDisplay?: (value: unknown) => string;
   className?: string;

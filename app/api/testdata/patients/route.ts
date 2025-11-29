@@ -82,13 +82,15 @@ function randomDate(start: Date, end: Date): Date {
 }
 
 /**
- * Generate a random phone number in 555-0XXX format
+ * Generate a random phone number in E.164 format
+ * Uses 555 area code (reserved for fictional use)
  */
 function generatePhoneNumber(): string {
-  const lastDigits = Math.floor(Math.random() * 1000)
+  // Generate 7 random digits for the subscriber number
+  const subscriberNumber = Math.floor(Math.random() * 10000000)
     .toString()
-    .padStart(3, "0");
-  return `555-0${lastDigits.substring(0, 3)}`;
+    .padStart(7, "0");
+  return `+1555${subscriberNumber}`;
 }
 
 /**
