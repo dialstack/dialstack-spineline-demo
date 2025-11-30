@@ -206,6 +206,25 @@ class PatientModel {
       throw new Error(`Failed to find patients by status: ${error}`);
     }
   }
+
+  // Find patient by phone number (for screen pop caller lookup)
+  static async findByPhone(
+    practiceId: number,
+    phone: string,
+  ): Promise<Patient | null> {
+    const pool = await dbConnect();
+
+    try {
+      const result = await pool.query(
+        "SELECT * FROM patients WHERE practice_id = $1 AND phone = $2 LIMIT 1",
+        [practiceId, phone],
+      );
+
+      return result.rows[0] || null;
+    } catch (error) {
+      throw new Error(`Failed to find patient by phone: ${error}`);
+    }
+  }
 }
 
 export default PatientModel;
