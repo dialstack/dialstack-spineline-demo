@@ -16,6 +16,9 @@ import {
   UserPlus,
   FileText,
   Loader2,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { formatPhone } from "@/lib/phone";
 import type { IncomingCallWithPatient } from "@/app/hooks/useCallEvents";
@@ -74,7 +77,7 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
     <Sheet open={isOpen} onOpenChange={(open) => !open && onDismiss()}>
       <SheetContent
         side="right"
-        className="w-[340px] sm:w-[380px] p-0 overflow-hidden"
+        className="w-[340px] sm:w-[380px] p-0 overflow-hidden bg-white dark:bg-slate-950"
       >
         {/* Animated header with gradient border */}
         <div className="relative">
@@ -150,9 +153,11 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
                   </div>
                 )}
                 {call.patient.email && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Email</span>
-                    <span className="font-medium truncate max-w-[180px]">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground shrink-0">
+                      Email
+                    </span>
+                    <span className="font-medium text-right break-all">
                       {call.patient.email}
                     </span>
                   </div>
@@ -165,6 +170,57 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
                     </span>
                   </div>
                 )}
+              </div>
+
+              {/* Recent Activity - Demo data */}
+              <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2 mb-3">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Recent Activity
+                  </span>
+                </div>
+                <div className="space-y-2.5">
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                    <div className="text-sm">
+                      <span className="font-medium">Adjustment</span>
+                      <span className="text-muted-foreground">
+                        {" "}
+                        · Nov 15, 2025
+                      </span>
+                      <p className="text-muted-foreground text-xs mt-0.5">
+                        Full spine, cervical focus
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                    <div className="text-sm">
+                      <span className="font-medium">X-Ray Review</span>
+                      <span className="text-muted-foreground">
+                        {" "}
+                        · Nov 8, 2025
+                      </span>
+                      <p className="text-muted-foreground text-xs mt-0.5">
+                        Discussed findings with patient
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                    <div className="text-sm">
+                      <span className="font-medium">Missed Appointment</span>
+                      <span className="text-muted-foreground">
+                        {" "}
+                        · Oct 25, 2025
+                      </span>
+                      <p className="text-muted-foreground text-xs mt-0.5">
+                        No-show, rescheduled to Nov 1
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
