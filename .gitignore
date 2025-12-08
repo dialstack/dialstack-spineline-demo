@@ -43,3 +43,5 @@ yarn-error.log*
 **/*.tfplan
 **/terraform.tfvars
 .yalc/
+.venv/
+yalc.lock

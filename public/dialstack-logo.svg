@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <!-- DialStack soundwave icon - white version -->
+  <g fill="white">
+    <!-- Bar 1 (shortest left) -->
+    <rect x="2" y="14" width="3" height="12" rx="1.5"/>
+    <!-- Bar 2 -->
+    <rect x="8" y="10" width="3" height="20" rx="1.5"/>
+    <!-- Bar 3 (tallest) -->
+    <rect x="14" y="4" width="3" height="32" rx="1.5"/>
+    <!-- Bar 4 -->
+    <rect x="20" y="8" width="3" height="24" rx="1.5"/>
+    <!-- Bar 5 (shortest right) -->
+    <rect x="26" y="12" width="3" height="16" rx="1.5"/>
+  </g>
+  <!-- DialStack text -->
+  <text x="36" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="600" fill="white">DialStack</text>
+</svg>

@@ -24,6 +24,9 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <title>Spineline</title>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body
         className={cn(

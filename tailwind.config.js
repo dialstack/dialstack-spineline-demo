@@ -11,6 +11,10 @@ module.exports = {
       mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
     },
     extend: {
+      backgroundImage: {
+        "spine-pattern": "url('/pattern.png')",
+        "spine-pattern-white": "url('/pattern-white.png')",
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
