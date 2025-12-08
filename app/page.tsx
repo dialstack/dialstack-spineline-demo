@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 import SpinelineIcon from "@/public/spineline_icon.webp";
 import TestimonialImage from "@/public/testimonial.webp";
 import TestimonialPortrait from "@/public/testimonial-portrait.webp";
-import DashboardImage from "@/public/dashboard.png";
+import DashboardImage from "@/public/dashboard.webp";
 import HeroImage from "@/public/landing-page.webp";
 
 function Card({
