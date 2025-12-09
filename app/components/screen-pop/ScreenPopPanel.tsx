@@ -17,10 +17,10 @@ import {
   FileText,
   Loader2,
   Clock,
-  CheckCircle2,
-  AlertCircle,
 } from "lucide-react";
 import { formatPhone } from "@/lib/phone";
+import { CallHistory } from "@dialstack/sdk";
+import EmbeddedComponentContainer from "@/app/components/EmbeddedComponentContainer";
 import type { IncomingCallWithPatient } from "@/app/hooks/useCallEvents";
 
 interface ScreenPopPanelProps {
@@ -81,16 +81,16 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
       >
         {/* Animated header with gradient border */}
         <div className="relative">
-          {/* Breathing gradient border effect */}
-          <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-teal-400 via-emerald-500 to-teal-400 animate-pulse" />
+          {/* Breathing accent border effect */}
+          <div className="absolute inset-x-0 bottom-0 h-[2px] bg-accent animate-pulse" />
 
           <SheetHeader className="p-5 pb-4 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
             <div className="flex items-center gap-3">
               {/* Pulsing phone icon */}
               <div className="relative">
-                <div className="absolute inset-0 bg-teal-500/20 rounded-full animate-ping" />
-                <div className="relative flex items-center justify-center w-10 h-10 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full shadow-lg shadow-teal-500/25">
-                  <Phone className="w-5 h-5 text-white" />
+                <div className="absolute inset-0 bg-accent/20 rounded-full animate-ping" />
+                <div className="relative flex items-center justify-center w-10 h-10 bg-accent rounded-full shadow-lg shadow-accent/25">
+                  <Phone className="w-5 h-5 text-accent-foreground" />
                 </div>
               </div>
               <div>
@@ -118,7 +118,7 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
           {/* Patient card or no match message */}
           {call?.isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
+              <Loader2 className="w-6 h-6 text-accent animate-spin" />
               <span className="ml-2 text-muted-foreground">
                 Looking up patient...
               </span>
@@ -172,55 +172,24 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
                 )}
               </div>
 
-              {/* Recent Activity - Demo data */}
+              {/* Recent Calls - Real call history */}
               <div className="p-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2 mb-3">
                   <Clock className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-muted-foreground">
-                    Recent Activity
+                    Recent Calls
                   </span>
                 </div>
-                <div className="space-y-2.5">
-                  <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-                    <div className="text-sm">
-                      <span className="font-medium">Adjustment</span>
-                      <span className="text-muted-foreground">
-                        {" "}
-                        · Nov 15, 2025
-                      </span>
-                      <p className="text-muted-foreground text-xs mt-0.5">
-                        Full spine, cervical focus
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-                    <div className="text-sm">
-                      <span className="font-medium">X-Ray Review</span>
-                      <span className="text-muted-foreground">
-                        {" "}
-                        · Nov 8, 2025
-                      </span>
-                      <p className="text-muted-foreground text-xs mt-0.5">
-                        Discussed findings with patient
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2.5">
-                    <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                    <div className="text-sm">
-                      <span className="font-medium">Missed Appointment</span>
-                      <span className="text-muted-foreground">
-                        {" "}
-                        · Oct 25, 2025
-                      </span>
-                      <p className="text-muted-foreground text-xs mt-0.5">
-                        No-show, rescheduled to Nov 1
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <EmbeddedComponentContainer componentName="CallHistory">
+                  <CallHistory
+                    phoneNumber={call?.call.from_number || ""}
+                    limit={3}
+                    classes={{
+                      base: "rounded-lg",
+                      item: "rounded-md text-sm",
+                    }}
+                  />
+                </EmbeddedComponentContainer>
               </div>
             </div>
           ) : (
@@ -241,10 +210,7 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
           <div className="space-y-2.5 pt-2">
             {call?.patient ? (
               <>
-                <Button
-                  onClick={handleViewPatient}
-                  className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-lg shadow-teal-500/20"
-                >
+                <Button onClick={handleViewPatient} className="w-full">
                   <User className="w-4 h-4 mr-2" />
                   View Patient
                 </Button>
@@ -270,7 +236,7 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
             ) : (
               <Button
                 onClick={handleCreatePatient}
-                className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white shadow-lg shadow-teal-500/20"
+                className="w-full"
                 disabled={call?.isLoading}
               >
                 <UserPlus className="w-4 h-4 mr-2" />

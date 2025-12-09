@@ -11,7 +11,14 @@ type EditableCellProps = {
   field: keyof Patient;
   type?: "text" | "email" | "date" | "tel" | "select";
   options?: { value: string; label: string }[];
+  /** Format raw value for display (when not editing) */
   formatDisplay?: (value: unknown) => string;
+  /** Format raw value for editing (defaults to formatDisplay if not provided) */
+  formatInput?: (value: unknown) => string;
+  /** Format value as user types (e.g., phone formatting) */
+  formatOnChange?: (value: string) => string;
+  /** Parse edited value before saving (e.g., convert to E.164) */
+  parseValue?: (value: string) => unknown;
   className?: string;
 };
 
@@ -46,6 +53,9 @@ export function EditableCell({
   type = "text",
   options,
   formatDisplay,
+  formatInput,
+  formatOnChange,
+  parseValue,
   className = "",
 }: EditableCellProps) {
   const [isEditing, setIsEditing] = React.useState(false);
@@ -76,10 +86,19 @@ export function EditableCell({
     return String(rawValue);
   }, [rawValue, formatDisplay, type]);
 
-  // Format value for input
+  // Format value for input (what user edits)
   const inputValue = React.useMemo(() => {
     if (rawValue === null || rawValue === undefined) {
       return "";
+    }
+    if (formatInput) {
+      const formatted = formatInput(rawValue);
+      return formatted === "—" ? "" : formatted;
+    }
+    if (formatDisplay && type === "tel") {
+      // For phone fields, use display format for editing too
+      const formatted = formatDisplay(rawValue);
+      return formatted === "—" ? "" : formatted;
     }
     if (type === "date" && rawValue) {
       // Format as YYYY-MM-DD for date input
@@ -87,7 +106,7 @@ export function EditableCell({
       return d.toISOString().split("T")[0];
     }
     return String(rawValue);
-  }, [rawValue, type]);
+  }, [rawValue, type, formatInput, formatDisplay]);
 
   // Mutation for saving
   const mutation = useMutation({
@@ -121,6 +140,14 @@ export function EditableCell({
       parsedValue = value || null;
     } else if (value === "") {
       parsedValue = null;
+    } else if (parseValue) {
+      // Use custom parser (e.g., for phone numbers to E.164)
+      parsedValue = parseValue(value);
+      // If parser returned null but input wasn't empty, it's invalid
+      if (parsedValue === null) {
+        setError(true);
+        return;
+      }
     }
 
     // Only save if value changed
@@ -191,12 +218,19 @@ export function EditableCell({
       );
     }
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = formatOnChange
+        ? formatOnChange(e.target.value)
+        : e.target.value;
+      setValue(newValue);
+    };
+
     return (
       <Input
         ref={inputRef as React.RefObject<HTMLInputElement>}
-        type={type}
+        type={type === "tel" ? "text" : type}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={handleChange}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         className={`h-8 px-2 text-sm ${error ? "border-destructive" : ""} ${className}`}

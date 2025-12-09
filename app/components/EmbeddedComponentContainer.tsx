@@ -6,6 +6,7 @@ import { ChevronRight } from "lucide-react";
 // Maps component names to their documentation URLs
 const ComponentURLs: { [key: string]: string } = {
   CallLogs: "https://docs.dialstack.ai/sdks/react/call-logs",
+  CallHistory: "https://docs.dialstack.ai/sdks/react/call-history",
   Voicemails: "https://docs.dialstack.ai/sdks/react/voicemails",
 };
 

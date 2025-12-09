@@ -4,7 +4,57 @@ import Patient from "@/app/models/patient";
 import dbConnect from "@/lib/dbConnect";
 import { getToken } from "next-auth/jwt";
 import logger from "@/lib/logger";
-import { isValidPhone, normalizePhone } from "@/lib/phone";
+import { normalizePhone } from "@/lib/phone";
+
+/**
+ * DELETE /api/patients/[id]
+ * Deletes a patient
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+    const patientId = parseInt(id, 10);
+
+    if (isNaN(patientId)) {
+      return new Response("Invalid patient ID", { status: 400 });
+    }
+
+    // Get authentication token
+    const token = await getToken({ req });
+
+    if (!token?.email) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    // Connect to database
+    await dbConnect();
+
+    // Find the practice by email
+    const practice = await Practice.findByEmail(token.email);
+
+    if (!practice || !practice.id) {
+      return new Response("Practice not found", { status: 404 });
+    }
+
+    // Delete the patient (ownership check is done in the model)
+    await Patient.delete(patientId, practice.id);
+
+    return new Response(null, { status: 204 });
+  } catch (error: unknown) {
+    logger.error({ error }, "An error occurred when deleting patient");
+    const message =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    if (message.includes("not found") || message.includes("access denied")) {
+      return new Response("Patient not found", { status: 404 });
+    }
+
+    return new Response(message, { status: 500 });
+  }
+}
 
 /**
  * PATCH /api/patients/[id]
@@ -63,17 +113,18 @@ export async function PATCH(
       return new Response("No valid fields to update", { status: 400 });
     }
 
-    // Validate and normalize phone number
+    // Normalize phone number (already validated and normalized on client, but ensure E.164 format)
     if ("phone" in updates) {
       const phoneValue = updates.phone as string | null;
       if (phoneValue) {
-        if (!isValidPhone(phoneValue)) {
+        const normalized = normalizePhone(phoneValue);
+        if (!normalized) {
           return new Response(
-            JSON.stringify({ error: "Invalid phone number" }),
+            JSON.stringify({ error: "Invalid phone number format" }),
             { status: 400, headers: { "Content-Type": "application/json" } },
           );
         }
-        updates.phone = normalizePhone(phoneValue);
+        updates.phone = normalized;
       }
     }
 
