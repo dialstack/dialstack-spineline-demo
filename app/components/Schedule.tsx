@@ -43,7 +43,6 @@ function getMinutesSince9AM() {
   const currentMinute = now.getMinutes();
 
   const targetHour = 9; // 9 AM
-  const targetMinute = 0; // 0 minutes
 
   let minutesSince9AM = 0;
 

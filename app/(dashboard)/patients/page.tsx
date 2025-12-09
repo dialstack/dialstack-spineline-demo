@@ -277,7 +277,7 @@ export default function Patients() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedPatient, filteredPatients, isAddDialogOpen]);
+  }, [selectedPatient, selectedPatientId, filteredPatients, isAddDialogOpen]);
 
   // Render sort indicator
   const SortIndicator = ({ column }: { column: SortColumn }) => {
