@@ -5,15 +5,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Container from "@/app/components/Container";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -110,16 +101,6 @@ export default function Patients() {
   const [sortColumn, setSortColumn] = useState<SortColumn>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
-  // Add patient dialog state
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newPatient, setNewPatient] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    date_of_birth: "",
-  });
-
   const {
     data: patients,
     isLoading,
@@ -140,32 +121,15 @@ export default function Patients() {
     mutationFn: createPatient,
     onSuccess: (createdPatient) => {
       queryClient.invalidateQueries({ queryKey: ["patients"] });
-      setIsAddDialogOpen(false);
-      setNewPatient({
-        first_name: "",
-        last_name: "",
-        email: "",
-        phone: "",
-        date_of_birth: "",
-      });
-      // Select the newly created patient
       setSelectedPatientId(createdPatient.id!);
     },
   });
 
-  // Handle form submission
-  const handleCreatePatient = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPatient.first_name || !newPatient.last_name) return;
-
+  // Handle adding a new patient
+  const handleAddPatient = () => {
     createMutation.mutate({
-      first_name: newPatient.first_name,
-      last_name: newPatient.last_name,
-      email: newPatient.email || undefined,
-      phone: newPatient.phone || undefined,
-      date_of_birth: newPatient.date_of_birth
-        ? new Date(newPatient.date_of_birth)
-        : undefined,
+      first_name: "New",
+      last_name: "Patient",
     });
   };
 
@@ -237,11 +201,10 @@ export default function Patients() {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't interfere with input fields or when dialog is open
+      // Don't interfere with input fields
       if (
         e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement ||
-        isAddDialogOpen
+        e.target instanceof HTMLTextAreaElement
       ) {
         return;
       }
@@ -277,7 +240,7 @@ export default function Patients() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedPatient, selectedPatientId, filteredPatients, isAddDialogOpen]);
+  }, [selectedPatient, selectedPatientId, filteredPatients]);
 
   // Render sort indicator
   const SortIndicator = ({ column }: { column: SortColumn }) => {
@@ -310,7 +273,10 @@ export default function Patients() {
             />
           </div>
 
-          <Button onClick={() => setIsAddDialogOpen(true)}>
+          <Button
+            onClick={handleAddPatient}
+            disabled={createMutation.isPending}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Patient
           </Button>
@@ -341,7 +307,10 @@ export default function Patients() {
               <p className="text-sm text-muted-foreground mb-4">
                 Add your first patient to get started.
               </p>
-              <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Button
+                onClick={handleAddPatient}
+                disabled={createMutation.isPending}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Patient
               </Button>
@@ -462,119 +431,6 @@ export default function Patients() {
         patient={selectedPatient}
         onClose={() => setSelectedPatientId(null)}
       />
-
-      {/* Add Patient Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <form onSubmit={handleCreatePatient}>
-            <DialogHeader>
-              <DialogTitle>Add New Patient</DialogTitle>
-              <DialogDescription>
-                Enter the patient&apos;s information. You can add more details
-                after creating.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name *</Label>
-                  <Input
-                    id="first_name"
-                    value={newPatient.first_name}
-                    onChange={(e) =>
-                      setNewPatient({
-                        ...newPatient,
-                        first_name: e.target.value,
-                      })
-                    }
-                    placeholder="John"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last_name">Last Name *</Label>
-                  <Input
-                    id="last_name"
-                    value={newPatient.last_name}
-                    onChange={(e) =>
-                      setNewPatient({
-                        ...newPatient,
-                        last_name: e.target.value,
-                      })
-                    }
-                    placeholder="Doe"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={newPatient.email}
-                  onChange={(e) =>
-                    setNewPatient({ ...newPatient, email: e.target.value })
-                  }
-                  placeholder="john@example.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={newPatient.phone}
-                  onChange={(e) =>
-                    setNewPatient({ ...newPatient, phone: e.target.value })
-                  }
-                  placeholder="+1 (555) 123-4567"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="date_of_birth">Date of Birth</Label>
-                <Input
-                  id="date_of_birth"
-                  type="date"
-                  value={newPatient.date_of_birth}
-                  onChange={(e) =>
-                    setNewPatient({
-                      ...newPatient,
-                      date_of_birth: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsAddDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={
-                  !newPatient.first_name ||
-                  !newPatient.last_name ||
-                  createMutation.isPending
-                }
-              >
-                {createMutation.isPending ? (
-                  <>
-                    <LoaderCircle className="h-4 w-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  "Create Patient"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
