@@ -28,6 +28,7 @@ import { CallHistory } from "@dialstack/sdk";
 import { useDialstackContext } from "@/app/hooks/EmbeddedComponentProvider";
 import EmbeddedComponentContainer from "@/app/components/EmbeddedComponentContainer";
 import { EditableCell } from "@/app/components/EditableCell";
+import { PatientQuickInfo } from "@/app/components/patients/PatientQuickInfo";
 import type { Patient } from "@/app/models/patient";
 
 /**
@@ -158,6 +159,9 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
 
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto p-5 space-y-5">
+            {/* Quick Info card */}
+            <PatientQuickInfo patient={patient} />
+
             {/* Editable info card */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
               <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">

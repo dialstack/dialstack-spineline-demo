@@ -21,6 +21,7 @@ import {
 import { formatPhone } from "@/lib/phone";
 import { CallHistory } from "@dialstack/sdk";
 import EmbeddedComponentContainer from "@/app/components/EmbeddedComponentContainer";
+import { PatientQuickInfo } from "@/app/components/patients/PatientQuickInfo";
 import type { IncomingCallWithPatient } from "@/app/hooks/useCallEvents";
 
 interface ScreenPopPanelProps {
@@ -170,6 +171,11 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
                     </span>
                   </div>
                 )}
+              </div>
+
+              {/* Quick Info */}
+              <div className="px-4 pb-4">
+                <PatientQuickInfo patient={call.patient} compact />
               </div>
 
               {/* Recent Calls - Real call history */}
