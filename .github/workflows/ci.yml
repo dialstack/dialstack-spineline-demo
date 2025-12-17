@@ -2,71 +2,56 @@ name: CI
 
 on:
   push:
-    branches: [dev]
+    branches: [dev, main]
   pull_request:
-    branches: [dev]
+    branches: [dev, main]
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: "npm"
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
+      - run: npx next typegen
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
 
-      - name: Generate TypeScript definitions
-        run: npx next typegen
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm run test
-
-  # Build and push Docker image with layer caching
+  # Only build/push on push to branch, NEVER on PRs
   docker-build-push:
+    if: github.event_name == 'push'
     runs-on: ubuntu-24.04-arm
     needs: [ci]
-
+    permissions:
+      id-token: write
+      contents: read
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: arn:aws:iam::857119675513:role/github-actions
           aws-region: us-east-1
 
-      - name: Login to Amazon ECR
+      - uses: aws-actions/amazon-ecr-login@v2
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push image to Amazon ECR
-        uses: docker/build-push-action@v5
+      - uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/dialstack:spineline-${{ github.sha }}
-          cache-from: type=registry,ref=${{ steps.login-ecr.outputs.registry }}/dialstack-buildcache:spineline
-          cache-to: type=registry,ref=${{ steps.login-ecr.outputs.registry }}/dialstack-buildcache:spineline,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
