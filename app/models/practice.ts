@@ -105,6 +105,26 @@ class PracticeModel {
     }
   }
 
+  // Find practice by DialStack account ID (for webhook lookups)
+  static async findByDialstackAccountId(
+    accountId: string,
+  ): Promise<Practice | null> {
+    const pool = await dbConnect();
+
+    try {
+      const result = await pool.query(
+        "SELECT * FROM practices WHERE dialstack_account_id = $1",
+        [accountId],
+      );
+
+      return result.rows[0] || null;
+    } catch (error) {
+      throw new Error(
+        `Failed to find practice by DialStack account ID: ${error}`,
+      );
+    }
+  }
+
   // Check if email exists (for validation)
   static async emailExists(email: string): Promise<boolean> {
     const pool = await dbConnect();
