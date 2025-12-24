@@ -14,6 +14,7 @@ import LocaleSelector from "./Tools/LocaleSelector";
 import ThemePicker from "./Tools/ThemePicker";
 import BrandSettingsModal from "./BrandSettingsModal";
 import CreateTestPatientsButton from "./testdata/CreateTestPatientsButton";
+import CreateTestAppointmentsButton from "./testdata/CreateTestAppointmentsButton";
 import SpinelineLogo from "@/public/spineline_logo.png";
 
 const ToolsPanel = () => {
@@ -29,6 +30,11 @@ const ToolsPanel = () => {
       description: "Create test patients",
       href: "/patients",
       component: CreateTestPatientsButton,
+    },
+    {
+      description: "Create test appointments",
+      href: "/home",
+      component: CreateTestAppointmentsButton,
     },
   ];
 

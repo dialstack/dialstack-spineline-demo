@@ -3,11 +3,18 @@
 /**
  * Database migration runner script
  * Parses RDS-managed secret and runs node-pg-migrate
+ *
+ * Usage:
+ *   node scripts/migrate.mjs [up|down]
+ *   Default direction is "up"
  */
 
 import { runner as migrate } from "node-pg-migrate";
 import pg from "pg";
 import pino from "pino";
+
+// Parse direction from command line args (default: "up")
+const direction = process.argv[2] === "down" ? "down" : "up";
 
 const logger = pino({
   level: process.env.LOG_LEVEL || "info",
@@ -52,8 +59,9 @@ async function runDatabaseMigrations() {
         port: dbPort,
         database: dbName,
         username: secret.username,
+        direction,
       },
-      "Running database migrations",
+      `Running database migrations (${direction})`,
     );
 
     // SSL is enabled by default - set DB_SSL_ENABLED=false to disable
@@ -83,7 +91,7 @@ async function runDatabaseMigrations() {
       const migrations = await migrate({
         dbClient,
         dir: "migrations",
-        direction: "up",
+        direction,
         migrationsTable: "pgmigrations",
         verbose: true,
         log: (msg) => {

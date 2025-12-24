@@ -4,6 +4,7 @@ import AuthenticatedAndOnboardedRoute from "@/app/components/AuthenticatedAndOnb
 import { ToolsPanelProvider } from "@/app/hooks/ToolsPanelProvider";
 import { EmbeddedComponentWrapper } from "@/app/hooks/EmbeddedComponentWrapper";
 import { ScreenPopProvider } from "@/app/components/screen-pop";
+import { ScheduleDateProvider } from "@/app/hooks/ScheduleDateProvider";
 import { DataRequest } from "../components/DataRequest";
 import Screen from "../components/Screen";
 import * as React from "react";
@@ -17,11 +18,13 @@ export default function DashboardLayout({
     <AuthenticatedAndOnboardedRoute>
       <EmbeddedComponentWrapper>
         <ScreenPopProvider>
-          <ToolsPanelProvider>
-            <DataRequest>
-              <Screen>{children}</Screen>
-            </DataRequest>
-          </ToolsPanelProvider>
+          <ScheduleDateProvider>
+            <ToolsPanelProvider>
+              <DataRequest>
+                <Screen>{children}</Screen>
+              </DataRequest>
+            </ToolsPanelProvider>
+          </ScheduleDateProvider>
         </ScreenPopProvider>
       </EmbeddedComponentWrapper>
     </AuthenticatedAndOnboardedRoute>

@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 
-// Appointment status values (matching Square API)
+// Appointment status values
 export type AppointmentStatus =
   | "pending"
   | "accepted"
@@ -8,14 +8,23 @@ export type AppointmentStatus =
   | "declined"
   | "no_show";
 
+// Appointment type values
+export type AppointmentType =
+  | "initial"
+  | "adjustment"
+  | "walk_in"
+  | "follow_up";
+
 // Appointment interface for TypeScript typing
 export interface Appointment {
   id?: number;
   practice_id: number;
   patient_id?: number | null;
+  provider_id?: number | null;
   start_at: Date;
   end_at: Date;
   status: AppointmentStatus;
+  type: AppointmentType;
   customer_phone?: string | null;
   customer_name?: string | null;
   customer_email?: string | null;
@@ -30,12 +39,25 @@ export interface CreateAppointmentInput {
   start_at: Date;
   end_at: Date;
   status?: AppointmentStatus;
+  type?: AppointmentType;
   patient_id?: number | null;
+  provider_id?: number | null;
   customer_phone?: string | null;
   customer_name?: string | null;
   customer_email?: string | null;
   notes?: string | null;
   idempotency_key?: string | null;
+}
+
+// Input type for updating appointments
+export interface UpdateAppointmentInput {
+  start_at?: Date;
+  end_at?: Date;
+  status?: AppointmentStatus;
+  type?: AppointmentType;
+  patient_id?: number | null;
+  provider_id?: number | null;
+  notes?: string | null;
 }
 
 // Appointment class with PostgreSQL methods (multi-tenant, scoped by practice)
@@ -50,15 +72,17 @@ class AppointmentModel {
     try {
       const result = await pool.query(
         `INSERT INTO appointments
-        (practice_id, patient_id, start_at, end_at, status, customer_phone, customer_name, customer_email, notes, idempotency_key)
-        VALUES ($1, $2, $3, $4, COALESCE($5, 'accepted'), $6, $7, $8, $9, $10)
+        (practice_id, patient_id, provider_id, start_at, end_at, status, type, customer_phone, customer_name, customer_email, notes, idempotency_key)
+        VALUES ($1, $2, $3, $4, $5, COALESCE($6, 'accepted'), COALESCE($7, 'adjustment'), $8, $9, $10, $11, $12)
         RETURNING *`,
         [
           practiceId,
           appointmentData.patient_id,
+          appointmentData.provider_id,
           appointmentData.start_at,
           appointmentData.end_at,
           appointmentData.status,
+          appointmentData.type,
           appointmentData.customer_phone,
           appointmentData.customer_name,
           appointmentData.customer_email,
@@ -191,6 +215,86 @@ class AppointmentModel {
       return result.rows[0] || null;
     } catch (error) {
       throw new Error(`Failed to update appointment status: ${error}`);
+    }
+  }
+
+  // Update appointment (general update for any fields)
+  static async update(
+    id: number,
+    practiceId: number,
+    data: UpdateAppointmentInput,
+  ): Promise<Appointment | null> {
+    const pool = await dbConnect();
+
+    try {
+      const fields: string[] = [];
+      const values: (string | number | Date | null)[] = [];
+      let paramCounter = 1;
+
+      if (data.start_at !== undefined) {
+        fields.push(`start_at = $${paramCounter++}`);
+        values.push(data.start_at);
+      }
+      if (data.end_at !== undefined) {
+        fields.push(`end_at = $${paramCounter++}`);
+        values.push(data.end_at);
+      }
+      if (data.status !== undefined) {
+        fields.push(`status = $${paramCounter++}`);
+        values.push(data.status);
+      }
+      if (data.type !== undefined) {
+        fields.push(`type = $${paramCounter++}`);
+        values.push(data.type);
+      }
+      if (data.patient_id !== undefined) {
+        fields.push(`patient_id = $${paramCounter++}`);
+        values.push(data.patient_id);
+      }
+      if (data.provider_id !== undefined) {
+        fields.push(`provider_id = $${paramCounter++}`);
+        values.push(data.provider_id);
+      }
+      if (data.notes !== undefined) {
+        fields.push(`notes = $${paramCounter++}`);
+        values.push(data.notes);
+      }
+
+      if (fields.length === 0) {
+        // Nothing to update, just return the existing appointment
+        return this.findById(id, practiceId);
+      }
+
+      fields.push(`updated_at = NOW()`);
+      values.push(id, practiceId);
+
+      const result = await pool.query(
+        `UPDATE appointments
+         SET ${fields.join(", ")}
+         WHERE id = $${paramCounter++} AND practice_id = $${paramCounter}
+         RETURNING *`,
+        values,
+      );
+
+      return result.rows[0] || null;
+    } catch (error) {
+      throw new Error(`Failed to update appointment: ${error}`);
+    }
+  }
+
+  // Delete appointment (with practice ownership check)
+  static async delete(id: number, practiceId: number): Promise<boolean> {
+    const pool = await dbConnect();
+
+    try {
+      const result = await pool.query(
+        "DELETE FROM appointments WHERE id = $1 AND practice_id = $2 RETURNING id",
+        [id, practiceId],
+      );
+
+      return result.rows.length > 0;
+    } catch (error) {
+      throw new Error(`Failed to delete appointment: ${error}`);
     }
   }
 }

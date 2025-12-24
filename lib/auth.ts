@@ -1,4 +1,5 @@
 import Practice from "../app/models/practice";
+import Provider from "../app/models/provider";
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/dbConnect";
@@ -170,6 +171,11 @@ export const authOptions: AuthOptions = {
 
           // Store the DialStack account ID (user created on-demand when needed)
           await Practice.update(email, { dialstack_account_id: account.id });
+
+          // Create default providers for the practice
+          logger.info("Creating default providers...");
+          await Provider.createDefaults(user!.id!);
+          logger.info("Default providers created");
 
           return {
             id: user!.id?.toString(),
