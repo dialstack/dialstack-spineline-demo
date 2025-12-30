@@ -4,7 +4,7 @@ import {
   StartedPostgreSqlContainer,
 } from "@testcontainers/postgresql";
 import { Pool } from "pg";
-import migrate from "node-pg-migrate";
+import { runner as migrate } from "node-pg-migrate";
 
 describe("Database Migrations", () => {
   let container: StartedPostgreSqlContainer;
