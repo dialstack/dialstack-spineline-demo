@@ -9,16 +9,16 @@
 # Stage 1a: Install stable dependencies (rarely changes)
 FROM node:24-alpine AS deps-stable
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY spineline/package.json spineline/package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
-    apk add --no-cache jq && \
+    apk add --no-cache jq=1.8.1-r0 && \
     jq 'del(.dependencies["@dialstack/sdk"])' package.json > package-stable.json && \
     mv package-stable.json package.json && \
     npm ci --ignore-scripts
 
 # Stage 1b: Add @dialstack/sdk (changes more frequently)
 FROM deps-stable AS deps
-COPY package.json package-lock.json ./
+COPY spineline/package.json spineline/package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
     npm ci
 
@@ -28,20 +28,21 @@ WORKDIR /app
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY package.json package-lock.json ./
+COPY spineline/package.json spineline/package-lock.json ./
 
 # Copy config files (these change less frequently)
-COPY next.config.mjs ./
-COPY tailwind.config.js postcss.config.js tsconfig.json components.json ./
+COPY spineline/next.config.mjs ./
+COPY spineline/tailwind.config.js spineline/postcss.config.js spineline/tsconfig.json spineline/components.json ./
 
 # Copy source code (ordered by change frequency - least to most)
-COPY public/ ./public/
-COPY migrations/ ./migrations/
-COPY scripts/ ./scripts/
-COPY types/ ./types/
-COPY lib/ ./lib/
-COPY components/ ./components/
-COPY app/ ./app/
+COPY spineline/public/ ./public/
+COPY spineline/migrations/ ./migrations/
+COPY spineline/scripts/ ./scripts/
+COPY spineline/types/ ./types/
+COPY spineline/lib/ ./lib/
+COPY spineline/components/ ./components/
+COPY spineline/middleware.ts ./
+COPY spineline/app/ ./app/
 
 # Build application
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -57,8 +58,9 @@ RUN addgroup -g 1001 -S nodejs && \
 
 # Install migration dependencies (stable layer)
 # These are runtime deps not in the standalone build
+# hadolint ignore=DL3016
 RUN --mount=type=cache,target=/root/.npm \
-    npm install --no-save node-pg-migrate pg pino pino-pretty
+    npm install --no-save node-pg-migrate@8 pg@8 pino@10 pino-pretty@13
 
 # Copy standalone build (includes only necessary node_modules)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
@@ -84,5 +86,5 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Run migrations then start standalone server
-CMD ["sh", "-c", "node scripts/migrate.mjs && node server.js"]
+# Start standalone server (migrations run separately via ECS task)
+CMD ["node", "server.js"]
