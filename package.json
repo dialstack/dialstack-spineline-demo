@@ -1,6 +1,6 @@
 {
   "name": "dialstack-spineline-demo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "FORCE_COLOR=1 next dev 2>&1 | pino-pretty -c -i pid,hostname -t HH:MM:ss",
