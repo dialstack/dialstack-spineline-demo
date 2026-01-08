@@ -243,7 +243,7 @@ export default function Patients() {
   }, [selectedPatient, selectedPatientId, filteredPatients]);
 
   // Render sort indicator
-  const SortIndicator = ({ column }: { column: SortColumn }) => {
+  const renderSortIndicator = (column: SortColumn) => {
     if (sortColumn !== column) return null;
     return sortDirection === "asc" ? (
       <ChevronUp className="h-4 w-4" />
@@ -339,7 +339,7 @@ export default function Patients() {
                   >
                     <div className="flex items-center gap-1">
                       Name
-                      <SortIndicator column="name" />
+                      {renderSortIndicator("name")}
                     </div>
                   </TableHead>
                   <TableHead
@@ -348,7 +348,7 @@ export default function Patients() {
                   >
                     <div className="flex items-center gap-1">
                       Email
-                      <SortIndicator column="email" />
+                      {renderSortIndicator("email")}
                     </div>
                   </TableHead>
                   <TableHead
@@ -357,7 +357,7 @@ export default function Patients() {
                   >
                     <div className="flex items-center gap-1">
                       Phone
-                      <SortIndicator column="phone" />
+                      {renderSortIndicator("phone")}
                     </div>
                   </TableHead>
                   <TableHead
@@ -366,7 +366,7 @@ export default function Patients() {
                   >
                     <div className="flex items-center gap-1">
                       Date of Birth
-                      <SortIndicator column="dob" />
+                      {renderSortIndicator("dob")}
                     </div>
                   </TableHead>
                   <TableHead
@@ -375,7 +375,7 @@ export default function Patients() {
                   >
                     <div className="flex items-center gap-1">
                       Status
-                      <SortIndicator column="status" />
+                      {renderSortIndicator("status")}
                     </div>
                   </TableHead>
                   <TableHead className="w-10"></TableHead>

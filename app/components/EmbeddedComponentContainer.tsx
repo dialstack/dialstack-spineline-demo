@@ -21,7 +21,7 @@ const EmbeddedComponentContainer = ({
 }) => {
   const { enableBorder } = useEmbeddedComponentBorder();
 
-  const ComponentDetails = () => {
+  const renderComponentDetails = () => {
     if (!enableBorder) {
       return null;
     }
@@ -62,7 +62,7 @@ const EmbeddedComponentContainer = ({
           : ""
       } group relative transition-border duration-200 ${className}`}
     >
-      <ComponentDetails />
+      {renderComponentDetails()}
       {children}
     </div>
   );

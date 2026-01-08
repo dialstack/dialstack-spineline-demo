@@ -68,7 +68,7 @@ const OnboardingDialog = () => {
     }
   };
 
-  const DecrementButon = () => {
+  const renderDecrementButton = () => {
     // If user is at first step, show a close button
     if (currentStep == 0) {
       return (
@@ -91,7 +91,7 @@ const OnboardingDialog = () => {
     );
   };
 
-  const IncrementButton = () => {
+  const renderIncrementButton = () => {
     if (currentStep == onboardingSteps.length - 1) {
       return (
         <DialogClose asChild>
@@ -117,7 +117,7 @@ const OnboardingDialog = () => {
     );
   };
 
-  const ProgressIndicator = () => {
+  const renderProgressIndicator = () => {
     const progressDot = (isActive: boolean) => {
       const bg = isActive ? "bg-[#675DFF]" : "bg-neutral-200";
       return <div className={`h-2.5 w-2.5 rounded-full ${bg}`}></div>;
@@ -162,10 +162,10 @@ const OnboardingDialog = () => {
               {onboardingSteps[currentStep].description}
             </DialogDescription>
             <div className="flex flex-1 items-center justify-between gap-2 pt-4">
-              <ProgressIndicator />
+              {renderProgressIndicator()}
               <div className="flex gap-2">
-                <DecrementButon />
-                <IncrementButton />
+                {renderDecrementButton()}
+                {renderIncrementButton()}
               </div>
             </div>
           </DialogHeader>
