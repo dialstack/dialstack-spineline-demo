@@ -15,6 +15,7 @@ import ThemePicker from "./Tools/ThemePicker";
 import BrandSettingsModal from "./BrandSettingsModal";
 import CreateTestPatientsButton from "./testdata/CreateTestPatientsButton";
 import CreateTestAppointmentsButton from "./testdata/CreateTestAppointmentsButton";
+import ClearTodayScheduleButton from "./testdata/ClearTodayScheduleButton";
 import SpinelineLogo from "@/public/spineline_logo.png";
 
 const ToolsPanel = () => {
@@ -35,6 +36,11 @@ const ToolsPanel = () => {
       description: "Create test appointments",
       href: "/home",
       component: CreateTestAppointmentsButton,
+    },
+    {
+      description: "Clear schedule",
+      href: "/home",
+      component: ClearTodayScheduleButton,
     },
   ];
 

@@ -90,6 +90,7 @@ export async function PATCH(
       "start_at",
       "end_at",
       "patient_id",
+      "provider_id",
       "status",
       "type",
       "notes",
@@ -108,37 +109,6 @@ export async function PATCH(
 
     if (Object.keys(updates).length === 0) {
       return new Response("No valid fields to update", { status: 400 });
-    }
-
-    // Check for conflicts if time is being updated
-    if (updates.start_at || updates.end_at) {
-      // Get existing appointment to fill in missing time fields
-      const existing = await Appointment.findById(appointmentId, practice.id);
-      if (!existing) {
-        return new Response("Appointment not found", { status: 404 });
-      }
-
-      const newStartAt = (updates.start_at as Date) || existing.start_at;
-      const newEndAt = (updates.end_at as Date) || existing.end_at;
-
-      // Only check conflicts if status won't be cancelled/declined
-      const newStatus = (updates.status as string) || existing.status;
-      if (newStatus !== "cancelled" && newStatus !== "declined") {
-        const conflicts = await Appointment.findConflicting(
-          practice.id,
-          newStartAt,
-          newEndAt,
-          appointmentId,
-        );
-        if (conflicts.length > 0) {
-          return new Response(
-            JSON.stringify({
-              error: "Time slot conflicts with existing appointment",
-            }),
-            { status: 409, headers: { "Content-Type": "application/json" } },
-          );
-        }
-      }
     }
 
     const updatedAppointment = await Appointment.update(

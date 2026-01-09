@@ -102,11 +102,14 @@ export async function POST(req: NextRequest) {
 
     // Check for conflicts (skip if status is cancelled or declined)
     const status = body.status || "accepted";
+    const providerId = body.provider_id || null;
     if (status !== "cancelled" && status !== "declined") {
       const conflicts = await Appointment.findConflicting(
         practice.id,
         startAt,
         endAt,
+        undefined,
+        providerId,
       );
       if (conflicts.length > 0) {
         return new Response(
@@ -122,6 +125,7 @@ export async function POST(req: NextRequest) {
       start_at: startAt,
       end_at: endAt,
       patient_id: body.patient_id || null,
+      provider_id: body.provider_id || null,
       status: status,
       type: body.type || "adjustment",
       notes: body.notes || null,

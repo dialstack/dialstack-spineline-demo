@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Schedule from "@/app/components/Schedule";
 import Container from "@/app/components/Container";
@@ -9,6 +8,7 @@ import { Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { AppointmentPanel } from "@/app/components/appointments/AppointmentPanel";
+import { useSelectedAppointment } from "@/app/hooks/SelectedAppointmentProvider";
 import type { Appointment } from "@/app/models/appointment";
 
 /**
@@ -35,9 +35,8 @@ const createAppointment = async (
 export default function Dashboard() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
-  const [selectedAppointmentId, setSelectedAppointmentId] = useState<
-    number | null
-  >(null);
+  const { selectedAppointmentId, setSelectedAppointmentId } =
+    useSelectedAppointment();
 
   if (!session) {
     redirect("/");

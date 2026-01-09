@@ -121,11 +121,13 @@ class AppointmentModel {
   // Find conflicting appointments (overlapping time slots)
   // An appointment conflicts if it overlaps with the given time range
   // and is not cancelled or declined
+  // If providerId is specified, only check conflicts for that provider
   static async findConflicting(
     practiceId: number,
     startAt: Date,
     endAt: Date,
     excludeId?: number,
+    providerId?: number | null,
   ): Promise<Appointment[]> {
     const pool = await dbConnect();
 
@@ -137,11 +139,23 @@ class AppointmentModel {
           AND start_at < $3
           AND end_at > $2
       `;
-      const params: (number | Date)[] = [practiceId, startAt, endAt];
+      const params: (number | Date | null)[] = [practiceId, startAt, endAt];
+      let paramIndex = 4;
 
       if (excludeId !== undefined) {
-        query += ` AND id != $4`;
+        query += ` AND id != $${paramIndex}`;
         params.push(excludeId);
+        paramIndex++;
+      }
+
+      // If providerId is specified, only check conflicts for that provider
+      if (providerId !== undefined) {
+        if (providerId === null) {
+          query += ` AND provider_id IS NULL`;
+        } else {
+          query += ` AND provider_id = $${paramIndex}`;
+          params.push(providerId);
+        }
       }
 
       const result = await pool.query(query, params);

@@ -105,10 +105,15 @@ const updateAppointment = async ({
     body: JSON.stringify(data),
   });
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(
-      error.error || `Failed to update appointment: ${res.status}`,
-    );
+    const text = await res.text();
+    let errorMessage = `Failed to update appointment: ${res.status}`;
+    try {
+      const error = JSON.parse(text);
+      errorMessage = error.error || errorMessage;
+    } catch {
+      if (text) errorMessage = text;
+    }
+    throw new Error(errorMessage);
   }
   return res.json();
 };
@@ -143,8 +148,18 @@ export function AppointmentPanel({
   const { dialstackInstance } = useDialstackContext();
   const [dialstackUserId, setDialstackUserId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errorState, setErrorState] = useState<{
+    appointmentId: number | null;
+    message: string;
+  } | null>(null);
   const isOpen = appointmentId !== null;
+
+  // Only show error if it's for the current appointment
+  const error =
+    errorState?.appointmentId === appointmentId ? errorState.message : null;
+  const setError = (message: string | null) => {
+    setErrorState(message ? { appointmentId, message } : null);
+  };
 
   // Fetch appointment data
   const { data: appointment, isLoading: appointmentLoading } = useQuery({
@@ -250,6 +265,17 @@ export function AppointmentPanel({
     return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
   };
 
+  // Add minutes to a date and format for input
+  const addMinutesForInput = (
+    date: Date | string | undefined,
+    minutes: number,
+  ): string => {
+    if (!date) return "";
+    const d = new Date(date);
+    d.setMinutes(d.getMinutes() + minutes);
+    return formatTimeForInput(d);
+  };
+
   // Handle date/time change
   const handleDateTimeChange = (
     field: "date" | "startTime" | "endTime",
@@ -259,6 +285,7 @@ export function AppointmentPanel({
 
     const currentStart = new Date(appointment.start_at);
     const currentEnd = new Date(appointment.end_at);
+    const MIN_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
     if (field === "date") {
       // Update both start and end dates, keep times
@@ -273,11 +300,19 @@ export function AppointmentPanel({
       const [hours, minutes] = value.split(":").map(Number);
       const newStart = new Date(currentStart);
       newStart.setHours(hours, minutes, 0, 0);
+      // Ensure at least 15 minutes before end time
+      if (currentEnd.getTime() - newStart.getTime() < MIN_DURATION_MS) {
+        return;
+      }
       handleUpdate("start_at", newStart.toISOString());
     } else if (field === "endTime") {
       const [hours, minutes] = value.split(":").map(Number);
       const newEnd = new Date(currentEnd);
       newEnd.setHours(hours, minutes, 0, 0);
+      // Ensure at least 15 minutes after start time
+      if (newEnd.getTime() - currentStart.getTime() < MIN_DURATION_MS) {
+        return;
+      }
       handleUpdate("end_at", newEnd.toISOString());
     }
   };
@@ -312,7 +347,7 @@ export function AppointmentPanel({
                     <Badge
                       variant={
                         appointment.status === "accepted"
-                          ? "default"
+                          ? "success"
                           : appointment.status === "cancelled" ||
                               appointment.status === "declined"
                             ? "destructive"
@@ -444,6 +479,7 @@ export function AppointmentPanel({
                     <Input
                       type="time"
                       value={formatTimeForInput(appointment.start_at)}
+                      max={addMinutesForInput(appointment.end_at, -15)}
                       onChange={(e) =>
                         handleDateTimeChange("startTime", e.target.value)
                       }
@@ -456,6 +492,7 @@ export function AppointmentPanel({
                     <Input
                       type="time"
                       value={formatTimeForInput(appointment.end_at)}
+                      min={addMinutesForInput(appointment.start_at, 15)}
                       onChange={(e) =>
                         handleDateTimeChange("endTime", e.target.value)
                       }
@@ -518,10 +555,12 @@ export function AppointmentPanel({
                   <Label className="text-xs text-muted-foreground mb-1 block">
                     Notes
                   </Label>
-                  <Input
+                  <textarea
                     value={appointment.notes || ""}
                     placeholder="Add notes..."
                     onChange={(e) => handleUpdate("notes", e.target.value)}
+                    rows={3}
+                    className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
               </div>
