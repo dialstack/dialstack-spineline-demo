@@ -14,8 +14,10 @@ import {
 import { LoaderCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useScheduleDate } from "@/app/hooks/ScheduleDateProvider";
+import { useTimezone } from "@/app/hooks/TimezoneProvider";
 import { useSelectedAppointment } from "@/app/hooks/SelectedAppointmentProvider";
 import { Appointment } from "@/app/models/appointment";
+import { getDayStartUTC, getDayEndUTC } from "@/lib/timezone";
 
 export default function ClearTodayScheduleButton({
   classes,
@@ -25,6 +27,7 @@ export default function ClearTodayScheduleButton({
   const [open, setOpen] = React.useState(false);
   const queryClient = useQueryClient();
   const { selectedDate } = useScheduleDate();
+  const { timezone } = useTimezone();
   const { selectedAppointmentId, setSelectedAppointmentId } =
     useSelectedAppointment();
 
@@ -36,15 +39,13 @@ export default function ClearTodayScheduleButton({
     setError(null);
 
     try {
-      // Build date range for the selected day (local timezone)
-      const startOfDay = new Date(selectedDate);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(selectedDate);
-      endOfDay.setHours(23, 59, 59, 999);
+      // Build date range for the selected day (practice timezone converted to UTC)
+      const dayStart = getDayStartUTC(selectedDate, timezone);
+      const dayEnd = getDayEndUTC(selectedDate, timezone);
 
       // Fetch today's appointments
       const response = await fetch(
-        `/api/appointments?start=${startOfDay.toISOString()}&end=${endOfDay.toISOString()}`,
+        `/api/appointments?start=${dayStart.toISOString()}&end=${dayEnd.toISOString()}`,
       );
 
       if (!response.ok) {

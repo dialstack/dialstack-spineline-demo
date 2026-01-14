@@ -1,28 +1,32 @@
 "use client";
 
 import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
 import Container from "@/app/components/Container";
 import EditPasswordButton from "@/app/components/EditPasswordButton";
 import EditEmailButton from "@/app/components/EditEmailButton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { fetchAccountInfo, updateTimezone } from "@/lib/api/account";
 
-const fetchAccountInfo = async () => {
-  const res = await fetch("/api/account_info", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch account info: ${res.status}`);
-  }
-
-  return res.json();
-};
+const US_TIMEZONES = [
+  { value: "America/New_York", label: "Eastern Time (ET)" },
+  { value: "America/Chicago", label: "Central Time (CT)" },
+  { value: "America/Denver", label: "Mountain Time (MT)" },
+  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
+  { value: "America/Anchorage", label: "Alaska Time (AKT)" },
+  { value: "Pacific/Honolulu", label: "Hawaii Time (HT)" },
+];
 
 export default function Settings() {
+  const queryClient = useQueryClient();
+
   const {
     data: accountData,
     isLoading,
@@ -32,8 +36,16 @@ export default function Settings() {
     queryFn: fetchAccountInfo,
   });
 
+  const timezoneMutation = useMutation({
+    mutationFn: updateTimezone,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["accountInfo"] });
+    },
+  });
+
   const practiceName = accountData?.businessName || "";
   const email = accountData?.email || "";
+  const timezone = accountData?.timezone || "America/New_York";
 
   return (
     <>
@@ -64,6 +76,30 @@ export default function Settings() {
             <div>
               <div className="text-subdued">Email</div>
               <div className="font-medium">{email}</div>
+            </div>
+            <div>
+              <div className="text-subdued">Time zone</div>
+              <Select
+                value={timezone}
+                onValueChange={(value) => timezoneMutation.mutate(value)}
+                disabled={timezoneMutation.isPending}
+              >
+                <SelectTrigger className="mt-1 w-[200px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {US_TIMEZONES.map((tz) => (
+                    <SelectItem key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {timezoneMutation.isError && (
+                <div className="mt-1 text-sm text-red-600">
+                  Failed to save timezone
+                </div>
+              )}
             </div>
           </div>
         )}

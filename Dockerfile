@@ -41,7 +41,7 @@ COPY spineline/scripts/ ./scripts/
 COPY spineline/types/ ./types/
 COPY spineline/lib/ ./lib/
 COPY spineline/components/ ./components/
-COPY spineline/middleware.ts ./
+COPY spineline/proxy.ts ./
 COPY spineline/app/ ./app/
 
 # Build application

@@ -5,8 +5,11 @@ import {
   AvailabilitySearchResponse,
   WebhookErrorResponse,
 } from "@dialstack/sdk/server";
-import PracticeModel from "@/app/models/practice";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
+import { startOfDay, addDays } from "date-fns";
+import PracticeModel, { getTimezone } from "@/app/models/practice";
 import AppointmentModel from "@/app/models/appointment";
+import { generateAvailabilities } from "@/lib/availability";
 
 // POST /api/dialstack/webhooks/availability/search
 // DialStack calls this endpoint to search for available appointment slots
@@ -90,63 +93,33 @@ export async function POST(request: NextRequest) {
     rangeEnd,
   );
 
-  // Generate available 15-minute slots (typical for chiropractic appointments)
-  // Business hours: 9am-5pm (configurable in future)
-  const SLOT_DURATION_MINUTES = 15;
-  const BUSINESS_START_HOUR = 9;
-  const BUSINESS_END_HOUR = 17;
+  // Get the practice's timezone
+  const timezone = getTimezone(practice);
 
-  const availabilities: { start_at: string; duration_minutes: number }[] = [];
+  // Calculate the range of days to iterate through in the practice's timezone
+  // We need to expand the appointment query to cover all days that overlap
+  const startZoned = toZonedTime(rangeStart, timezone);
+  const endZoned = toZonedTime(rangeEnd, timezone);
+  const queryStart = fromZonedTime(startOfDay(startZoned), timezone);
+  const queryEnd = fromZonedTime(addDays(startOfDay(endZoned), 1), timezone);
 
-  // Iterate through each day in the range
-  const currentDate = new Date(rangeStart);
-  while (currentDate < rangeEnd) {
-    // Skip weekends (0 = Sunday, 6 = Saturday)
-    const dayOfWeek = currentDate.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-      // Generate slots for this day
-      const dayStart = new Date(currentDate);
-      dayStart.setHours(BUSINESS_START_HOUR, 0, 0, 0);
+  // Fetch appointments for the expanded range if needed
+  const appointments =
+    queryStart < rangeStart || queryEnd > rangeEnd
+      ? await AppointmentModel.findByPractice(practice.id, queryStart, queryEnd)
+      : existingAppointments;
 
-      const dayEnd = new Date(currentDate);
-      dayEnd.setHours(BUSINESS_END_HOUR, 0, 0, 0);
-
-      let slotStart = new Date(dayStart);
-      while (slotStart < dayEnd) {
-        const slotEnd = new Date(
-          slotStart.getTime() + SLOT_DURATION_MINUTES * 60 * 1000,
-        );
-
-        // Check if this slot conflicts with any existing appointment
-        const hasConflict = existingAppointments.some((apt) => {
-          const aptStart = new Date(apt.start_at);
-          const aptEnd = new Date(apt.end_at);
-          // Conflict if appointment overlaps with slot and is not cancelled/declined
-          return (
-            apt.status !== "cancelled" &&
-            apt.status !== "declined" &&
-            aptStart < slotEnd &&
-            aptEnd > slotStart
-          );
-        });
-
-        // Only include future slots that don't conflict
-        const now = new Date();
-        if (!hasConflict && slotStart > now) {
-          availabilities.push({
-            start_at: slotStart.toISOString(),
-            duration_minutes: SLOT_DURATION_MINUTES,
-          });
-        }
-
-        slotStart = slotEnd;
-      }
-    }
-
-    // Move to next day
-    currentDate.setDate(currentDate.getDate() + 1);
-    currentDate.setHours(0, 0, 0, 0);
-  }
+  // Generate availability windows
+  const availabilities = generateAvailabilities(
+    timezone,
+    rangeStart,
+    rangeEnd,
+    appointments.map((apt) => ({
+      start_at: apt.start_at,
+      end_at: apt.end_at,
+      status: apt.status,
+    })),
+  );
 
   return NextResponse.json<AvailabilitySearchResponse>({ availabilities });
 }

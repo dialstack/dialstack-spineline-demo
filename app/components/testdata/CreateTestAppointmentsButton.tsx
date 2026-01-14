@@ -32,10 +32,12 @@ import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useScheduleDate } from "@/app/hooks/ScheduleDateProvider";
+import { useTimezone } from "@/app/hooks/TimezoneProvider";
 import { sample } from "lodash-es";
 import { Patient } from "@/app/models/patient";
 import { Provider } from "@/app/models/provider";
 import { AppointmentType } from "@/app/models/appointment";
+import { createUTCFromMinutes } from "@/lib/timezone";
 
 const formSchema = z.object({
   count: z.string(),
@@ -203,6 +205,7 @@ export default function CreateTestAppointmentsButton({
   const [open, setOpen] = React.useState(false);
   const queryClient = useQueryClient();
   const { selectedDate } = useScheduleDate();
+  const { timezone } = useTimezone();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -278,11 +281,12 @@ export default function CreateTestAppointmentsButton({
         // Book the slot locally (update available time)
         bookSlot(availableTime, slot.providerId, slot.startMinutes, duration);
 
-        // Create start/end times in local timezone
-        const startAt = new Date(selectedDate);
-        startAt.setHours(0, 0, 0, 0);
-        startAt.setMinutes(slot.startMinutes);
-
+        // Create start/end times in practice timezone (converts to UTC)
+        const startAt = createUTCFromMinutes(
+          selectedDate,
+          slot.startMinutes,
+          timezone,
+        );
         const endAt = new Date(startAt.getTime() + duration * 60 * 1000);
 
         // Random patient, type, and notes

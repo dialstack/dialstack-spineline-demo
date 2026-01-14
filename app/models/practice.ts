@@ -1,6 +1,11 @@
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/dbConnect";
 
+// Practice configuration stored as JSONB
+export interface PracticeConfig {
+  timezone?: string;
+}
+
 // Practice interface for TypeScript typing
 export interface Practice {
   id?: number;
@@ -12,6 +17,12 @@ export interface Practice {
   businessName?: string;
   setup?: boolean;
   dialstack_account_id?: string;
+  config?: PracticeConfig;
+}
+
+// Helper to get timezone from practice config with default
+export function getTimezone(practice: Practice): string {
+  return practice.config?.timezone ?? "America/New_York";
 }
 
 // Practice class with PostgreSQL methods
@@ -196,6 +207,29 @@ class PracticeModel {
       return result.rows[0];
     } catch (error) {
       throw new Error(`Failed to update practice: ${error}`);
+    }
+  }
+
+  // Update practice config (JSONB field)
+  static async updateConfig(
+    email: string,
+    config: PracticeConfig,
+  ): Promise<Practice> {
+    const pool = await dbConnect();
+
+    try {
+      const result = await pool.query(
+        "UPDATE practices SET config = $1, updated_at = NOW() WHERE email = $2 RETURNING *",
+        [JSON.stringify(config), email],
+      );
+
+      if (result.rows.length === 0) {
+        throw new Error("Practice not found");
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      throw new Error(`Failed to update practice config: ${error}`);
     }
   }
 }

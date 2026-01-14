@@ -5,14 +5,14 @@ import logger from "./lib/logger";
 const isDevelopment = process.env.NODE_ENV === "development";
 
 /**
- * Next.js middleware for request logging
+ * Next.js proxy for request logging
  *
  * Logs all incoming requests with method, path, and duration
  * Similar to pino-http middleware in Express
  *
  * Access logs are disabled in development to reduce noise.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const response = NextResponse.next();
 
   // Skip access logs in development
@@ -65,7 +65,7 @@ export function middleware(request: NextRequest) {
   return response;
 }
 
-// Configure which routes the middleware runs on
+// Configure which routes the proxy runs on
 export const config = {
   // Match all routes except static files and Next.js internals
   matcher: [

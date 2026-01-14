@@ -153,6 +153,22 @@ describe("Database Migrations", () => {
     expect(triggers.rows.length).toBe(1);
   });
 
+  it("should create config JSONB column with timezone default", async () => {
+    // Check config column exists with correct type
+    const columns = await pool.query(`
+      SELECT column_name, data_type, is_nullable, column_default
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+      AND table_name = 'practices'
+      AND column_name = 'config';
+    `);
+
+    expect(columns.rows).toHaveLength(1);
+    expect(columns.rows[0].data_type).toBe("jsonb");
+    expect(columns.rows[0].is_nullable).toBe("NO");
+    expect(columns.rows[0].column_default).toContain("America/New_York");
+  });
+
   it("should automatically update updated_at on row update", async () => {
     // Insert a test row
     const insertResult = await pool.query(

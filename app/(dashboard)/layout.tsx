@@ -6,6 +6,7 @@ import { EmbeddedComponentWrapper } from "@/app/hooks/EmbeddedComponentWrapper";
 import { ScreenPopProvider } from "@/app/components/screen-pop";
 import { ScheduleDateProvider } from "@/app/hooks/ScheduleDateProvider";
 import { SelectedAppointmentProvider } from "@/app/hooks/SelectedAppointmentProvider";
+import { TimezoneProvider } from "@/app/hooks/TimezoneProvider";
 import { DataRequest } from "../components/DataRequest";
 import Screen from "../components/Screen";
 import * as React from "react";
@@ -19,15 +20,17 @@ export default function DashboardLayout({
     <AuthenticatedAndOnboardedRoute>
       <EmbeddedComponentWrapper>
         <ScreenPopProvider>
-          <ScheduleDateProvider>
-            <SelectedAppointmentProvider>
-              <ToolsPanelProvider>
-                <DataRequest>
-                  <Screen>{children}</Screen>
-                </DataRequest>
-              </ToolsPanelProvider>
-            </SelectedAppointmentProvider>
-          </ScheduleDateProvider>
+          <TimezoneProvider>
+            <ScheduleDateProvider>
+              <SelectedAppointmentProvider>
+                <ToolsPanelProvider>
+                  <DataRequest>
+                    <Screen>{children}</Screen>
+                  </DataRequest>
+                </ToolsPanelProvider>
+              </SelectedAppointmentProvider>
+            </ScheduleDateProvider>
+          </TimezoneProvider>
         </ScreenPopProvider>
       </EmbeddedComponentWrapper>
     </AuthenticatedAndOnboardedRoute>

@@ -6,6 +6,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
 import { useScheduleDate } from "@/app/hooks/ScheduleDateProvider";
+import { useTimezone } from "@/app/hooks/TimezoneProvider";
+import {
+  formatInTimezone,
+  getMinutesSinceHour,
+  getTimeInTimezone,
+  getLocalStartOfDay,
+  getLocalEndOfDay,
+} from "@/lib/timezone";
 import type { Patient } from "@/app/models/patient";
 import type { Provider } from "@/app/models/provider";
 import type { Appointment, AppointmentType } from "@/app/models/appointment";
@@ -125,50 +133,9 @@ const fetchAppointments = async (
   return res.json();
 };
 
-/**
- * Format a date for display
- */
-const formatDate = (date: Date): string => {
-  const options: Intl.DateTimeFormatOptions = {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  };
-  return date.toLocaleDateString("en-US", options);
-};
-
-/**
- * Get minutes since 8 AM for positioning the current time indicator
- */
-function getMinutesSince8AM(): number {
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  const targetHour = 8;
-
-  if (currentHour >= targetHour && currentHour < 18) {
-    return (currentHour - targetHour) * 60 + currentMinute;
-  }
-  return -1; // Outside business hours
-}
-
-/**
- * Get start of day (midnight)
- */
-const getStartOfDay = (date: Date): Date => {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-
-/**
- * Get end of day (11:59:59 PM)
- */
-const getEndOfDay = (date: Date): Date => {
-  const d = new Date(date);
-  d.setHours(23, 59, 59, 999);
-  return d;
-};
+// Business hours constants
+const BUSINESS_START_HOUR = 8;
+const BUSINESS_END_HOUR = 18;
 
 /**
  * Get appointment type badge
@@ -189,10 +156,15 @@ const getTypeBadge = (type: AppointmentType) => {
 /**
  * Render the current time indicator
  */
-const CurrentTimeIndicator = () => {
-  const minutesSince8AM = getMinutesSince8AM();
+const CurrentTimeIndicator = ({ timezone }: { timezone: string }) => {
+  const minutesSinceStart = getMinutesSinceHour(
+    new Date(),
+    timezone,
+    BUSINESS_START_HOUR,
+    BUSINESS_END_HOUR,
+  );
 
-  if (minutesSince8AM < 0 || minutesSince8AM > MINUTES_IN_BUSINESS_DAY) {
+  if (minutesSinceStart < 0 || minutesSinceStart > MINUTES_IN_BUSINESS_DAY) {
     return null;
   }
 
@@ -200,7 +172,7 @@ const CurrentTimeIndicator = () => {
     <div
       className="absolute left-0 z-30 h-[2px] w-full bg-accent"
       style={{
-        top: `${(SCHEDULE_HEIGHT * minutesSince8AM) / MINUTES_IN_BUSINESS_DAY}px`,
+        top: `${(SCHEDULE_HEIGHT * minutesSinceStart) / MINUTES_IN_BUSINESS_DAY}px`,
       }}
     >
       <div className="relative left-0 top-[-3px] h-2 w-2 rounded-full border-2 border-accent bg-accent" />
@@ -244,6 +216,7 @@ const HourBlock = ({
 
 const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
   const { selectedDate, setSelectedDate } = useScheduleDate();
+  const { timezone } = useTimezone();
 
   // Fetch patients
   const { data: patients } = useQuery({
@@ -265,7 +238,10 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
   } = useQuery({
     queryKey: ["appointments", selectedDate.toISOString()],
     queryFn: () =>
-      fetchAppointments(getStartOfDay(selectedDate), getEndOfDay(selectedDate)),
+      fetchAppointments(
+        getLocalStartOfDay(selectedDate),
+        getLocalEndOfDay(selectedDate),
+      ),
   });
 
   // Create patient lookup map
@@ -326,11 +302,11 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
 
   // Navigate to today
   const goToToday = () => {
-    setSelectedDate(getStartOfDay(new Date()));
+    setSelectedDate(getLocalStartOfDay(new Date()));
   };
 
   const isToday =
-    getStartOfDay(new Date()).getTime() === selectedDate.getTime();
+    getLocalStartOfDay(new Date()).getTime() === selectedDate.getTime();
 
   const columnCount = providers?.length || 1;
 
@@ -342,9 +318,13 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
     const startAt = new Date(appointment.start_at);
     const endAt = new Date(appointment.end_at);
 
-    // Calculate position (minutes since 8 AM)
-    const startMinutes = (startAt.getHours() - 8) * 60 + startAt.getMinutes();
-    const endMinutes = (endAt.getHours() - 8) * 60 + endAt.getMinutes();
+    // Calculate position (minutes since business start) in practice timezone
+    const startTime = getTimeInTimezone(startAt, timezone);
+    const endTime = getTimeInTimezone(endAt, timezone);
+    const startMinutes =
+      (startTime.hours - BUSINESS_START_HOUR) * 60 + startTime.minutes;
+    const endMinutes =
+      (endTime.hours - BUSINESS_START_HOUR) * 60 + endTime.minutes;
     const durationMinutes = endMinutes - startMinutes;
 
     // Skip appointments outside business hours
@@ -361,14 +341,8 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
     const padding = isShort ? "p-2" : "p-3";
     const spacing = isShort ? "space-y-1" : "space-y-2";
 
-    const startTimeStr = startAt.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    const endTimeStr = endAt.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
+    const startTimeStr = formatInTimezone(startAt, timezone, "h:mm a");
+    const endTimeStr = formatInTimezone(endAt, timezone, "h:mm a");
 
     const patientName = patient
       ? `${patient.first_name} ${patient.last_name}`
@@ -426,7 +400,7 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
               onClick={goToToday}
               className="font-bold text-accent hover:underline"
             >
-              {formatDate(selectedDate)}
+              {formatInTimezone(selectedDate, timezone, "EEEE, MMMM d")}
             </button>
             <Button variant="ghost" size="sm" onClick={goToNextDay}>
               <ChevronRight className="h-4 w-4" />
@@ -478,7 +452,7 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
             {/* Schedule grid */}
             <div className="relative">
               {/* Current time indicator (only on today) */}
-              {isToday && <CurrentTimeIndicator />}
+              {isToday && <CurrentTimeIndicator timezone={timezone} />}
 
               {/* Hour grid */}
               <div className="absolute z-10 w-full flex-1">
