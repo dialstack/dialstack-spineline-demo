@@ -166,7 +166,8 @@ class AppointmentModel {
     }
   }
 
-  // Find appointments for a practice within a date range
+  // Find appointments for a practice that overlap a date range
+  // Uses proper overlap detection: appointment starts before range ends AND ends after range starts
   static async findByPractice(
     practiceId: number,
     startDate: Date,
@@ -178,8 +179,8 @@ class AppointmentModel {
       const result = await pool.query(
         `SELECT * FROM appointments
          WHERE practice_id = $1
-           AND start_at >= $2
            AND start_at < $3
+           AND end_at > $2
          ORDER BY start_at ASC`,
         [practiceId, startDate, endDate],
       );

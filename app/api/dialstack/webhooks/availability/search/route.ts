@@ -110,6 +110,8 @@ export async function POST(request: NextRequest) {
       : existingAppointments;
 
   // Generate availability windows
+  // Pass rangeStart as 'now' to show all availability in the requested range
+  // (not clipped to server's current time)
   const availabilities = generateAvailabilities(
     timezone,
     rangeStart,
@@ -119,6 +121,7 @@ export async function POST(request: NextRequest) {
       end_at: apt.end_at,
       status: apt.status,
     })),
+    rangeStart,
   );
 
   return NextResponse.json<AvailabilitySearchResponse>({ availabilities });

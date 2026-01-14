@@ -267,19 +267,48 @@ describe("Database Integration", () => {
       [practiceId],
     );
 
-    // Query appointments in range
+    // Query appointments in range using overlap detection
     const appointments = await pool.query(
       `
       SELECT start_at, end_at, status
       FROM appointments
       WHERE practice_id = $1
-        AND start_at >= $2
         AND start_at < $3
+        AND end_at > $2
     `,
       [practiceId, "2026-01-15T00:00:00Z", "2026-01-16T00:00:00Z"],
     );
 
     expect(appointments.rows).toHaveLength(1);
     expect(appointments.rows[0].status).toBe("accepted");
+  });
+
+  it("should find appointments that start before range but overlap it", async () => {
+    // Create practice
+    const practiceResult = await pool.query(`
+      INSERT INTO practices (email, password, config)
+      VALUES ('overlap-test@example.com', 'hashedpw', '{"timezone": "America/New_York"}')
+      RETURNING id
+    `);
+    const practiceId = practiceResult.rows[0].id;
+
+    // Create appointment that starts BEFORE range but ENDS during range
+    // Appointment: 8am-10am EST (13:00-15:00 UTC)
+    await pool.query(
+      `INSERT INTO appointments (practice_id, start_at, end_at, status, type)
+       VALUES ($1, '2026-01-15T13:00:00Z', '2026-01-15T15:00:00Z', 'accepted', 'adjustment')`,
+      [practiceId],
+    );
+
+    // Query range: 9am-5pm EST (14:00-22:00 UTC) - starts AFTER appointment begins
+    // Using overlap detection: start_at < rangeEnd AND end_at > rangeStart
+    const appointments = await pool.query(
+      `SELECT start_at, end_at, status FROM appointments
+       WHERE practice_id = $1 AND start_at < $3 AND end_at > $2`,
+      [practiceId, "2026-01-15T14:00:00Z", "2026-01-15T22:00:00Z"],
+    );
+
+    // Should find the overlapping appointment
+    expect(appointments.rows).toHaveLength(1);
   });
 });
