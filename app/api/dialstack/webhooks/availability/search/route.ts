@@ -14,55 +14,78 @@ import { generateAvailabilities } from "@/lib/availability";
 // POST /api/dialstack/webhooks/availability/search
 // DialStack calls this endpoint to search for available appointment slots
 export async function POST(request: NextRequest) {
-  const webhookSecret = process.env.DIALSTACK_WEBHOOK_SECRET;
-  if (!webhookSecret) {
-    console.error("DIALSTACK_WEBHOOK_SECRET not configured");
-    return NextResponse.json<WebhookErrorResponse>(
-      {
-        error: {
-          code: "configuration_error",
-          message: "Webhook not configured",
-        },
-      },
-      { status: 500 },
-    );
-  }
-
-  // Get raw body and signature
   const body = await request.text();
-  const signature = request.headers.get("x-dialstack-signature");
 
-  if (!signature) {
-    return NextResponse.json<WebhookErrorResponse>(
-      {
-        error: {
-          code: "invalid_signature",
-          message: "Missing signature header",
-        },
-      },
-      { status: 401 },
-    );
-  }
-
-  // Verify signature and parse webhook payload
+  // Parse webhook payload (with optional signature verification)
   let event: AvailabilitySearchWebhook;
-  try {
-    event = DialStack.webhooks.constructEvent<AvailabilitySearchWebhook>(
-      body,
-      signature,
-      webhookSecret,
-    );
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err);
-    return NextResponse.json<WebhookErrorResponse>(
-      {
-        error: {
-          code: "invalid_signature",
-          message: "Signature verification failed",
+
+  // Dev-only: bypass signature verification when DIALSTACK_WEBHOOK_SECRET is not set
+  if (
+    process.env.NODE_ENV === "development" &&
+    !process.env.DIALSTACK_WEBHOOK_SECRET
+  ) {
+    console.debug("[dev] Bypassing webhook signature verification");
+    try {
+      event = JSON.parse(body) as AvailabilitySearchWebhook;
+    } catch {
+      return NextResponse.json<WebhookErrorResponse>(
+        {
+          error: {
+            code: "invalid_payload",
+            message: "Invalid JSON payload",
+          },
         },
-      },
-      { status: 401 },
-    );
+        { status: 400 },
+      );
+    }
+  } else {
+    const webhookSecret = process.env.DIALSTACK_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      console.error("DIALSTACK_WEBHOOK_SECRET not configured");
+      return NextResponse.json<WebhookErrorResponse>(
+        {
+          error: {
+            code: "configuration_error",
+            message: "Webhook not configured",
+          },
+        },
+        { status: 500 },
+      );
+    }
+
+    const signature = request.headers.get("x-dialstack-signature");
+
+    if (!signature) {
+      return NextResponse.json<WebhookErrorResponse>(
+        {
+          error: {
+            code: "invalid_signature",
+            message: "Missing signature header",
+          },
+        },
+        { status: 401 },
+      );
+    }
+
+    // Verify signature and parse webhook payload
+    try {
+      event = DialStack.webhooks.constructEvent<AvailabilitySearchWebhook>(
+        body,
+        signature,
+        webhookSecret,
+      );
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err);
+      return NextResponse.json<WebhookErrorResponse>(
+        {
+          error: {
+            code: "invalid_signature",
+            message: "Signature verification failed",
+          },
+        },
+        { status: 401 },
+      );
+    }
   }
 
   // Find practice by DialStack account ID

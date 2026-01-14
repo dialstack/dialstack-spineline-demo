@@ -121,8 +121,14 @@ export function generateAvailabilities(
 
         // If there's a gap before this appointment, it's an available window
         if (aptStart > windowStart) {
-          const start = windowStart > now ? windowStart : now;
-          if (start < aptStart) {
+          let start = windowStart > now ? windowStart : now;
+          // Ensure start is never before rangeStart (handles timezone edge cases)
+          if (start < rangeStart) {
+            start = rangeStart;
+          }
+          // Ensure end is never after rangeEnd
+          const end = aptStart > rangeEnd ? rangeEnd : aptStart;
+          if (start < end) {
             availabilities.push({
               start_at: formatInTimezone(
                 start,
@@ -130,7 +136,7 @@ export function generateAvailabilities(
                 "yyyy-MM-dd'T'HH:mm:ssXXX",
               ),
               duration_minutes: Math.round(
-                (aptStart.getTime() - start.getTime()) / 60000,
+                (end.getTime() - start.getTime()) / 60000,
               ),
             });
           }
@@ -144,8 +150,14 @@ export function generateAvailabilities(
 
       // Add remaining time after last appointment
       if (windowStart < dayEnd) {
-        const start = windowStart > now ? windowStart : now;
-        if (start < dayEnd) {
+        let start = windowStart > now ? windowStart : now;
+        // Ensure start is never before rangeStart (handles timezone edge cases)
+        if (start < rangeStart) {
+          start = rangeStart;
+        }
+        // Ensure end is never after rangeEnd
+        const end = dayEnd > rangeEnd ? rangeEnd : dayEnd;
+        if (start < end) {
           availabilities.push({
             start_at: formatInTimezone(
               start,
@@ -153,7 +165,7 @@ export function generateAvailabilities(
               "yyyy-MM-dd'T'HH:mm:ssXXX",
             ),
             duration_minutes: Math.round(
-              (dayEnd.getTime() - start.getTime()) / 60000,
+              (end.getTime() - start.getTime()) / 60000,
             ),
           });
         }

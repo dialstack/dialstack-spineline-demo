@@ -170,6 +170,83 @@ describe("Availability Search Algorithm", () => {
     });
   });
 
+  describe("Range Boundary Clipping", () => {
+    it("should clip availability to query range (user reported bug)", () => {
+      // User's exact query: 2026-01-14T09:00:00Z to 2026-01-15T17:00:00Z
+      // In EST: 4am Jan 14 to 12pm Jan 15
+      // Business hours: 9am-5pm EST
+      // Expected: Jan 14 should be clipped to start at 9am EST (business open, after 4am query start)
+      //           Jan 15 should be clipped to end at 12pm EST (query end, before 5pm business close)
+      const result = generateAvailabilities(
+        "America/New_York",
+        new Date("2026-01-14T09:00:00Z"), // 4am EST
+        new Date("2026-01-15T17:00:00Z"), // 12pm EST next day
+        [],
+        new Date("2026-01-14T09:00:00Z"), // now = rangeStart
+      );
+
+      // Jan 14: 9am-5pm EST = 480 min (business hours, query starts before business opens)
+      // Jan 15: 9am-12pm EST = 180 min (business open to query end)
+      expect(result).toEqual([
+        { start_at: "2026-01-14T09:00:00-05:00", duration_minutes: 480 },
+        { start_at: "2026-01-15T09:00:00-05:00", duration_minutes: 180 },
+      ]);
+
+      // Verify: availability start (9am EST = 14:00 UTC) is AFTER query start (9am UTC)
+      const queryStartUtc = new Date("2026-01-14T09:00:00Z").getTime();
+      const availStartUtc = new Date("2026-01-14T14:00:00Z").getTime(); // 9am EST in UTC
+      expect(availStartUtc).toBeGreaterThan(queryStartUtc);
+    });
+
+    it("should clip availability start to rangeStart when business hours start earlier", () => {
+      // Query range starts at 11am EST (16:00 UTC), but business opens at 9am EST
+      // The availability should start at 11am EST (the query start), not 9am EST
+      const result = generateAvailabilities(
+        "America/New_York",
+        new Date("2026-01-15T16:00:00Z"), // 11am EST
+        new Date("2026-01-15T22:00:00Z"), // 5pm EST
+        [],
+        now,
+      );
+
+      expect(result).toEqual([
+        { start_at: "2026-01-15T11:00:00-05:00", duration_minutes: 360 },
+      ]);
+    });
+
+    it("should clip availability end to rangeEnd when business hours end later", () => {
+      // Query range ends at 2pm EST (19:00 UTC), but business closes at 5pm EST
+      // The availability should end at 2pm EST (the query end), not 5pm EST
+      const result = generateAvailabilities(
+        "America/New_York",
+        new Date("2026-01-15T14:00:00Z"), // 9am EST
+        new Date("2026-01-15T19:00:00Z"), // 2pm EST
+        [],
+        now,
+      );
+
+      expect(result).toEqual([
+        { start_at: "2026-01-15T09:00:00-05:00", duration_minutes: 300 },
+      ]);
+    });
+
+    it("should clip both start and end when range is narrower than business hours", () => {
+      // Query range is 11am-2pm EST, business hours are 9am-5pm EST
+      // Availability should be exactly 11am-2pm EST (180 minutes)
+      const result = generateAvailabilities(
+        "America/New_York",
+        new Date("2026-01-15T16:00:00Z"), // 11am EST
+        new Date("2026-01-15T19:00:00Z"), // 2pm EST
+        [],
+        now,
+      );
+
+      expect(result).toEqual([
+        { start_at: "2026-01-15T11:00:00-05:00", duration_minutes: 180 },
+      ]);
+    });
+  });
+
   describe("Outside Business Hours", () => {
     it("should return empty array for evening hours", () => {
       // Jan 17, 2026 02:00-08:00 UTC = Fri 6pm - Sat midnight PST
