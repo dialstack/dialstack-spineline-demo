@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 
 // https://lucide.dev/icons/
 import {
@@ -15,7 +15,7 @@ import {
   LogIn as LogInIcon,
   Loader as LoaderIcon,
   Key as KeyIcon,
-} from "lucide-react";
+} from 'lucide-react';
 
 import {
   CommandDialog,
@@ -24,10 +24,10 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from '@/components/ui/command';
 
-import { SettingsContext } from "@/app/contexts/settings";
-import changeLocale from "@/app/components/debug/commands/ChangeLocale";
+import { SettingsContext } from '@/app/contexts/settings';
+import changeLocale from '@/app/components/debug/commands/ChangeLocale';
 
 const settingsCommands = [changeLocale];
 
@@ -35,9 +35,7 @@ const DebugMenu = () => {
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [commandError, setCommandError] = React.useState<Error | null>(null);
-  const [actionMenu, setActionMenu] = React.useState<React.ReactNode | null>(
-    null,
-  );
+  const [actionMenu, setActionMenu] = React.useState<React.ReactNode | null>(null);
 
   const settings = React.useContext(SettingsContext);
 
@@ -45,14 +43,14 @@ const DebugMenu = () => {
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
       }
     };
 
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
   }, []);
 
   return (
@@ -96,7 +94,7 @@ const DebugMenu = () => {
               <CommandGroup heading="Navigation">
                 <CommandItem
                   onSelect={() => {
-                    router.push("/");
+                    router.push('/');
                     setOpen(false);
                   }}
                 >
@@ -105,7 +103,7 @@ const DebugMenu = () => {
                 </CommandItem>
                 <CommandItem
                   onSelect={() => {
-                    router.push("/payments");
+                    router.push('/payments');
                     setOpen(false);
                   }}
                 >
@@ -114,7 +112,7 @@ const DebugMenu = () => {
                 </CommandItem>
                 <CommandItem
                   onSelect={() => {
-                    router.push("/payouts");
+                    router.push('/payouts');
                     setOpen(false);
                   }}
                 >
@@ -123,7 +121,7 @@ const DebugMenu = () => {
                 </CommandItem>
                 <CommandItem
                   onSelect={() => {
-                    router.push("/finances");
+                    router.push('/finances');
                     setOpen(false);
                   }}
                 >
@@ -132,7 +130,7 @@ const DebugMenu = () => {
                 </CommandItem>
                 <CommandItem
                   onSelect={() => {
-                    router.push("/settings");
+                    router.push('/settings');
                     setOpen(false);
                   }}
                 >
@@ -140,7 +138,7 @@ const DebugMenu = () => {
                   <span>Settings</span>
                 </CommandItem>
               </CommandGroup>
-              {process.env.NODE_ENV !== "production" && (
+              {process.env.NODE_ENV !== 'production' && (
                 <CommandGroup heading="Demo">
                   <CommandItem
                     onSelect={async () => {
@@ -149,15 +147,12 @@ const DebugMenu = () => {
                       setCommandError(null);
 
                       try {
-                        const response = await fetch(
-                          "/api/debug/get_demo_account",
-                          {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                            },
+                        const response = await fetch('/api/debug/get_demo_account', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
                           },
-                        );
+                        });
                         const json = await response.json();
                         if (json.error) {
                           throw new Error(json.error);
@@ -165,29 +160,22 @@ const DebugMenu = () => {
                         const { accountId } = json;
 
                         // Login as that account
-                        await signIn("loginas", {
+                        await signIn('loginas', {
                           accountId,
                           redirect: false,
                         });
 
-                        console.log("Logged in as demo account", accountId);
+                        console.log('Logged in as demo account', accountId);
 
                         // Ensure we're in the en-US locale
-                        settings.handleUpdate({ locale: "en-US" });
+                        settings.handleUpdate({ locale: 'en-US' });
 
-                        router.push("/");
+                        router.push('/');
                         setLoading(false);
                         setOpen(false);
                       } catch (error: unknown) {
-                        console.error(
-                          "An error occurred when logging in as a demo account",
-                          error,
-                        );
-                        setCommandError(
-                          error instanceof Error
-                            ? error
-                            : new Error(String(error)),
-                        );
+                        console.error('An error occurred when logging in as a demo account', error);
+                        setCommandError(error instanceof Error ? error : new Error(String(error)));
                         setLoading(false);
                       }
                     }}
@@ -198,19 +186,15 @@ const DebugMenu = () => {
                       <LogInIcon className="mr-2 h-4 w-4" />
                     )}
                     <span>
-                      {loading
-                        ? "Logging in as Demo account..."
-                        : "Login as Demo Account"}
+                      {loading ? 'Logging in as Demo account...' : 'Login as Demo Account'}
                     </span>
                     {commandError && (
-                      <div className="ml-2 text-red-500">
-                        Error: {commandError.message}
-                      </div>
+                      <div className="ml-2 text-red-500">Error: {commandError.message}</div>
                     )}
                   </CommandItem>
                   <CommandItem
                     onSelect={() => {
-                      router.push("/register");
+                      router.push('/register');
                       setOpen(false);
                     }}
                   >
@@ -219,7 +203,7 @@ const DebugMenu = () => {
                   </CommandItem>
                   <CommandItem
                     onSelect={() => {
-                      router.push("/loginas");
+                      router.push('/loginas');
                       setOpen(false);
                     }}
                   >

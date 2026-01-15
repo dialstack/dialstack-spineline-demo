@@ -1,6 +1,6 @@
-"use client";
-import { useSession } from "next-auth/react";
-import * as React from "react";
+'use client';
+import { useSession } from 'next-auth/react';
+import * as React from 'react';
 
 export const DataRequest = ({
   children,
@@ -10,14 +10,14 @@ export const DataRequest = ({
   const { data: session, update } = useSession();
   React.useEffect(() => {
     const fetchData = async () => {
-      console.log("fetching data", session?.user.setup, session?.user);
+      console.log('fetching data', session?.user.setup, session?.user);
       if (session?.user.setup) {
         return;
       }
-      const info = await fetch("/api/account_info", {
-        method: "GET",
+      const info = await fetch('/api/account_info', {
+        method: 'GET',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
       });
       if (info.ok) {
@@ -32,7 +32,7 @@ export const DataRequest = ({
           return;
         }
       } else {
-        console.error("Failed to fetch account info:", info.status);
+        console.error('Failed to fetch account info:', info.status);
       }
     };
     setTimeout(() => fetchData(), 10000);

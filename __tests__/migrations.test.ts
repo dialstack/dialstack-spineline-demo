@@ -1,20 +1,15 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from "@testcontainers/postgresql";
-import { Pool } from "pg";
-import { runner as migrate } from "node-pg-migrate";
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { Pool } from 'pg';
+import { runner as migrate } from 'node-pg-migrate';
 
-describe("Database Migrations", () => {
+describe('Database Migrations', () => {
   let container: StartedPostgreSqlContainer;
   let pool: Pool;
 
   beforeAll(async () => {
     // Start PostgreSQL container
-    container = await new PostgreSqlContainer("postgres:16-alpine")
-      .withExposedPorts(5432)
-      .start();
+    container = await new PostgreSqlContainer('postgres:16-alpine').withExposedPorts(5432).start();
 
     // Create connection pool
     pool = new Pool({
@@ -28,13 +23,13 @@ describe("Database Migrations", () => {
     await container?.stop();
   });
 
-  it("should run migrations successfully", async () => {
+  it('should run migrations successfully', async () => {
     // Run migrations
     const migrations = await migrate({
       databaseUrl: container.getConnectionUri(),
-      dir: "migrations",
-      direction: "up",
-      migrationsTable: "pgmigrations",
+      dir: 'migrations',
+      direction: 'up',
+      migrationsTable: 'pgmigrations',
       verbose: false,
       log: () => {},
     });
@@ -43,7 +38,7 @@ describe("Database Migrations", () => {
     expect(migrations.length).toBeGreaterThan(0);
   });
 
-  it("should create pgmigrations table", async () => {
+  it('should create pgmigrations table', async () => {
     const result = await pool.query(`
       SELECT EXISTS (
         SELECT FROM information_schema.tables
@@ -55,7 +50,7 @@ describe("Database Migrations", () => {
     expect(result.rows[0].exists).toBe(true);
   });
 
-  it("should create practices table with correct schema", async () => {
+  it('should create practices table with correct schema', async () => {
     // Check table exists
     const tableExists = await pool.query(`
       SELECT EXISTS (
@@ -75,32 +70,30 @@ describe("Database Migrations", () => {
       ORDER BY ordinal_position;
     `);
 
-    const columnMap = new Map(
-      columns.rows.map((row) => [row.column_name, row]),
-    );
+    const columnMap = new Map(columns.rows.map((row) => [row.column_name, row]));
 
     // Verify required columns exist
-    expect(columnMap.has("id")).toBe(true);
-    expect(columnMap.has("email")).toBe(true);
-    expect(columnMap.has("password")).toBe(true);
-    expect(columnMap.has("created_at")).toBe(true);
-    expect(columnMap.has("updated_at")).toBe(true);
+    expect(columnMap.has('id')).toBe(true);
+    expect(columnMap.has('email')).toBe(true);
+    expect(columnMap.has('password')).toBe(true);
+    expect(columnMap.has('created_at')).toBe(true);
+    expect(columnMap.has('updated_at')).toBe(true);
 
     // Verify column types
-    expect(columnMap.get("id")?.data_type).toBe("integer");
-    expect(columnMap.get("email")?.data_type).toBe("character varying");
-    expect(columnMap.get("password")?.data_type).toBe("character varying");
-    expect(columnMap.get("created_at")?.data_type).toContain("timestamp");
-    expect(columnMap.get("updated_at")?.data_type).toContain("timestamp");
+    expect(columnMap.get('id')?.data_type).toBe('integer');
+    expect(columnMap.get('email')?.data_type).toBe('character varying');
+    expect(columnMap.get('password')?.data_type).toBe('character varying');
+    expect(columnMap.get('created_at')?.data_type).toContain('timestamp');
+    expect(columnMap.get('updated_at')?.data_type).toContain('timestamp');
 
     // Verify NOT NULL constraints
-    expect(columnMap.get("email")?.is_nullable).toBe("NO");
-    expect(columnMap.get("password")?.is_nullable).toBe("NO");
-    expect(columnMap.get("created_at")?.is_nullable).toBe("NO");
-    expect(columnMap.get("updated_at")?.is_nullable).toBe("NO");
+    expect(columnMap.get('email')?.is_nullable).toBe('NO');
+    expect(columnMap.get('password')?.is_nullable).toBe('NO');
+    expect(columnMap.get('created_at')?.is_nullable).toBe('NO');
+    expect(columnMap.get('updated_at')?.is_nullable).toBe('NO');
   });
 
-  it("should create email unique constraint", async () => {
+  it('should create email unique constraint', async () => {
     const constraints = await pool.query(`
       SELECT constraint_name, constraint_type
       FROM information_schema.table_constraints
@@ -110,12 +103,10 @@ describe("Database Migrations", () => {
     `);
 
     expect(constraints.rows.length).toBeGreaterThan(0);
-    expect(
-      constraints.rows.some((row) => row.constraint_name.includes("email")),
-    ).toBe(true);
+    expect(constraints.rows.some((row) => row.constraint_name.includes('email'))).toBe(true);
   });
 
-  it("should create indexes", async () => {
+  it('should create indexes', async () => {
     const indexes = await pool.query(`
       SELECT indexname
       FROM pg_indexes
@@ -126,11 +117,11 @@ describe("Database Migrations", () => {
     const indexNames = indexes.rows.map((row) => row.indexname);
 
     // Should have indexes for email and created_at
-    expect(indexNames.some((name) => name.includes("email"))).toBe(true);
-    expect(indexNames.some((name) => name.includes("created_at"))).toBe(true);
+    expect(indexNames.some((name) => name.includes('email'))).toBe(true);
+    expect(indexNames.some((name) => name.includes('created_at'))).toBe(true);
   });
 
-  it("should create update_updated_at_column function", async () => {
+  it('should create update_updated_at_column function', async () => {
     const functions = await pool.query(`
       SELECT routine_name
       FROM information_schema.routines
@@ -141,7 +132,7 @@ describe("Database Migrations", () => {
     expect(functions.rows.length).toBe(1);
   });
 
-  it("should create trigger for updated_at", async () => {
+  it('should create trigger for updated_at', async () => {
     const triggers = await pool.query(`
       SELECT trigger_name
       FROM information_schema.triggers
@@ -153,7 +144,7 @@ describe("Database Migrations", () => {
     expect(triggers.rows.length).toBe(1);
   });
 
-  it("should create config JSONB column with timezone default", async () => {
+  it('should create config JSONB column with timezone default', async () => {
     // Check config column exists with correct type
     const columns = await pool.query(`
       SELECT column_name, data_type, is_nullable, column_default
@@ -164,12 +155,12 @@ describe("Database Migrations", () => {
     `);
 
     expect(columns.rows).toHaveLength(1);
-    expect(columns.rows[0].data_type).toBe("jsonb");
-    expect(columns.rows[0].is_nullable).toBe("NO");
-    expect(columns.rows[0].column_default).toContain("America/New_York");
+    expect(columns.rows[0].data_type).toBe('jsonb');
+    expect(columns.rows[0].is_nullable).toBe('NO');
+    expect(columns.rows[0].column_default).toContain('America/New_York');
   });
 
-  it("should automatically update updated_at on row update", async () => {
+  it('should automatically update updated_at on row update', async () => {
     // Insert a test row
     const insertResult = await pool.query(
       `
@@ -177,7 +168,7 @@ describe("Database Migrations", () => {
       VALUES ($1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       RETURNING id, created_at, updated_at;
     `,
-      ["test@example.com", "hashedpassword"],
+      ['test@example.com', 'hashedpassword']
     );
 
     const originalUpdatedAt = insertResult.rows[0].updated_at;
@@ -193,7 +184,7 @@ describe("Database Migrations", () => {
       SET password = $1
       WHERE id = $2;
     `,
-      ["newhashedpassword", practiceId],
+      ['newhashedpassword', practiceId]
     );
 
     // Check that updated_at changed
@@ -203,13 +194,11 @@ describe("Database Migrations", () => {
       FROM practices
       WHERE id = $1;
     `,
-      [practiceId],
+      [practiceId]
     );
 
     const newUpdatedAt = selectResult.rows[0].updated_at;
 
-    expect(new Date(newUpdatedAt).getTime()).toBeGreaterThan(
-      new Date(originalUpdatedAt).getTime(),
-    );
+    expect(new Date(newUpdatedAt).getTime()).toBeGreaterThan(new Date(originalUpdatedAt).getTime());
   });
 });

@@ -1,32 +1,29 @@
-import { NextRequest } from "next/server";
-import Practice from "@/app/models/practice";
-import Patient from "@/app/models/patient";
-import dbConnect from "@/lib/dbConnect";
-import { getToken } from "next-auth/jwt";
-import logger from "@/lib/logger";
-import { normalizePhone } from "@/lib/phone";
+import { NextRequest } from 'next/server';
+import Practice from '@/app/models/practice';
+import Patient from '@/app/models/patient';
+import dbConnect from '@/lib/dbConnect';
+import { getToken } from 'next-auth/jwt';
+import logger from '@/lib/logger';
+import { normalizePhone } from '@/lib/phone';
 
 /**
  * DELETE /api/patients/[id]
  * Deletes a patient
  */
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const patientId = parseInt(id, 10);
 
     if (isNaN(patientId)) {
-      return new Response("Invalid patient ID", { status: 400 });
+      return new Response('Invalid patient ID', { status: 400 });
     }
 
     // Get authentication token
     const token = await getToken({ req });
 
     if (!token?.email) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response('Unauthorized', { status: 401 });
     }
 
     // Connect to database
@@ -36,7 +33,7 @@ export async function DELETE(
     const practice = await Practice.findByEmail(token.email);
 
     if (!practice || !practice.id) {
-      return new Response("Practice not found", { status: 404 });
+      return new Response('Practice not found', { status: 404 });
     }
 
     // Delete the patient (ownership check is done in the model)
@@ -44,12 +41,11 @@ export async function DELETE(
 
     return new Response(null, { status: 204 });
   } catch (error: unknown) {
-    logger.error({ error }, "An error occurred when deleting patient");
-    const message =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    logger.error({ error }, 'An error occurred when deleting patient');
+    const message = error instanceof Error ? error.message : 'Unknown error occurred';
 
-    if (message.includes("not found") || message.includes("access denied")) {
-      return new Response("Patient not found", { status: 404 });
+    if (message.includes('not found') || message.includes('access denied')) {
+      return new Response('Patient not found', { status: 404 });
     }
 
     return new Response(message, { status: 500 });
@@ -60,23 +56,20 @@ export async function DELETE(
  * PATCH /api/patients/[id]
  * Updates a patient's details
  */
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const patientId = parseInt(id, 10);
 
     if (isNaN(patientId)) {
-      return new Response("Invalid patient ID", { status: 400 });
+      return new Response('Invalid patient ID', { status: 400 });
     }
 
     // Get authentication token
     const token = await getToken({ req });
 
     if (!token?.email) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response('Unauthorized', { status: 401 });
     }
 
     // Connect to database
@@ -86,21 +79,14 @@ export async function PATCH(
     const practice = await Practice.findByEmail(token.email);
 
     if (!practice || !practice.id) {
-      return new Response("Practice not found", { status: 404 });
+      return new Response('Practice not found', { status: 404 });
     }
 
     // Parse request body
     const body = await req.json();
 
     // Extract allowed fields only
-    const allowedFields = [
-      "first_name",
-      "last_name",
-      "email",
-      "phone",
-      "date_of_birth",
-      "status",
-    ];
+    const allowedFields = ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'status'];
     const updates: Record<string, unknown> = {};
 
     for (const field of allowedFields) {
@@ -110,43 +96,38 @@ export async function PATCH(
     }
 
     if (Object.keys(updates).length === 0) {
-      return new Response("No valid fields to update", { status: 400 });
+      return new Response('No valid fields to update', { status: 400 });
     }
 
     // Normalize phone number (already validated and normalized on client, but ensure E.164 format)
-    if ("phone" in updates) {
+    if ('phone' in updates) {
       const phoneValue = updates.phone as string | null;
       if (phoneValue) {
         const normalized = normalizePhone(phoneValue);
         if (!normalized) {
-          return new Response(
-            JSON.stringify({ error: "Invalid phone number format" }),
-            { status: 400, headers: { "Content-Type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ error: 'Invalid phone number format' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          });
         }
         updates.phone = normalized;
       }
     }
 
     // Update the patient (ownership check is done in the model)
-    const updatedPatient = await Patient.update(
-      patientId,
-      practice.id,
-      updates,
-    );
+    const updatedPatient = await Patient.update(patientId, practice.id, updates);
 
     return new Response(JSON.stringify(updatedPatient), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
-    logger.error({ error }, "An error occurred when updating patient");
-    const message =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    logger.error({ error }, 'An error occurred when updating patient');
+    const message = error instanceof Error ? error.message : 'Unknown error occurred';
 
     // Check for "not found" errors
-    if (message.includes("not found") || message.includes("access denied")) {
-      return new Response("Patient not found", { status: 404 });
+    if (message.includes('not found') || message.includes('access denied')) {
+      return new Response('Patient not found', { status: 404 });
     }
 
     return new Response(message, { status: 500 });

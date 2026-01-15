@@ -1,4 +1,4 @@
-import dbConnect from "@/lib/dbConnect";
+import dbConnect from '@/lib/dbConnect';
 
 // Patient interface for TypeScript typing
 export interface Patient {
@@ -20,10 +20,7 @@ class PatientModel {
   // Create a new patient for a practice
   static async create(
     practiceId: number,
-    patientData: Omit<
-      Patient,
-      "id" | "practice_id" | "created_at" | "updated_at"
-    >,
+    patientData: Omit<Patient, 'id' | 'practice_id' | 'created_at' | 'updated_at'>
   ): Promise<Patient> {
     const pool = await dbConnect();
 
@@ -42,7 +39,7 @@ class PatientModel {
           patientData.date_of_birth,
           patientData.registration_date,
           patientData.status,
-        ],
+        ]
       );
 
       return result.rows[0];
@@ -57,8 +54,8 @@ class PatientModel {
 
     try {
       const result = await pool.query(
-        "SELECT * FROM patients WHERE practice_id = $1 ORDER BY registration_date DESC, last_name ASC, first_name ASC",
-        [practiceId],
+        'SELECT * FROM patients WHERE practice_id = $1 ORDER BY registration_date DESC, last_name ASC, first_name ASC',
+        [practiceId]
       );
 
       return result.rows;
@@ -68,17 +65,14 @@ class PatientModel {
   }
 
   // Find patient by ID (with practice ownership check)
-  static async findById(
-    id: number,
-    practiceId: number,
-  ): Promise<Patient | null> {
+  static async findById(id: number, practiceId: number): Promise<Patient | null> {
     const pool = await dbConnect();
 
     try {
-      const result = await pool.query(
-        "SELECT * FROM patients WHERE id = $1 AND practice_id = $2",
-        [id, practiceId],
-      );
+      const result = await pool.query('SELECT * FROM patients WHERE id = $1 AND practice_id = $2', [
+        id,
+        practiceId,
+      ]);
 
       return result.rows[0] || null;
     } catch (error) {
@@ -90,9 +84,7 @@ class PatientModel {
   static async update(
     id: number,
     practiceId: number,
-    patientData: Partial<
-      Omit<Patient, "id" | "practice_id" | "created_at" | "updated_at">
-    >,
+    patientData: Partial<Omit<Patient, 'id' | 'practice_id' | 'created_at' | 'updated_at'>>
   ): Promise<Patient> {
     const pool = await dbConnect();
 
@@ -132,7 +124,7 @@ class PatientModel {
       }
 
       if (fields.length === 0) {
-        throw new Error("No fields to update");
+        throw new Error('No fields to update');
       }
 
       // Add updated_at
@@ -142,12 +134,12 @@ class PatientModel {
       values.push(id, practiceId);
 
       const result = await pool.query(
-        `UPDATE patients SET ${fields.join(", ")} WHERE id = $${paramCounter++} AND practice_id = $${paramCounter++} RETURNING *`,
-        values,
+        `UPDATE patients SET ${fields.join(', ')} WHERE id = $${paramCounter++} AND practice_id = $${paramCounter++} RETURNING *`,
+        values
       );
 
       if (result.rows.length === 0) {
-        throw new Error("Patient not found or access denied");
+        throw new Error('Patient not found or access denied');
       }
 
       return result.rows[0];
@@ -162,8 +154,8 @@ class PatientModel {
 
     try {
       const result = await pool.query(
-        "DELETE FROM patients WHERE id = $1 AND practice_id = $2 RETURNING id",
-        [id, practiceId],
+        'DELETE FROM patients WHERE id = $1 AND practice_id = $2 RETURNING id',
+        [id, practiceId]
       );
 
       return result.rows.length > 0;
@@ -177,10 +169,9 @@ class PatientModel {
     const pool = await dbConnect();
 
     try {
-      const result = await pool.query(
-        "SELECT COUNT(*) FROM patients WHERE practice_id = $1",
-        [practiceId],
-      );
+      const result = await pool.query('SELECT COUNT(*) FROM patients WHERE practice_id = $1', [
+        practiceId,
+      ]);
 
       return parseInt(result.rows[0].count);
     } catch (error) {
@@ -189,16 +180,13 @@ class PatientModel {
   }
 
   // Find patients by status for a practice
-  static async findByStatus(
-    practiceId: number,
-    status: string,
-  ): Promise<Patient[]> {
+  static async findByStatus(practiceId: number, status: string): Promise<Patient[]> {
     const pool = await dbConnect();
 
     try {
       const result = await pool.query(
-        "SELECT * FROM patients WHERE practice_id = $1 AND status = $2 ORDER BY registration_date DESC, last_name ASC, first_name ASC",
-        [practiceId, status],
+        'SELECT * FROM patients WHERE practice_id = $1 AND status = $2 ORDER BY registration_date DESC, last_name ASC, first_name ASC',
+        [practiceId, status]
       );
 
       return result.rows;
@@ -208,16 +196,13 @@ class PatientModel {
   }
 
   // Find patient by phone number (for screen pop caller lookup)
-  static async findByPhone(
-    practiceId: number,
-    phone: string,
-  ): Promise<Patient | null> {
+  static async findByPhone(practiceId: number, phone: string): Promise<Patient | null> {
     const pool = await dbConnect();
 
     try {
       const result = await pool.query(
-        "SELECT * FROM patients WHERE practice_id = $1 AND phone = $2 LIMIT 1",
-        [practiceId, phone],
+        'SELECT * FROM patients WHERE practice_id = $1 AND phone = $2 LIMIT 1',
+        [practiceId, phone]
       );
 
       return result.rows[0] || null;

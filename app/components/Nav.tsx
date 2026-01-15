@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useSession } from 'next-auth/react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   Home as HomeIcon,
   Users as PatientsIcon,
@@ -11,34 +11,34 @@ import {
   Menu as MenuIcon,
   Sparkles as SparklesIcon,
   Phone as PhoneIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import SpinelineLogo from "@/public/spineline_logo.png";
-import { useToolsContext } from "../hooks/ToolsPanelProvider";
-import * as React from "react";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import SpinelineLogo from '@/public/spineline_logo.png';
+import { useToolsContext } from '../hooks/ToolsPanelProvider';
+import * as React from 'react';
 
 const navigationMenuItems = [
   {
-    label: "Home",
-    href: "/home",
+    label: 'Home',
+    href: '/home',
     icon: HomeIcon,
     paths: [],
   },
   {
-    label: "Patients",
-    href: "/patients",
+    label: 'Patients',
+    href: '/patients',
     icon: PatientsIcon,
     paths: [],
   },
   {
-    label: "Voice",
-    href: "/voice",
+    label: 'Voice',
+    href: '/voice',
     icon: PhoneIcon,
     paths: [],
   },
   {
-    label: "Account",
-    href: "/settings",
+    label: 'Account',
+    href: '/settings',
     icon: SettingsIcon,
     paths: [],
   },
@@ -60,12 +60,12 @@ const Nav = () => {
               width={36}
               height={36}
               src={session?.user?.companyLogoUrl || SpinelineLogo}
-              alt={`${session?.user?.companyName || "Spineline"} Logo`}
+              alt={`${session?.user?.companyName || 'Spineline'} Logo`}
               className="h-9 w-9 sm:h-10 sm:w-10"
               sizes="100px"
               priority
             />
-            {session?.user?.companyName || "Spineline"}
+            {session?.user?.companyName || 'Spineline'}
           </div>
         </Link>
         <Button
@@ -77,7 +77,7 @@ const Nav = () => {
         </Button>
       </div>
       <nav
-        className={`${showMobileNavItems ? "flex" : "hidden"} w-full flex-1 p-2 pb-3 shadow-xl transition sm:flex sm:p-0 sm:shadow-none`}
+        className={`${showMobileNavItems ? 'flex' : 'hidden'} w-full flex-1 p-2 pb-3 shadow-xl transition sm:flex sm:p-0 sm:shadow-none`}
       >
         <ul className="w-full flex-col">
           {navigationMenuItems.map((item) => (
@@ -86,8 +86,8 @@ const Nav = () => {
                 <Button
                   className={`w-full justify-start text-lg text-primary hover:bg-accent-subdued ${
                     pathname === item.href || item.paths.includes(pathname)
-                      ? "bg-accent-subdued text-accent"
-                      : "bg-foreground"
+                      ? 'bg-accent-subdued text-accent'
+                      : 'bg-foreground'
                   }`}
                   onClick={() => setShowMobileNavItems(false)}
                   tabIndex={-1}
@@ -97,10 +97,10 @@ const Nav = () => {
                     size={20}
                     color={`${
                       pathname === item.href || item.paths.includes(pathname)
-                        ? "var(--accent)"
-                        : "var(--primary)"
+                        ? 'var(--accent)'
+                        : 'var(--primary)'
                     }`}
-                  />{" "}
+                  />{' '}
                   {item.label}
                 </Button>
               </Link>
@@ -109,7 +109,7 @@ const Nav = () => {
         </ul>
       </nav>
       <div
-        className={`${open ? "invisible opacity-0" : "opacity-100"} fixed bottom-2 left-1/2 w-[calc(100%-20px)] -translate-x-1/2 rounded-lg border bg-gradient-to-tr from-[#E4E5F9] to-[#DAEFF7] p-2 shadow-lg transition dark:bg-gradient-to-tr dark:from-[#2D314A] dark:to-[#233B48] sm:relative sm:bottom-0 sm:w-full sm:p-3 sm:shadow-none`}
+        className={`${open ? 'invisible opacity-0' : 'opacity-100'} fixed bottom-2 left-1/2 w-[calc(100%-20px)] -translate-x-1/2 rounded-lg border bg-gradient-to-tr from-[#E4E5F9] to-[#DAEFF7] p-2 shadow-lg transition dark:bg-gradient-to-tr dark:from-[#2D314A] dark:to-[#233B48] sm:relative sm:bottom-0 sm:w-full sm:p-3 sm:shadow-none`}
       >
         <div className="flex hidden items-center gap-2 font-bold text-primary sm:flex">
           <SparklesIcon size={20} color="var(--primary)" />

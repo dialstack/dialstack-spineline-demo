@@ -1,26 +1,24 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import Schedule from "@/app/components/Schedule";
-import Container from "@/app/components/Container";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { AppointmentPanel } from "@/app/components/appointments/AppointmentPanel";
-import { useSelectedAppointment } from "@/app/hooks/SelectedAppointmentProvider";
-import type { Appointment } from "@/app/models/appointment";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import Schedule from '@/app/components/Schedule';
+import Container from '@/app/components/Container';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import { AppointmentPanel } from '@/app/components/appointments/AppointmentPanel';
+import { useSelectedAppointment } from '@/app/hooks/SelectedAppointmentProvider';
+import type { Appointment } from '@/app/models/appointment';
 
 /**
  * Create a new appointment
  */
-const createAppointment = async (
-  data: Partial<Appointment>,
-): Promise<Appointment> => {
-  const res = await fetch("/api/appointments", {
-    method: "POST",
+const createAppointment = async (data: Partial<Appointment>): Promise<Appointment> => {
+  const res = await fetch('/api/appointments', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(data),
   });
@@ -35,18 +33,17 @@ const createAppointment = async (
 export default function Dashboard() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
-  const { selectedAppointmentId, setSelectedAppointmentId } =
-    useSelectedAppointment();
+  const { selectedAppointmentId, setSelectedAppointmentId } = useSelectedAppointment();
 
   if (!session) {
-    redirect("/");
+    redirect('/');
   }
 
   // Create appointment mutation
   const createMutation = useMutation({
     mutationFn: createAppointment,
     onSuccess: (createdAppointment) => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
       setSelectedAppointmentId(createdAppointment.id!);
     },
   });
@@ -61,8 +58,8 @@ export default function Dashboard() {
     createMutation.mutate({
       start_at: now,
       end_at: endAt,
-      type: "adjustment",
-      status: "pending",
+      type: 'adjustment',
+      status: 'pending',
     });
   };
 
@@ -70,22 +67,16 @@ export default function Dashboard() {
     <>
       <div
         className={`transition-all duration-300 ease-out ${
-          selectedAppointmentId !== null ? "-translate-x-[190px]" : ""
+          selectedAppointmentId !== null ? '-translate-x-[190px]' : ''
         }`}
       >
         {/* Header with title and add button */}
         <div className="flex items-center gap-4">
-          <h1
-            className="flex-1 text-3xl font-bold text-primary"
-            data-testid="title-header"
-          >
+          <h1 className="flex-1 text-3xl font-bold text-primary" data-testid="title-header">
             Welcome back!
           </h1>
 
-          <Button
-            onClick={handleAddAppointment}
-            disabled={createMutation.isPending}
-          >
+          <Button onClick={handleAddAppointment} disabled={createMutation.isPending}>
             <Plus className="h-4 w-4 mr-2" />
             Add Appointment
           </Button>
@@ -93,9 +84,7 @@ export default function Dashboard() {
 
         <div className="mt-6 flex flex-col items-start gap-2 md:gap-5">
           <Container className="flex w-full flex-1 flex-col p-5">
-            <Schedule
-              onAppointmentClick={(id) => setSelectedAppointmentId(id)}
-            />
+            <Schedule onAppointmentClick={(id) => setSelectedAppointmentId(id)} />
           </Container>
         </div>
       </div>

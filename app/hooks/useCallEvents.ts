@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from "react";
-import { useDialstackContext } from "./EmbeddedComponentProvider";
-import type { IncomingCallEvent } from "@dialstack/sdk";
-import type { Patient } from "@/app/models/patient";
+import { useEffect, useState, useCallback } from 'react';
+import { useDialstackContext } from './EmbeddedComponentProvider';
+import type { IncomingCallEvent } from '@dialstack/sdk';
+import type { Patient } from '@/app/models/patient';
 
 /**
  * Incoming call with patient lookup result
@@ -27,31 +27,25 @@ export interface IncomingCallWithPatient {
  */
 export function useCallEvents() {
   const { dialstackInstance } = useDialstackContext();
-  const [currentCall, setCurrentCall] =
-    useState<IncomingCallWithPatient | null>(null);
+  const [currentCall, setCurrentCall] = useState<IncomingCallWithPatient | null>(null);
 
   /**
    * Look up patient by phone number
    */
-  const lookupPatient = useCallback(
-    async (phone: string): Promise<Patient | null> => {
-      try {
-        const response = await fetch(
-          `/api/patients/lookup?phone=${encodeURIComponent(phone)}`,
-        );
-        if (!response.ok) {
-          console.error("Failed to lookup patient:", response.statusText);
-          return null;
-        }
-        const { patient } = await response.json();
-        return patient;
-      } catch (error) {
-        console.error("Error looking up patient:", error);
+  const lookupPatient = useCallback(async (phone: string): Promise<Patient | null> => {
+    try {
+      const response = await fetch(`/api/patients/lookup?phone=${encodeURIComponent(phone)}`);
+      if (!response.ok) {
+        console.error('Failed to lookup patient:', response.statusText);
         return null;
       }
-    },
-    [],
-  );
+      const { patient } = await response.json();
+      return patient;
+    } catch (error) {
+      console.error('Error looking up patient:', error);
+      return null;
+    }
+  }, []);
 
   /**
    * Handle incoming call event
@@ -75,7 +69,7 @@ export function useCallEvents() {
         isLoading: false,
       });
     },
-    [lookupPatient],
+    [lookupPatient]
   );
 
   /**
@@ -90,11 +84,11 @@ export function useCallEvents() {
     if (!dialstackInstance) return;
 
     // Subscribe to incoming calls
-    dialstackInstance.on("call.incoming", handleIncomingCall);
+    dialstackInstance.on('call.incoming', handleIncomingCall);
 
     // Cleanup on unmount
     return () => {
-      dialstackInstance.off("call.incoming", handleIncomingCall);
+      dialstackInstance.off('call.incoming', handleIncomingCall);
     };
   }, [dialstackInstance, handleIncomingCall]);
 

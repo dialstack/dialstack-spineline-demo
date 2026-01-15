@@ -1,6 +1,6 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { defaultPrimaryColor } from "@/app/contexts/themes/ThemeConstants";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { defaultPrimaryColor } from '@/app/contexts/themes/ThemeConstants';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,7 +14,7 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function hexToRgba(hex: string, opacity: number): string {
   // Remove # if present
-  const cleanHex = hex.replace("#", "");
+  const cleanHex = hex.replace('#', '');
 
   // Parse RGB values
   const r = parseInt(cleanHex.substr(0, 2), 16);
@@ -36,12 +36,12 @@ export function calculateSecondaryColor(
   options: {
     opacity?: number;
     darkenAmount?: number;
-  } = {},
+  } = {}
 ): string {
   const { opacity = 0.25, darkenAmount = 0.1 } = options;
 
   // Remove # if present
-  const cleanHex = primaryColor.replace("#", "");
+  const cleanHex = primaryColor.replace('#', '');
 
   // Parse RGB values
   let r = parseInt(cleanHex.substr(0, 2), 16);
@@ -66,7 +66,7 @@ export function calculateSecondaryColor(
 export function rgbToHex(r: number, g: number, b: number): string {
   const toHex = (n: number) => {
     const hex = Math.round(n).toString(16);
-    return hex.length === 1 ? "0" + hex : hex;
+    return hex.length === 1 ? '0' + hex : hex;
   };
 
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
@@ -88,10 +88,10 @@ export function hasCustomBranding(settings: {
   const hasCustomColor = primaryColor && primaryColor !== defaultPrimaryColor;
 
   // Check if company name is set and differs from default
-  const hasCustomName = companyName && companyName !== "Furever";
+  const hasCustomName = companyName && companyName !== 'Furever';
 
   // Check if company logo is set
-  const hasCustomLogo = companyLogoUrl && companyLogoUrl !== "";
+  const hasCustomLogo = companyLogoUrl && companyLogoUrl !== '';
 
   return Boolean(hasCustomColor || hasCustomName || hasCustomLogo);
 }

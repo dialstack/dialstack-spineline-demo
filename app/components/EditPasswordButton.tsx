@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link';
 import {
   Dialog,
   DialogClose,
@@ -6,13 +6,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import React from "react";
+} from '@/components/ui/dialog';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import React from 'react';
 import {
   Form,
   FormControl,
@@ -20,10 +20,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import bcrypt from "bcryptjs";
+} from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import bcrypt from 'bcryptjs';
 
 const formSchema = z.object({
   password: z.string().min(8),
@@ -36,13 +36,13 @@ const EditPasswordButton = () => {
     const { data: session } = useSession();
 
     if (!session) {
-      redirect("/home");
+      redirect('/home');
     }
 
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: {
-        password: "",
+        password: '',
       },
     });
 
@@ -52,14 +52,14 @@ const EditPasswordButton = () => {
         changedPassword: true,
       };
 
-      const response = await fetch("/api/password_update", {
-        method: "POST",
+      const response = await fetch('/api/password_update', {
+        method: 'POST',
         body: JSON.stringify(data),
       });
       if (!response.ok) {
         // Handle errors on the client side here
         const { error } = await response.json();
-        console.warn("An error occurred: ", error);
+        console.warn('An error occurred: ', error);
         return undefined;
       } else {
         setOpen(false);
@@ -81,7 +81,7 @@ const EditPasswordButton = () => {
                     <FormControl>
                       <Input
                         className="rounded-md border border-gray-300 p-2 placeholder:text-gray-400"
-                        placeholder={"password"}
+                        placeholder={'password'}
                         type="password"
                         {...field}
                       />

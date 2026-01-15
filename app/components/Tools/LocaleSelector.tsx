@@ -1,13 +1,13 @@
-import { useContext, useCallback } from "react";
+import { useContext, useCallback } from 'react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Locales } from "@/types/settings";
-import { SettingsContext } from "@/app/contexts/settings";
+} from '@/components/ui/select';
+import { Locales } from '@/types/settings';
+import { SettingsContext } from '@/app/contexts/settings';
 
 type LocaleProps = {
   localeUpdated?: () => void;
@@ -28,12 +28,11 @@ const LocaleSelector = ({ localeUpdated }: LocaleProps) => {
         localeUpdated();
       }
     },
-    [localeUpdated, settings],
+    [localeUpdated, settings]
   );
 
   // Find the locale display name
-  const locale =
-    Locales.find((l) => l.locale === settings.locale) || Locales[0]!;
+  const locale = Locales.find((l) => l.locale === settings.locale) || Locales[0]!;
 
   return (
     <Select value={locale.locale} onValueChange={setLocale}>

@@ -3,9 +3,9 @@ import {
   isValidPhoneNumber,
   AsYouType,
   type PhoneNumber,
-} from "libphonenumber-js";
+} from 'libphonenumber-js';
 
-const DEFAULT_COUNTRY = "US";
+const DEFAULT_COUNTRY = 'US';
 
 /**
  * Parse a phone number string into a PhoneNumber object.
@@ -43,7 +43,7 @@ export function normalizePhone(input: string): string | null {
   if (!phone || !phone.isPossible()) {
     return null;
   }
-  return phone.format("E.164");
+  return phone.format('E.164');
 }
 
 /**
@@ -56,7 +56,7 @@ export function normalizePhone(input: string): string | null {
  * formatPhoneAsYouType("5551234567") // "(555) 123-4567"
  */
 export function formatPhoneAsYouType(input: string): string {
-  if (!input) return "";
+  if (!input) return '';
   const formatter = new AsYouType(DEFAULT_COUNTRY);
   return formatter.input(input);
 }
@@ -71,7 +71,7 @@ export function formatPhoneAsYouType(input: string): string {
  */
 export function formatPhone(e164: string | null | undefined): string {
   if (!e164) {
-    return "—";
+    return '—';
   }
 
   const phone = parsePhoneNumberFromString(e164);
@@ -80,7 +80,7 @@ export function formatPhone(e164: string | null | undefined): string {
   }
 
   // Use national format for North American numbers (+1: US, Canada, etc.)
-  if (phone.countryCallingCode === "1") {
+  if (phone.countryCallingCode === '1') {
     return phone.formatNational();
   }
 

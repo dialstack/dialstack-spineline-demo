@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEmbeddedComponentBorder } from "@/app/hooks/EmbeddedComponentBorderProvider";
-import { ChevronRight } from "lucide-react";
+import { useEmbeddedComponentBorder } from '@/app/hooks/EmbeddedComponentBorderProvider';
+import { ChevronRight } from 'lucide-react';
 
 // Maps component names to their documentation URLs
 const ComponentURLs: { [key: string]: string } = {
-  CallLogs: "https://docs.dialstack.ai/sdks/react/call-logs",
-  CallHistory: "https://docs.dialstack.ai/sdks/react/call-history",
-  Voicemails: "https://docs.dialstack.ai/sdks/react/voicemails",
+  CallLogs: 'https://docs.dialstack.ai/sdks/react/call-logs',
+  CallHistory: 'https://docs.dialstack.ai/sdks/react/call-history',
+  Voicemails: 'https://docs.dialstack.ai/sdks/react/voicemails',
 };
 
 const EmbeddedComponentContainer = ({
@@ -58,8 +58,8 @@ const EmbeddedComponentContainer = ({
     <div
       className={`${
         enableBorder
-          ? "m-[-4px] rounded-lg border-[3px] border-dashed border-component p-[8px]"
-          : ""
+          ? 'm-[-4px] rounded-lg border-[3px] border-dashed border-component p-[8px]'
+          : ''
       } group relative transition-border duration-200 ${className}`}
     >
       {renderComponentDetails()}

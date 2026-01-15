@@ -3,9 +3,9 @@
  * Extracted from the webhook handler for testability.
  */
 
-import { toZonedTime, fromZonedTime } from "date-fns-tz";
-import { getDay, addDays } from "date-fns";
-import { formatInTimezone } from "./timezone";
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
+import { getDay, addDays } from 'date-fns';
+import { formatInTimezone } from './timezone';
 
 // Business hours configuration
 const BUSINESS_START_HOUR = 9;
@@ -37,7 +37,7 @@ export function generateAvailabilities(
   rangeStart: Date,
   rangeEnd: Date,
   existingAppointments: Appointment[],
-  now: Date = new Date(),
+  now: Date = new Date()
 ): AvailabilitySlot[] {
   const availabilities: AvailabilitySlot[] = [];
 
@@ -53,7 +53,7 @@ export function generateAvailabilities(
 
   // Filter to active appointments (not cancelled/declined)
   const allActiveAppointments = existingAppointments.filter(
-    (apt) => apt.status !== "cancelled" && apt.status !== "declined",
+    (apt) => apt.status !== 'cancelled' && apt.status !== 'declined'
   );
 
   // Create a Date representing the current day for iteration
@@ -72,16 +72,9 @@ export function generateAvailabilities(
         currentDay,
         BUSINESS_START_HOUR,
         0,
-        0,
+        0
       );
-      const dayEndLocal = new Date(
-        currentYear,
-        currentMonth,
-        currentDay,
-        BUSINESS_END_HOUR,
-        0,
-        0,
-      );
+      const dayEndLocal = new Date(currentYear, currentMonth, currentDay, BUSINESS_END_HOUR, 0, 0);
       let dayStart = fromZonedTime(dayStartLocal, timezone);
       let dayEnd = fromZonedTime(dayEndLocal, timezone);
 
@@ -130,14 +123,8 @@ export function generateAvailabilities(
           const end = aptStart > rangeEnd ? rangeEnd : aptStart;
           if (start < end) {
             availabilities.push({
-              start_at: formatInTimezone(
-                start,
-                timezone,
-                "yyyy-MM-dd'T'HH:mm:ssXXX",
-              ),
-              duration_minutes: Math.round(
-                (end.getTime() - start.getTime()) / 60000,
-              ),
+              start_at: formatInTimezone(start, timezone, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+              duration_minutes: Math.round((end.getTime() - start.getTime()) / 60000),
             });
           }
         }
@@ -159,14 +146,8 @@ export function generateAvailabilities(
         const end = dayEnd > rangeEnd ? rangeEnd : dayEnd;
         if (start < end) {
           availabilities.push({
-            start_at: formatInTimezone(
-              start,
-              timezone,
-              "yyyy-MM-dd'T'HH:mm:ssXXX",
-            ),
-            duration_minutes: Math.round(
-              (end.getTime() - start.getTime()) / 60000,
-            ),
+            start_at: formatInTimezone(start, timezone, "yyyy-MM-dd'T'HH:mm:ssXXX"),
+            duration_minutes: Math.round((end.getTime() - start.getTime()) / 60000),
           });
         }
       }

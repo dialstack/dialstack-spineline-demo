@@ -4,42 +4,42 @@
  */
 
 export function up(pgm) {
-  pgm.createTable("providers", {
+  pgm.createTable('providers', {
     id: {
-      type: "serial",
+      type: 'serial',
       primaryKey: true,
     },
     practice_id: {
-      type: "integer",
+      type: 'integer',
       notNull: true,
-      references: "practices",
-      onDelete: "CASCADE",
+      references: 'practices',
+      onDelete: 'CASCADE',
     },
     first_name: {
-      type: "varchar(100)",
+      type: 'varchar(100)',
       notNull: true,
     },
     last_name: {
-      type: "varchar(100)",
+      type: 'varchar(100)',
       notNull: true,
     },
     specialty: {
-      type: "varchar(100)",
+      type: 'varchar(100)',
     },
     created_at: {
-      type: "timestamp",
+      type: 'timestamp',
       notNull: true,
-      default: pgm.func("CURRENT_TIMESTAMP"),
+      default: pgm.func('CURRENT_TIMESTAMP'),
     },
     updated_at: {
-      type: "timestamp",
+      type: 'timestamp',
       notNull: true,
-      default: pgm.func("CURRENT_TIMESTAMP"),
+      default: pgm.func('CURRENT_TIMESTAMP'),
     },
   });
 
-  pgm.createIndex("providers", "practice_id", {
-    name: "idx_providers_practice_id",
+  pgm.createIndex('providers', 'practice_id', {
+    name: 'idx_providers_practice_id',
   });
 
   // Trigger to automatically update updated_at
@@ -62,12 +62,12 @@ export function up(pgm) {
 }
 
 export function down(pgm) {
-  pgm.sql("DROP TRIGGER IF EXISTS update_providers_updated_at ON providers;");
+  pgm.sql('DROP TRIGGER IF EXISTS update_providers_updated_at ON providers;');
 
-  pgm.dropIndex("providers", "practice_id", {
-    name: "idx_providers_practice_id",
+  pgm.dropIndex('providers', 'practice_id', {
+    name: 'idx_providers_practice_id',
     ifExists: true,
   });
 
-  pgm.dropTable("providers");
+  pgm.dropTable('providers');
 }

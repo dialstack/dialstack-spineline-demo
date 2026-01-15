@@ -1,13 +1,13 @@
-import Link from "next/link";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import Form from "./form";
+import Link from 'next/link';
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+import Form from './form';
 
 export default async function Login() {
   const session = await getServerSession();
 
   if (session) {
-    redirect("/home");
+    redirect('/home');
   }
 
   return (
@@ -18,9 +18,9 @@ export default async function Login() {
       <div className="flex flex-col gap-y[24x]">
         <Form />
         <div>
-          New user?{" "}
+          New user?{' '}
           <Link href="/signup" className="font-medium">
-            Create an account{" "}
+            Create an account{' '}
           </Link>
         </div>
       </div>

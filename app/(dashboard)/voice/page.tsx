@@ -1,76 +1,70 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import Container from "@/app/components/Container";
-import EmbeddedComponentContainer from "@/app/components/EmbeddedComponentContainer";
-import { CallLogs, Voicemails } from "@dialstack/sdk";
-import { useDialstackContext } from "@/app/hooks/EmbeddedComponentProvider";
-import {
-  CalendarCheck,
-  UserPlus,
-  PhoneForwarded,
-  AlertCircle,
-  Phone,
-} from "lucide-react";
-import { formatPhone } from "@/lib/phone";
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import Container from '@/app/components/Container';
+import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
+import { CallLogs, Voicemails } from '@dialstack/sdk';
+import { useDialstackContext } from '@/app/hooks/EmbeddedComponentProvider';
+import { CalendarCheck, UserPlus, PhoneForwarded, AlertCircle, Phone } from 'lucide-react';
+import { formatPhone } from '@/lib/phone';
 
 // Practice-specific call insights (Spineline native content)
 const callInsights = [
   {
-    label: "Appointment Confirmations",
-    value: "18",
-    subtext: "12 confirmed, 6 pending callback",
+    label: 'Appointment Confirmations',
+    value: '18',
+    subtext: '12 confirmed, 6 pending callback',
     icon: CalendarCheck,
-    color: "text-green-600",
-    bgColor: "bg-green-50",
+    color: 'text-green-600',
+    bgColor: 'bg-green-50',
   },
   {
-    label: "New Patient Inquiries",
-    value: "7",
-    subtext: "4 scheduled, 3 need follow-up",
+    label: 'New Patient Inquiries',
+    value: '7',
+    subtext: '4 scheduled, 3 need follow-up',
     icon: UserPlus,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50',
   },
   {
-    label: "Callback Requests",
-    value: "5",
-    subtext: "From voicemail today",
+    label: 'Callback Requests',
+    value: '5',
+    subtext: 'From voicemail today',
     icon: PhoneForwarded,
-    color: "text-amber-600",
-    bgColor: "bg-amber-50",
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-50',
   },
   {
-    label: "Urgent",
-    value: "2",
-    subtext: "Same-day appointment requests",
+    label: 'Urgent',
+    value: '2',
+    subtext: 'Same-day appointment requests',
     icon: AlertCircle,
-    color: "text-red-600",
-    bgColor: "bg-red-50",
+    color: 'text-red-600',
+    bgColor: 'bg-red-50',
   },
 ];
 
 // Patients awaiting callback (Spineline native content)
 const pendingCallbacks = [
   {
-    name: "Margaret Thompson",
-    reason: "Reschedule adjustment",
-    time: "Left VM 2h ago",
-    phone: "(555) 234-5678",
+    name: 'Margaret Thompson',
+    reason: 'Reschedule adjustment',
+    time: 'Left VM 2h ago',
+    phone: '(555) 234-5678',
   },
   {
-    name: "Robert Chen",
-    reason: "New patient - back pain",
-    time: "Left VM 3h ago",
-    phone: "(555) 345-6789",
+    name: 'Robert Chen',
+    reason: 'New patient - back pain',
+    time: 'Left VM 3h ago',
+    phone: '(555) 345-6789',
   },
   {
-    name: "Susan Williams",
-    reason: "Insurance question",
-    time: "Left VM 4h ago",
-    phone: "(555) 456-7890",
+    name: 'Susan Williams',
+    reason: 'Insurance question',
+    time: 'Left VM 4h ago',
+    phone: '(555) 456-7890',
   },
 ];
 
@@ -92,13 +86,13 @@ export default function VoicePage() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const response = await fetch("/api/dialstack/user");
+        const response = await fetch('/api/dialstack/user');
         if (response.ok) {
           const user = await response.json();
           setDialstackUserId(user.id);
         }
       } catch (error) {
-        console.error("Failed to fetch DialStack user:", error);
+        console.error('Failed to fetch DialStack user:', error);
       }
     }
 
@@ -114,7 +108,7 @@ export default function VoicePage() {
 
       try {
         const response = await dialstackInstance.fetchApi(
-          "/v1/phone-numbers?limit=1&status=active",
+          '/v1/phone-numbers?limit=1&status=active'
         );
         if (response.ok) {
           const data = await response.json();
@@ -122,7 +116,7 @@ export default function VoicePage() {
           setPhoneNumber(data.data?.[0] ?? null);
         }
       } catch (error) {
-        console.error("Failed to fetch phone number:", error);
+        console.error('Failed to fetch phone number:', error);
       } finally {
         setPhoneNumberLoading(false);
       }
@@ -134,7 +128,7 @@ export default function VoicePage() {
   }, [dialstackInstance]);
 
   if (!session) {
-    redirect("/");
+    redirect('/');
   }
 
   return (
@@ -147,21 +141,13 @@ export default function VoicePage() {
             <Phone className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <p className="text-xs font-medium text-muted-foreground">
-              Your Practice Number
-            </p>
+            <p className="text-xs font-medium text-muted-foreground">Your Practice Number</p>
             {phoneNumberLoading ? (
-              <p className="text-base font-semibold text-muted-foreground">
-                Loading...
-              </p>
+              <p className="text-base font-semibold text-muted-foreground">Loading...</p>
             ) : phoneNumber ? (
-              <p className="text-base font-semibold">
-                {formatPhone(phoneNumber.phone_number)}
-              </p>
+              <p className="text-base font-semibold">{formatPhone(phoneNumber.phone_number)}</p>
             ) : (
-              <p className="text-base font-semibold text-muted-foreground">
-                No number assigned
-              </p>
+              <p className="text-base font-semibold text-muted-foreground">No number assigned</p>
             )}
           </div>
         </div>
@@ -178,9 +164,7 @@ export default function VoicePage() {
               <div>
                 <p className="text-2xl font-bold">{insight.value}</p>
                 <p className="text-sm font-medium">{insight.label}</p>
-                <p className="text-xs text-muted-foreground">
-                  {insight.subtext}
-                </p>
+                <p className="text-xs text-muted-foreground">{insight.subtext}</p>
               </div>
             </div>
           </Container>
@@ -193,18 +177,11 @@ export default function VoicePage() {
           <h2 className="text-lg font-semibold mb-4">Pending Callbacks</h2>
           <div className="space-y-3">
             {pendingCallbacks.map((patient) => (
-              <div
-                key={patient.phone}
-                className="p-3 bg-slate-50 rounded-lg space-y-1"
-              >
+              <div key={patient.phone} className="p-3 bg-slate-50 rounded-lg space-y-1">
                 <p className="font-medium text-sm">{patient.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {patient.reason}
-                </p>
+                <p className="text-xs text-muted-foreground">{patient.reason}</p>
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs text-muted-foreground">
-                    {patient.time}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{patient.time}</span>
                   <button className="text-xs text-primary font-medium hover:underline">
                     Call Back
                   </button>
@@ -233,9 +210,7 @@ export default function VoicePage() {
           {dialstackUserId ? (
             <Voicemails userId={dialstackUserId} />
           ) : (
-            <p className="text-sm text-muted-foreground">
-              Loading voicemails...
-            </p>
+            <p className="text-sm text-muted-foreground">Loading voicemails...</p>
           )}
         </EmbeddedComponentContainer>
       </Container>

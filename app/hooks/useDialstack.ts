@@ -1,8 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import {
-  type DialStackInstance,
-  loadDialstackAndInitialize,
-} from "@dialstack/sdk";
+import { useEffect, useState, useCallback } from 'react';
+import { type DialStackInstance, loadDialstackAndInitialize } from '@dialstack/sdk';
 
 /**
  * Hook to initialize and manage DialStack SDK instance
@@ -19,20 +16,19 @@ import {
  */
 export const useDialstack = () => {
   const [hasError, setHasError] = useState(false);
-  const [dialstackInstance, setDialstackInstance] =
-    useState<DialStackInstance | null>(null);
+  const [dialstackInstance, setDialstackInstance] = useState<DialStackInstance | null>(null);
 
   const fetchClientSecret = useCallback(async () => {
     // Fetch the session client secret from our proxy API
     // The server determines the account ID from the authenticated session
-    const response = await fetch("/api/dialstack/session", {
-      method: "POST",
+    const response = await fetch('/api/dialstack/session', {
+      method: 'POST',
     });
 
     if (!response.ok) {
       // Handle errors on the client side here
       const { error } = await response.json();
-      console.warn("An error occurred: ", error);
+      console.warn('An error occurred: ', error);
       setHasError(true);
       return undefined;
     } else {
@@ -45,7 +41,7 @@ export const useDialstack = () => {
   useEffect(() => {
     if (!dialstackInstance) {
       // Fetch the publishable key and API URL from the server, then initialize the SDK
-      fetch("/api/dialstack/config")
+      fetch('/api/dialstack/config')
         .then((res) => res.json())
         .then(({ publishableKey, apiUrl }) => {
           return loadDialstackAndInitialize({
@@ -60,7 +56,7 @@ export const useDialstack = () => {
           setDialstackInstance(instance);
         })
         .catch((error) => {
-          console.error("Failed to initialize DialStack:", error);
+          console.error('Failed to initialize DialStack:', error);
           setHasError(true);
         });
     }

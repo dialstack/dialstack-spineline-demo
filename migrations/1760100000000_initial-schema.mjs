@@ -5,36 +5,36 @@
 
 export function up(pgm) {
   // Create the practices table
-  pgm.createTable("practices", {
+  pgm.createTable('practices', {
     id: {
-      type: "serial",
+      type: 'serial',
       primaryKey: true,
     },
     email: {
-      type: "varchar(255)",
+      type: 'varchar(255)',
       notNull: true,
       unique: true,
     },
     password: {
-      type: "varchar(255)",
+      type: 'varchar(255)',
       notNull: true,
     },
     created_at: {
-      type: "timestamp",
+      type: 'timestamp',
       notNull: true,
-      default: pgm.func("CURRENT_TIMESTAMP"),
+      default: pgm.func('CURRENT_TIMESTAMP'),
     },
     updated_at: {
-      type: "timestamp",
+      type: 'timestamp',
       notNull: true,
-      default: pgm.func("CURRENT_TIMESTAMP"),
+      default: pgm.func('CURRENT_TIMESTAMP'),
     },
   });
 
   // Create indexes for better performance
-  pgm.createIndex("practices", "email", { name: "idx_practices_email" });
-  pgm.createIndex("practices", "created_at", {
-    name: "idx_practices_created_at",
+  pgm.createIndex('practices', 'email', { name: 'idx_practices_email' });
+  pgm.createIndex('practices', 'created_at', {
+    name: 'idx_practices_created_at',
   });
 
   // Create function to automatically update the updated_at column
@@ -59,21 +59,21 @@ export function up(pgm) {
 
 export function down(pgm) {
   // Drop trigger first
-  pgm.sql("DROP TRIGGER IF EXISTS update_practices_updated_at ON practices;");
+  pgm.sql('DROP TRIGGER IF EXISTS update_practices_updated_at ON practices;');
 
   // Drop function
-  pgm.sql("DROP FUNCTION IF EXISTS update_updated_at_column();");
+  pgm.sql('DROP FUNCTION IF EXISTS update_updated_at_column();');
 
   // Drop indexes (automatically dropped with table, but explicit for clarity)
-  pgm.dropIndex("practices", "email", {
-    name: "idx_practices_email",
+  pgm.dropIndex('practices', 'email', {
+    name: 'idx_practices_email',
     ifExists: true,
   });
-  pgm.dropIndex("practices", "created_at", {
-    name: "idx_practices_created_at",
+  pgm.dropIndex('practices', 'created_at', {
+    name: 'idx_practices_created_at',
     ifExists: true,
   });
 
   // Drop table
-  pgm.dropTable("practices");
+  pgm.dropTable('practices');
 }

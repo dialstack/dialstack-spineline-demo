@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 import {
   DialStack,
   AvailabilitySearchWebhook,
   AvailabilitySearchResponse,
   WebhookErrorResponse,
-} from "@dialstack/sdk/server";
-import { toZonedTime, fromZonedTime } from "date-fns-tz";
-import { startOfDay, addDays } from "date-fns";
-import PracticeModel, { getTimezone } from "@/app/models/practice";
-import AppointmentModel from "@/app/models/appointment";
-import { generateAvailabilities } from "@/lib/availability";
+} from '@dialstack/sdk/server';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
+import { startOfDay, addDays } from 'date-fns';
+import PracticeModel, { getTimezone } from '@/app/models/practice';
+import AppointmentModel from '@/app/models/appointment';
+import { generateAvailabilities } from '@/lib/availability';
 
 // POST /api/dialstack/webhooks/availability/search
 // DialStack calls this endpoint to search for available appointment slots
@@ -20,50 +20,47 @@ export async function POST(request: NextRequest) {
   let event: AvailabilitySearchWebhook;
 
   // Dev-only: bypass signature verification when DIALSTACK_WEBHOOK_SECRET is not set
-  if (
-    process.env.NODE_ENV === "development" &&
-    !process.env.DIALSTACK_WEBHOOK_SECRET
-  ) {
-    console.debug("[dev] Bypassing webhook signature verification");
+  if (process.env.NODE_ENV === 'development' && !process.env.DIALSTACK_WEBHOOK_SECRET) {
+    console.debug('[dev] Bypassing webhook signature verification');
     try {
       event = JSON.parse(body) as AvailabilitySearchWebhook;
     } catch {
       return NextResponse.json<WebhookErrorResponse>(
         {
           error: {
-            code: "invalid_payload",
-            message: "Invalid JSON payload",
+            code: 'invalid_payload',
+            message: 'Invalid JSON payload',
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
   } else {
     const webhookSecret = process.env.DIALSTACK_WEBHOOK_SECRET;
     if (!webhookSecret) {
-      console.error("DIALSTACK_WEBHOOK_SECRET not configured");
+      console.error('DIALSTACK_WEBHOOK_SECRET not configured');
       return NextResponse.json<WebhookErrorResponse>(
         {
           error: {
-            code: "configuration_error",
-            message: "Webhook not configured",
+            code: 'configuration_error',
+            message: 'Webhook not configured',
           },
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
-    const signature = request.headers.get("x-dialstack-signature");
+    const signature = request.headers.get('x-dialstack-signature');
 
     if (!signature) {
       return NextResponse.json<WebhookErrorResponse>(
         {
           error: {
-            code: "invalid_signature",
-            message: "Missing signature header",
+            code: 'invalid_signature',
+            message: 'Missing signature header',
           },
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -72,35 +69,33 @@ export async function POST(request: NextRequest) {
       event = DialStack.webhooks.constructEvent<AvailabilitySearchWebhook>(
         body,
         signature,
-        webhookSecret,
+        webhookSecret
       );
     } catch (err) {
-      console.error("Webhook signature verification failed:", err);
+      console.error('Webhook signature verification failed:', err);
       return NextResponse.json<WebhookErrorResponse>(
         {
           error: {
-            code: "invalid_signature",
-            message: "Signature verification failed",
+            code: 'invalid_signature',
+            message: 'Signature verification failed',
           },
         },
-        { status: 401 },
+        { status: 401 }
       );
     }
   }
 
   // Find practice by DialStack account ID
-  const practice = await PracticeModel.findByDialstackAccountId(
-    event.account_id,
-  );
+  const practice = await PracticeModel.findByDialstackAccountId(event.account_id);
   if (!practice || !practice.id) {
     return NextResponse.json<WebhookErrorResponse>(
       {
         error: {
-          code: "account_not_found",
-          message: "No practice linked to this account",
+          code: 'account_not_found',
+          message: 'No practice linked to this account',
         },
       },
-      { status: 404 },
+      { status: 404 }
     );
   }
 
@@ -113,7 +108,7 @@ export async function POST(request: NextRequest) {
   const existingAppointments = await AppointmentModel.findByPractice(
     practice.id,
     rangeStart,
-    rangeEnd,
+    rangeEnd
   );
 
   // Get the practice's timezone
@@ -144,7 +139,7 @@ export async function POST(request: NextRequest) {
       end_at: apt.end_at,
       status: apt.status,
     })),
-    rangeStart,
+    rangeStart
   );
 
   return NextResponse.json<AvailabilitySearchResponse>({ availabilities });

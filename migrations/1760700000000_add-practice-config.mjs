@@ -4,9 +4,9 @@
  */
 
 export async function up(pgm) {
-  pgm.addColumn("practices", {
+  pgm.addColumn('practices', {
     config: {
-      type: "jsonb",
+      type: 'jsonb',
       notNull: true,
       default: pgm.func(`'{"timezone": "America/New_York"}'::jsonb`),
     },
@@ -14,5 +14,5 @@ export async function up(pgm) {
 }
 
 export async function down(pgm) {
-  pgm.dropColumn("practices", "config");
+  pgm.dropColumn('practices', 'config');
 }

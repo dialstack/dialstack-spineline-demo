@@ -1,6 +1,6 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { getDialstack } from "@/lib/dialstack";
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { getDialstack } from '@/lib/dialstack';
 
 // Fetch the DialStack user for the current practice, creating it if it doesn't exist
 export async function GET() {
@@ -10,9 +10,9 @@ export async function GET() {
     if (!session?.user?.dialstackAccountId) {
       return new Response(
         JSON.stringify({
-          error: "No authenticated user found",
+          error: 'No authenticated user found',
         }),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -27,22 +27,18 @@ export async function GET() {
       const newUser = await getDialstack().users.create(accountId, { email });
       return new Response(JSON.stringify(newUser), {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
     // Return the first (and should be only) user
     return new Response(JSON.stringify(users[0]), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error(
-      "An error occurred when calling the DialStack API to fetch user",
-      error,
-    );
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+    console.error('An error occurred when calling the DialStack API to fetch user', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
     });

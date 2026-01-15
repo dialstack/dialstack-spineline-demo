@@ -12,10 +12,10 @@ export interface AccountInfo {
 }
 
 export async function fetchAccountInfo(): Promise<AccountInfo> {
-  const res = await fetch("/api/account_info", {
-    method: "GET",
+  const res = await fetch('/api/account_info', {
+    method: 'GET',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
@@ -26,13 +26,11 @@ export async function fetchAccountInfo(): Promise<AccountInfo> {
   return res.json();
 }
 
-export async function updateTimezone(
-  timezone: string,
-): Promise<{ timezone: string }> {
-  const res = await fetch("/api/account_info", {
-    method: "PATCH",
+export async function updateTimezone(timezone: string): Promise<{ timezone: string }> {
+  const res = await fetch('/api/account_info', {
+    method: 'PATCH',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ timezone }),
   });

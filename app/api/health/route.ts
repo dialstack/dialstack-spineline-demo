@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
 export async function GET() {
   const healthData = {
-    status: "healthy",
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    environment: process.env.ENVIRONMENT || "development",
-    version: process.env.npm_package_version || "1.0.0",
+    environment: process.env.ENVIRONMENT || 'development',
+    version: process.env.npm_package_version || '1.0.0',
     checks: {
       database: await checkDatabase(),
       memory: getMemoryUsage(),
@@ -16,19 +16,18 @@ export async function GET() {
 }
 
 async function checkDatabase(): Promise<{
-  status: "healthy" | "unhealthy";
+  status: 'healthy' | 'unhealthy';
   message?: string;
 }> {
   try {
     // Basic database connectivity check
     // In a real application, you would check your database connection here
     // For now, we'll just simulate a successful check
-    return { status: "healthy" };
+    return { status: 'healthy' };
   } catch (error) {
     return {
-      status: "unhealthy",
-      message:
-        error instanceof Error ? error.message : "Unknown database error",
+      status: 'unhealthy',
+      message: error instanceof Error ? error.message : 'Unknown database error',
     };
   }
 }

@@ -1,19 +1,19 @@
-import type { FC, ReactNode } from "react";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import PropTypes from "prop-types";
+import type { FC, ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import PropTypes from 'prop-types';
 
-import type { Settings } from "@/types/settings";
-import { defaultSettings, SettingsContext } from "./SettingsContext";
-import { Session } from "next-auth";
+import type { Settings } from '@/types/settings';
+import { defaultSettings, SettingsContext } from './SettingsContext';
+import { Session } from 'next-auth';
 
-const STORAGE_KEY = "furever.app.settings";
+const STORAGE_KEY = 'furever.app.settings';
 
 const updateCSSVariables = (primaryColor: string) => {
   const root = document.documentElement;
 
   // Update the main accent color
-  root.style.setProperty("--accent", primaryColor);
+  root.style.setProperty('--accent', primaryColor);
 
   // Generate subdued color (lighter version for light theme)
   const hexToRgb = (hex: string) => {
@@ -31,22 +31,20 @@ const updateCSSVariables = (primaryColor: string) => {
   if (rgb) {
     // For light theme - create a very light version
     const lightSubdued = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`;
-    root.style.setProperty("--accent-subdued", lightSubdued);
+    root.style.setProperty('--accent-subdued', lightSubdued);
 
     // For dark theme - create a darker version with transparency
     const darkSubdued = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`;
 
     // Update CSS variables for both themes
-    const theme = document.documentElement.classList.contains("dark")
-      ? "dark"
-      : "light";
+    const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 
-    if (theme === "light") {
-      root.style.setProperty("--accent-foreground", "#f4f4f5");
-      root.style.setProperty("--accent-subdued", lightSubdued);
+    if (theme === 'light') {
+      root.style.setProperty('--accent-foreground', '#f4f4f5');
+      root.style.setProperty('--accent-subdued', lightSubdued);
     } else {
-      root.style.setProperty("--accent-foreground", "#14171d");
-      root.style.setProperty("--accent-subdued", darkSubdued);
+      root.style.setProperty('--accent-foreground', '#14171d');
+      root.style.setProperty('--accent-subdued', darkSubdued);
     }
   }
 };
@@ -54,8 +52,8 @@ const updateCSSVariables = (primaryColor: string) => {
 const restoreSettingsFromLocalStorage = (): Settings | null => {
   let value = null;
 
-  if (window.location.pathname == "/") {
-    console.log("on homepage");
+  if (window.location.pathname == '/') {
+    console.log('on homepage');
     return value;
   }
 
@@ -65,10 +63,10 @@ const restoreSettingsFromLocalStorage = (): Settings | null => {
     if (restored) {
       value = JSON.parse(restored);
       if (value.theme) {
-        console.log("restore" + value.theme);
-        const root = document.querySelector(":root");
+        console.log('restore' + value.theme);
+        const root = document.querySelector(':root');
         if (root) {
-          root.classList.remove("light", "dark");
+          root.classList.remove('light', 'dark');
           root.classList.add(value.theme);
         }
       }
@@ -82,9 +80,7 @@ const restoreSettingsFromLocalStorage = (): Settings | null => {
   return value;
 };
 
-const restoreSettingsFromSession = (
-  session: Session | null,
-): Settings | null => {
+const restoreSettingsFromSession = (session: Session | null): Settings | null => {
   if (session?.user) {
     return {
       primaryColor: session.user.primaryColor || undefined,
@@ -170,18 +166,18 @@ export const SettingsProvider: FC<SettingsProviderProps> = (props) => {
 
   useEffect(() => {
     const handleChangeLocale = (e: KeyboardEvent) => {
-      if (e.key === "8" && e.metaKey && e.shiftKey) {
-        handleUpdate({ locale: "en-US" });
-      } else if (e.key === "9" && e.metaKey && e.shiftKey) {
-        handleUpdate({ locale: "fr-FR" });
-      } else if (e.key === "0" && e.metaKey && e.shiftKey) {
-        handleUpdate({ locale: "ko-KR" });
+      if (e.key === '8' && e.metaKey && e.shiftKey) {
+        handleUpdate({ locale: 'en-US' });
+      } else if (e.key === '9' && e.metaKey && e.shiftKey) {
+        handleUpdate({ locale: 'fr-FR' });
+      } else if (e.key === '0' && e.metaKey && e.shiftKey) {
+        handleUpdate({ locale: 'ko-KR' });
       }
     };
 
     // Keyboard shortcut to enable/disable border
-    document.addEventListener("keydown", handleChangeLocale);
-    return () => document.removeEventListener("keydown", handleChangeLocale);
+    document.addEventListener('keydown', handleChangeLocale);
+    return () => document.removeEventListener('keydown', handleChangeLocale);
   }, []);
 
   return (

@@ -1,9 +1,9 @@
-import { NextRequest } from "next/server";
-import Practice from "@/app/models/practice";
-import Patient from "@/app/models/patient";
-import dbConnect from "@/lib/dbConnect";
-import { getToken } from "next-auth/jwt";
-import logger from "@/lib/logger";
+import { NextRequest } from 'next/server';
+import Practice from '@/app/models/practice';
+import Patient from '@/app/models/patient';
+import dbConnect from '@/lib/dbConnect';
+import { getToken } from 'next-auth/jwt';
+import logger from '@/lib/logger';
 
 /**
  * GET /api/patients
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const token = await getToken({ req });
 
     if (!token?.email) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response('Unauthorized', { status: 401 });
     }
 
     // Connect to database
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     const practice = await Practice.findByEmail(token.email);
 
     if (!practice || !practice.id) {
-      return new Response("Practice not found", { status: 404 });
+      return new Response('Practice not found', { status: 404 });
     }
 
     // Fetch all patients for this practice
@@ -34,12 +34,11 @@ export async function GET(req: NextRequest) {
     // Return patients as JSON
     return new Response(JSON.stringify(patients), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
-    logger.error({ error }, "An error occurred when retrieving patients");
-    const message =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    logger.error({ error }, 'An error occurred when retrieving patients');
+    const message = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(message, { status: 500 });
   }
 }
@@ -54,7 +53,7 @@ export async function POST(req: NextRequest) {
     const token = await getToken({ req });
 
     if (!token?.email) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response('Unauthorized', { status: 401 });
     }
 
     // Parse request body
@@ -62,7 +61,7 @@ export async function POST(req: NextRequest) {
 
     // Validate required fields
     if (!body.first_name || !body.last_name) {
-      return new Response("First name and last name are required", {
+      return new Response('First name and last name are required', {
         status: 400,
       });
     }
@@ -74,7 +73,7 @@ export async function POST(req: NextRequest) {
     const practice = await Practice.findByEmail(token.email);
 
     if (!practice || !practice.id) {
-      return new Response("Practice not found", { status: 404 });
+      return new Response('Practice not found', { status: 404 });
     }
 
     // Create the patient
@@ -84,18 +83,17 @@ export async function POST(req: NextRequest) {
       email: body.email || null,
       phone: body.phone || null,
       date_of_birth: body.date_of_birth || null,
-      status: body.status || "active",
+      status: body.status || 'active',
     });
 
     // Return created patient as JSON
     return new Response(JSON.stringify(patient), {
       status: 201,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
-    logger.error({ error }, "An error occurred when creating patient");
-    const message =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    logger.error({ error }, 'An error occurred when creating patient');
+    const message = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(message, { status: 500 });
   }
 }

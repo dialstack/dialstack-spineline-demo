@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, LoaderCircle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { useMemo } from "react";
-import { useScheduleDate } from "@/app/hooks/ScheduleDateProvider";
-import { useTimezone } from "@/app/hooks/TimezoneProvider";
+import { Badge } from '@/components/ui/badge';
+import { ChevronLeft, ChevronRight, LoaderCircle } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { useMemo } from 'react';
+import { useScheduleDate } from '@/app/hooks/ScheduleDateProvider';
+import { useTimezone } from '@/app/hooks/TimezoneProvider';
 import {
   formatInTimezone,
   getMinutesSinceHour,
   getTimeInTimezone,
   getLocalStartOfDay,
   getLocalEndOfDay,
-} from "@/lib/timezone";
-import type { Patient } from "@/app/models/patient";
-import type { Provider } from "@/app/models/provider";
-import type { Appointment, AppointmentType } from "@/app/models/appointment";
+} from '@/lib/timezone';
+import type { Patient } from '@/app/models/patient';
+import type { Provider } from '@/app/models/provider';
+import type { Appointment, AppointmentType } from '@/app/models/appointment';
 
 const SCHEDULE_HEIGHT = 1440;
 const MINUTES_IN_BUSINESS_DAY = 600; // 8 AM to 6 PM = 10 hours = 600 minutes
@@ -30,15 +30,13 @@ interface AppointmentLayout {
  * Calculate layout for overlapping appointments.
  * Assigns each appointment a column index and total columns in its overlap group.
  */
-function calculateAppointmentLayout(
-  appointments: Appointment[],
-): Map<number, AppointmentLayout> {
+function calculateAppointmentLayout(appointments: Appointment[]): Map<number, AppointmentLayout> {
   const layout = new Map<number, AppointmentLayout>();
   if (!appointments.length) return layout;
 
   // Sort by start time
   const sorted = [...appointments].sort(
-    (a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
+    (a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime()
   );
 
   // For each appointment, track its assigned column
@@ -97,7 +95,7 @@ interface ScheduleProps {
  * Fetch patients from the API
  */
 const fetchPatients = async (): Promise<Patient[]> => {
-  const res = await fetch("/api/patients");
+  const res = await fetch('/api/patients');
   if (!res.ok) {
     throw new Error(`Failed to fetch patients: ${res.status}`);
   }
@@ -108,7 +106,7 @@ const fetchPatients = async (): Promise<Patient[]> => {
  * Fetch providers from the API
  */
 const fetchProviders = async (): Promise<Provider[]> => {
-  const res = await fetch("/api/providers");
+  const res = await fetch('/api/providers');
   if (!res.ok) {
     throw new Error(`Failed to fetch providers: ${res.status}`);
   }
@@ -118,10 +116,7 @@ const fetchProviders = async (): Promise<Provider[]> => {
 /**
  * Fetch appointments for a date range
  */
-const fetchAppointments = async (
-  start: Date,
-  end: Date,
-): Promise<Appointment[]> => {
+const fetchAppointments = async (start: Date, end: Date): Promise<Appointment[]> => {
   const params = new URLSearchParams({
     start: start.toISOString(),
     end: end.toISOString(),
@@ -142,11 +137,11 @@ const BUSINESS_END_HOUR = 18;
  */
 const getTypeBadge = (type: AppointmentType) => {
   switch (type) {
-    case "initial":
+    case 'initial':
       return <Badge variant="blue">Initial</Badge>;
-    case "walk_in":
+    case 'walk_in':
       return <Badge variant="red">Walk-in</Badge>;
-    case "follow_up":
+    case 'follow_up':
       return <Badge variant="default">Follow-up</Badge>;
     default:
       return null; // "adjustment" is default, no badge
@@ -161,7 +156,7 @@ const CurrentTimeIndicator = ({ timezone }: { timezone: string }) => {
     new Date(),
     timezone,
     BUSINESS_START_HOUR,
-    BUSINESS_END_HOUR,
+    BUSINESS_END_HOUR
   );
 
   if (minutesSinceStart < 0 || minutesSinceStart > MINUTES_IN_BUSINESS_DAY) {
@@ -183,13 +178,7 @@ const CurrentTimeIndicator = ({ timezone }: { timezone: string }) => {
 /**
  * Render an hour block in the schedule grid
  */
-const HourBlock = ({
-  hour,
-  columnCount,
-}: {
-  hour: string;
-  columnCount: number;
-}) => (
+const HourBlock = ({ hour, columnCount }: { hour: string; columnCount: number }) => (
   <div className="flex h-36 flex-row">
     <div className="w-12 text-sm text-subdued">
       <div className="-translate-y-[50%]">{hour}</div>
@@ -199,16 +188,10 @@ const HourBlock = ({
       style={{ gridTemplateColumns: `repeat(${columnCount}, 1fr)` }}
     >
       {Array.from({ length: columnCount }).map((_, i) => (
-        <div
-          key={`top-${i}`}
-          className={`border-b ${i < columnCount - 1 ? "border-r" : ""}`}
-        />
+        <div key={`top-${i}`} className={`border-b ${i < columnCount - 1 ? 'border-r' : ''}`} />
       ))}
       {Array.from({ length: columnCount }).map((_, i) => (
-        <div
-          key={`bottom-${i}`}
-          className={i < columnCount - 1 ? "border-r" : ""}
-        />
+        <div key={`bottom-${i}`} className={i < columnCount - 1 ? 'border-r' : ''} />
       ))}
     </div>
   </div>
@@ -220,13 +203,13 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
 
   // Fetch patients
   const { data: patients } = useQuery({
-    queryKey: ["patients"],
+    queryKey: ['patients'],
     queryFn: fetchPatients,
   });
 
   // Fetch providers
   const { data: providers } = useQuery({
-    queryKey: ["providers"],
+    queryKey: ['providers'],
     queryFn: fetchProviders,
   });
 
@@ -236,12 +219,9 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["appointments", selectedDate.toISOString()],
+    queryKey: ['appointments', selectedDate.toISOString()],
     queryFn: () =>
-      fetchAppointments(
-        getLocalStartOfDay(selectedDate),
-        getLocalEndOfDay(selectedDate),
-      ),
+      fetchAppointments(getLocalStartOfDay(selectedDate), getLocalEndOfDay(selectedDate)),
   });
 
   // Create patient lookup map
@@ -305,26 +285,20 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
     setSelectedDate(getLocalStartOfDay(new Date()));
   };
 
-  const isToday =
-    getLocalStartOfDay(new Date()).getTime() === selectedDate.getTime();
+  const isToday = getLocalStartOfDay(new Date()).getTime() === selectedDate.getTime();
 
   const columnCount = providers?.length || 1;
 
   // Render a single appointment card
-  const renderAppointment = (
-    appointment: Appointment,
-    layout: AppointmentLayout,
-  ) => {
+  const renderAppointment = (appointment: Appointment, layout: AppointmentLayout) => {
     const startAt = new Date(appointment.start_at);
     const endAt = new Date(appointment.end_at);
 
     // Calculate position (minutes since business start) in practice timezone
     const startTime = getTimeInTimezone(startAt, timezone);
     const endTime = getTimeInTimezone(endAt, timezone);
-    const startMinutes =
-      (startTime.hours - BUSINESS_START_HOUR) * 60 + startTime.minutes;
-    const endMinutes =
-      (endTime.hours - BUSINESS_START_HOUR) * 60 + endTime.minutes;
+    const startMinutes = (startTime.hours - BUSINESS_START_HOUR) * 60 + startTime.minutes;
+    const endMinutes = (endTime.hours - BUSINESS_START_HOUR) * 60 + endTime.minutes;
     const durationMinutes = endMinutes - startMinutes;
 
     // Skip appointments outside business hours
@@ -332,21 +306,19 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
       return null;
     }
 
-    const patient = appointment.patient_id
-      ? patientMap.get(appointment.patient_id)
-      : null;
+    const patient = appointment.patient_id ? patientMap.get(appointment.patient_id) : null;
 
     const badge = getTypeBadge(appointment.type);
     const isShort = durationMinutes < 20;
-    const padding = isShort ? "p-2" : "p-3";
-    const spacing = isShort ? "space-y-1" : "space-y-2";
+    const padding = isShort ? 'p-2' : 'p-3';
+    const spacing = isShort ? 'space-y-1' : 'space-y-2';
 
-    const startTimeStr = formatInTimezone(startAt, timezone, "h:mm a");
-    const endTimeStr = formatInTimezone(endAt, timezone, "h:mm a");
+    const startTimeStr = formatInTimezone(startAt, timezone, 'h:mm a');
+    const endTimeStr = formatInTimezone(endAt, timezone, 'h:mm a');
 
     const patientName = patient
       ? `${patient.first_name} ${patient.last_name}`
-      : "No patient assigned";
+      : 'No patient assigned';
 
     // Calculate horizontal position for overlapping appointments
     const widthPercent = 100 / layout.totalColumns;
@@ -375,7 +347,7 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
             </span>
           </div>
           <div
-            className={`text-sm text-subdued ${isShort ? "hidden group-hover:block" : "truncate group-hover:whitespace-normal"}`}
+            className={`text-sm text-subdued ${isShort ? 'hidden group-hover:block' : 'truncate group-hover:whitespace-normal'}`}
           >
             {appointment.notes || appointment.type}
           </div>
@@ -389,18 +361,13 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
       <div className="relative space-y-4">
         {/* Header with date navigation */}
         <div className="flex justify-between gap-2 sm:items-center">
-          <h1 className="text-xl font-bold">
-            {isToday ? "Today's schedule" : "Schedule"}
-          </h1>
+          <h1 className="text-xl font-bold">{isToday ? "Today's schedule" : 'Schedule'}</h1>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={goToPreviousDay}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <button
-              onClick={goToToday}
-              className="font-bold text-accent hover:underline"
-            >
-              {formatInTimezone(selectedDate, timezone, "EEEE, MMMM d")}
+            <button onClick={goToToday} className="font-bold text-accent hover:underline">
+              {formatInTimezone(selectedDate, timezone, 'EEEE, MMMM d')}
             </button>
             <Button variant="ghost" size="sm" onClick={goToNextDay}>
               <ChevronRight className="h-4 w-4" />
@@ -416,9 +383,7 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
           </div>
         ) : error ? (
           <div className="py-8 text-center">
-            <p className="text-sm text-subdued">
-              Unable to load schedule. Please try again.
-            </p>
+            <p className="text-sm text-subdued">Unable to load schedule. Please try again.</p>
           </div>
         ) : (
           <div className="relative flex flex-col bg-screen-foreground">
@@ -439,9 +404,7 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
                         {provider.first_name} {provider.last_name}
                       </div>
                       {provider.specialty && (
-                        <div className="text-xs text-subdued">
-                          {provider.specialty}
-                        </div>
+                        <div className="text-xs text-subdued">{provider.specialty}</div>
                       )}
                     </div>
                   ))}
@@ -475,15 +438,10 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
               >
                 {providers && providers.length > 0 ? (
                   providers.map((provider) => {
-                    const providerAppointments =
-                      appointmentsByProvider.get(provider.id!) || [];
-                    const layoutMap =
-                      calculateAppointmentLayout(providerAppointments);
+                    const providerAppointments = appointmentsByProvider.get(provider.id!) || [];
+                    const layoutMap = calculateAppointmentLayout(providerAppointments);
                     return (
-                      <div
-                        key={provider.id}
-                        className="relative flex-1 border-r last:border-r-0"
-                      >
+                      <div key={provider.id} className="relative flex-1 border-r last:border-r-0">
                         {providerAppointments.map((apt) => {
                           const layout = layoutMap.get(apt.id!) || {
                             column: 0,
@@ -498,15 +456,11 @@ const Schedule = ({ onAppointmentClick }: ScheduleProps) => {
                   <div className="relative flex flex-grow flex-col">
                     {appointments && appointments.length === 0 && (
                       <div className="absolute left-1/2 top-1/3 -translate-x-1/2 text-center">
-                        <p className="text-sm text-subdued">
-                          No appointments scheduled
-                        </p>
+                        <p className="text-sm text-subdued">No appointments scheduled</p>
                       </div>
                     )}
                     {(() => {
-                      const layoutMap = calculateAppointmentLayout(
-                        appointments || [],
-                      );
+                      const layoutMap = calculateAppointmentLayout(appointments || []);
                       return appointments?.map((apt) => {
                         const layout = layoutMap.get(apt.id!) || {
                           column: 0,

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   User,
   Phone,
@@ -22,21 +22,21 @@ import {
   MessageSquare,
   Trash2,
   LoaderCircle,
-} from "lucide-react";
-import { formatPhone, formatPhoneAsYouType, normalizePhone } from "@/lib/phone";
-import { CallHistory } from "@dialstack/sdk";
-import { useDialstackContext } from "@/app/hooks/EmbeddedComponentProvider";
-import EmbeddedComponentContainer from "@/app/components/EmbeddedComponentContainer";
-import { EditableCell } from "@/app/components/EditableCell";
-import { PatientQuickInfo } from "@/app/components/patients/PatientQuickInfo";
-import type { Patient } from "@/app/models/patient";
+} from 'lucide-react';
+import { formatPhone, formatPhoneAsYouType, normalizePhone } from '@/lib/phone';
+import { CallHistory } from '@dialstack/sdk';
+import { useDialstackContext } from '@/app/hooks/EmbeddedComponentProvider';
+import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
+import { EditableCell } from '@/app/components/EditableCell';
+import { PatientQuickInfo } from '@/app/components/patients/PatientQuickInfo';
+import type { Patient } from '@/app/models/patient';
 
 /**
  * Delete a patient via the API
  */
 const deletePatient = async (patientId: number): Promise<void> => {
   const res = await fetch(`/api/patients/${patientId}`, {
-    method: "DELETE",
+    method: 'DELETE',
   });
 
   if (!res.ok) {
@@ -66,7 +66,7 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
   const deleteMutation = useMutation({
     mutationFn: deletePatient,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["patients"] });
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
       setIsDeleteDialogOpen(false);
       onClose();
     },
@@ -82,13 +82,13 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const response = await fetch("/api/dialstack/user");
+        const response = await fetch('/api/dialstack/user');
         if (response.ok) {
           const user = await response.json();
           setDialstackUserId(user.id);
         }
       } catch (error) {
-        console.error("Failed to fetch DialStack user:", error);
+        console.error('Failed to fetch DialStack user:', error);
       }
     }
 
@@ -104,14 +104,14 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
     try {
       await dialstackInstance.initiateCall(dialstackUserId, patient.phone);
     } catch (error) {
-      console.error("Failed to initiate call:", error);
+      console.error('Failed to initiate call:', error);
     }
   };
 
   return (
     <div
       className={`fixed top-0 right-0 bottom-0 w-[380px] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 z-40 flex flex-col shadow-2xl shadow-slate-900/10 transform transition-transform duration-300 ease-out ${
-        isOpen ? "translate-x-0" : "translate-x-full"
+        isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
       {patient && (
@@ -142,7 +142,7 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
                     />
                   </div>
                   <p className="text-sm text-muted-foreground capitalize">
-                    {patient.status || "Active"} Patient
+                    {patient.status || 'Active'} Patient
                   </p>
                 </div>
                 <Button
@@ -168,9 +168,7 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
                 <div className="flex items-center gap-2">
                   <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                   <span className="text-sm font-medium">Contact Details</span>
-                  <span className="text-xs text-muted-foreground">
-                    (click to edit)
-                  </span>
+                  <span className="text-xs text-muted-foreground">(click to edit)</span>
                 </div>
               </div>
               <div className="p-4 space-y-4">
@@ -197,12 +195,7 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
                     <Mail className="w-3 h-3" />
                     Email
                   </label>
-                  <EditableCell
-                    patient={patient}
-                    field="email"
-                    type="email"
-                    className="text-sm"
-                  />
+                  <EditableCell patient={patient} field="email" type="email" className="text-sm" />
                 </div>
 
                 {/* Date of Birth */}
@@ -221,16 +214,14 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
 
                 {/* Status */}
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">
-                    Status
-                  </label>
+                  <label className="text-xs text-muted-foreground mb-1 block">Status</label>
                   <EditableCell
                     patient={patient}
                     field="status"
                     type="select"
                     options={[
-                      { value: "active", label: "Active" },
-                      { value: "inactive", label: "Inactive" },
+                      { value: 'active', label: 'Active' },
+                      { value: 'inactive', label: 'Inactive' },
                     ]}
                     className="text-sm"
                   />
@@ -244,10 +235,11 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
                       Patient Since
                     </label>
                     <p className="text-sm px-1 py-0.5">
-                      {new Date(patient.registration_date).toLocaleDateString(
-                        "en-US",
-                        { month: "short", day: "numeric", year: "numeric" },
-                      )}
+                      {new Date(patient.registration_date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
                     </p>
                   </div>
                 )}
@@ -269,8 +261,8 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
                       phoneNumber={patient.phone}
                       limit={5}
                       classes={{
-                        base: "rounded-lg",
-                        item: "rounded-md",
+                        base: 'rounded-lg',
+                        item: 'rounded-md',
                       }}
                     />
                   </EmbeddedComponentContainer>
@@ -291,28 +283,13 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
                 Call Patient
               </Button>
               <div className="grid grid-cols-4 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  title="Send SMS"
-                >
+                <Button variant="outline" size="sm" className="w-full" title="Send SMS">
                   <MessageSquare className="w-4 h-4" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  title="Send Email"
-                >
+                <Button variant="outline" size="sm" className="w-full" title="Send Email">
                   <Mail className="w-4 h-4" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  title="Schedule Appointment"
-                >
+                <Button variant="outline" size="sm" className="w-full" title="Schedule Appointment">
                   <Calendar className="w-4 h-4" />
                 </Button>
                 <Button
@@ -336,8 +313,8 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
           <DialogHeader>
             <DialogTitle>Delete Patient</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete {patient?.first_name}{" "}
-              {patient?.last_name}? This action cannot be undone.
+              Are you sure you want to delete {patient?.first_name} {patient?.last_name}? This
+              action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -359,7 +336,7 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
                   Deleting...
                 </>
               ) : (
-                "Delete"
+                'Delete'
               )}
             </Button>
           </DialogFooter>

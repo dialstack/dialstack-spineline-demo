@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import { LoaderCircle } from "lucide-react";
+import { useSession } from 'next-auth/react';
+import { LoaderCircle } from 'lucide-react';
 
 const LoadingView = () => {
   return (

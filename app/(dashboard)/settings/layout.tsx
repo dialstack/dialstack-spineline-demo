@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { signOut } from "next-auth/react";
-import { Button } from "@/components/ui/button";
+import { signOut } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
 
 export default function SettingsLayout({
   children,
@@ -20,7 +20,7 @@ export default function SettingsLayout({
               className="text-md ml-2 self-end p-2 hover:bg-white/80 hover:text-primary"
               variant="ghost"
               onClick={async () => {
-                signOut({ callbackUrl: "/" });
+                signOut({ callbackUrl: '/' });
               }}
             >
               Sign out

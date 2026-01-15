@@ -1,2 +1,2 @@
-export { ScreenPopPanel } from "./ScreenPopPanel";
-export { ScreenPopProvider } from "./ScreenPopProvider";
+export { ScreenPopPanel } from './ScreenPopPanel';
+export { ScreenPopProvider } from './ScreenPopProvider';

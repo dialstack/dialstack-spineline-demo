@@ -1,6 +1,6 @@
-import { useContext, useCallback } from "react";
-import { SettingsContext } from "@/app/contexts/settings";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radiogroup";
+import { useContext, useCallback } from 'react';
+import { SettingsContext } from '@/app/contexts/settings';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radiogroup';
 
 const ThemePicker = () => {
   const settings = useContext(SettingsContext);
@@ -8,24 +8,20 @@ const ThemePicker = () => {
   const setTheme = useCallback(
     (value: string) => {
       settings.handleUpdate({ theme: value });
-      const root = document.querySelector(":root");
+      const root = document.querySelector(':root');
       if (root) {
-        root.classList.remove("light", "dark");
+        root.classList.remove('light', 'dark');
         root.classList.add(value);
       }
-      console.log("Theme changed to:", value);
+      console.log('Theme changed to:', value);
     },
-    [settings],
+    [settings]
   );
 
   return (
     <RadioGroup defaultValue="option-one" id="theme" onValueChange={setTheme}>
       <div className="flex items-center space-x-2">
-        <RadioGroupItem
-          className="border border-primary bg-white"
-          value="light"
-          id="light"
-        />
+        <RadioGroupItem className="border border-primary bg-white" value="light" id="light" />
         <RadioGroupItem className="bg-[#424242]" value="dark" id="dark" />
       </div>
     </RadioGroup>

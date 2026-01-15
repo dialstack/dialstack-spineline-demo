@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link';
 import {
   Dialog,
   DialogClose,
@@ -6,13 +6,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { signIn, useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import React from "react";
+} from '@/components/ui/dialog';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { signIn, useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import React from 'react';
 import {
   Form,
   FormControl,
@@ -20,9 +20,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+} from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -31,13 +31,13 @@ const formSchema = z.object({
 
 const EditEmailButton = () => {
   const [open, setOpen] = React.useState(false);
-  const [error, setError] = React.useState("");
+  const [error, setError] = React.useState('');
 
   // Clear error when dialog opens
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (isOpen) {
-      setError("");
+      setError('');
     }
   };
 
@@ -45,15 +45,15 @@ const EditEmailButton = () => {
     const { data: session } = useSession();
 
     if (!session) {
-      redirect("/home");
+      redirect('/home');
     }
 
     const email = session?.user?.email;
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: {
-        email: email || "",
-        password: "",
+        email: email || '',
+        password: '',
       },
     });
 
@@ -63,22 +63,22 @@ const EditEmailButton = () => {
         inputPassword: values.password,
       };
 
-      const response = await fetch("/api/email_update", {
-        method: "POST",
+      const response = await fetch('/api/email_update', {
+        method: 'POST',
         body: JSON.stringify(data),
       });
       if (!response.ok) {
         // Handle errors on the client side here
         const { error } = await response.json();
         setError(error);
-        console.warn("An error occurred: ", error);
+        console.warn('An error occurred: ', error);
         return undefined;
       } else {
         const { email: newEmail } = await response.json();
 
-        console.log("response ok", newEmail);
-        setError(""); // Clear any previous errors on success
-        await signIn("updateemail", {
+        console.log('response ok', newEmail);
+        setError(''); // Clear any previous errors on success
+        await signIn('updateemail', {
           email: values.email,
           password: values.password,
           redirect: false,
@@ -103,7 +103,7 @@ const EditEmailButton = () => {
                     <FormControl>
                       <Input
                         className="rounded-md border border-gray-300 p-2 placeholder:text-gray-400"
-                        placeholder={email || "email@email.com"}
+                        placeholder={email || 'email@email.com'}
                         {...field}
                       />
                     </FormControl>
@@ -122,7 +122,7 @@ const EditEmailButton = () => {
                     <FormControl>
                       <Input
                         className="rounded-md border border-gray-300 p-2 placeholder:text-gray-400"
-                        placeholder={"password"}
+                        placeholder={'password'}
                         type="password"
                         {...field}
                       />

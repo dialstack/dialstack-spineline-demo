@@ -4,16 +4,16 @@
  */
 
 export function up(pgm) {
-  pgm.addColumn("appointments", {
+  pgm.addColumn('appointments', {
     type: {
-      type: "varchar(20)",
+      type: 'varchar(20)',
       notNull: true,
       default: "'adjustment'",
-      comment: "initial, adjustment, walk_in, follow_up",
+      comment: 'initial, adjustment, walk_in, follow_up',
     },
   });
 }
 
 export function down(pgm) {
-  pgm.dropColumn("appointments", "type");
+  pgm.dropColumn('appointments', 'type');
 }

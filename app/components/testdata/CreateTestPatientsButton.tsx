@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -18,33 +18,29 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { LoaderCircle } from "lucide-react";
+} from '@/components/ui/select';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { LoaderCircle } from 'lucide-react';
 
 const formSchema = z.object({
   count: z.string(),
 });
 
-export default function CreateTestPatientsButton({
-  classes,
-}: {
-  classes?: string;
-}) {
+export default function CreateTestPatientsButton({ classes }: { classes?: string }) {
   const [open, setOpen] = React.useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      count: "5",
+      count: '5',
     },
   });
 
@@ -60,17 +56,17 @@ export default function CreateTestPatientsButton({
     };
 
     try {
-      const response = await fetch("/api/testdata/patients", {
-        method: "POST",
+      const response = await fetch('/api/testdata/patients', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         const { error } = await response.json();
-        setError(error || "Failed to create test patients");
+        setError(error || 'Failed to create test patients');
         setLoading(false);
         return;
       }
@@ -80,7 +76,7 @@ export default function CreateTestPatientsButton({
       setOpen(false);
       window.location.reload();
     } catch {
-      setError("An unexpected error occurred");
+      setError('An unexpected error occurred');
       setLoading(false);
     }
   };
@@ -88,7 +84,7 @@ export default function CreateTestPatientsButton({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className={`${classes || "border"}`} variant="ghost" size="sm">
+        <Button className={`${classes || 'border'}`} variant="ghost" size="sm">
           Create test patients
         </Button>
       </DialogTrigger>
@@ -96,8 +92,8 @@ export default function CreateTestPatientsButton({
         <DialogHeader>
           <DialogTitle>Create test patients</DialogTitle>
           <DialogDescription>
-            Generate dummy patient records for testing the CRM. These will be
-            added to your practice&apos;s patient list.
+            Generate dummy patient records for testing the CRM. These will be added to your
+            practice&apos;s patient list.
           </DialogDescription>
         </DialogHeader>
 
@@ -110,10 +106,7 @@ export default function CreateTestPatientsButton({
                 <FormItem>
                   <FormLabel>Number of patients</FormLabel>
                   <FormControl>
-                    <Select
-                      {...field}
-                      onValueChange={(value) => field.onChange(value)}
-                    >
+                    <Select {...field} onValueChange={(value) => field.onChange(value)}>
                       <SelectTrigger className="mt-1">
                         <SelectValue>{field.value}</SelectValue>
                       </SelectTrigger>
@@ -144,13 +137,8 @@ export default function CreateTestPatientsButton({
                 </Button>
               </DialogClose>
               <Button variant="default" type="submit" disabled={loading}>
-                Create patients{" "}
-                {loading && (
-                  <LoaderCircle
-                    className="ml-2 animate-spin items-center"
-                    size={20}
-                  />
-                )}
+                Create patients{' '}
+                {loading && <LoaderCircle className="ml-2 animate-spin items-center" size={20} />}
               </Button>
             </div>
           </form>

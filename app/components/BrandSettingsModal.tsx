@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useSession } from "next-auth/react";
-import Image from "next/image";
-import { LoaderCircle, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import * as React from 'react';
+import { useSession } from 'next-auth/react';
+import Image from 'next/image';
+import { LoaderCircle, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { SettingsContext } from "../contexts/settings";
-import { defaultPrimaryColor } from "../contexts/themes/ThemeConstants";
-import BrandSettingsIcon from "@/public/brand-settings.svg";
+} from '@/components/ui/dialog';
+import { SettingsContext } from '../contexts/settings';
+import { defaultPrimaryColor } from '../contexts/themes/ThemeConstants';
+import BrandSettingsIcon from '@/public/brand-settings.svg';
 
 const BrandSettingsModal = () => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -26,14 +26,12 @@ const BrandSettingsModal = () => {
 
   // Local state for form values
   const [primaryColor, setPrimaryColor] = React.useState(
-    settings.primaryColor || defaultPrimaryColor,
+    settings.primaryColor || defaultPrimaryColor
   );
-  const [companyName, setCompanyName] = React.useState(
-    settings.companyName || "Furever",
-  );
+  const [companyName, setCompanyName] = React.useState(settings.companyName || 'Furever');
   const [companyLogo, setCompanyLogo] = React.useState<File | null>(null);
   const [logoPreview, setLogoPreview] = React.useState<string | null>(
-    settings.companyLogoUrl || null,
+    settings.companyLogoUrl || null
   );
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -43,7 +41,7 @@ const BrandSettingsModal = () => {
   React.useEffect(() => {
     if (isOpen) {
       setPrimaryColor(settings.primaryColor || defaultPrimaryColor);
-      setCompanyName(settings.companyName || "Furever");
+      setCompanyName(settings.companyName || 'Furever');
       setCompanyLogo(null);
       setLogoPreview(settings.companyLogoUrl || null);
     }
@@ -55,13 +53,13 @@ const BrandSettingsModal = () => {
 
     // Validate file size (max 5MB)
     if (file.size > 512 * 1024) {
-      alert("File size must be less than 512KB");
+      alert('File size must be less than 512KB');
       return;
     }
 
     // Validate file type
-    if (!file.type.startsWith("image/")) {
-      alert("Only image files are allowed");
+    if (!file.type.startsWith('image/')) {
+      alert('Only image files are allowed');
       return;
     }
 
@@ -81,18 +79,18 @@ const BrandSettingsModal = () => {
       // Prepare all API requests to run in parallel
       const requests = [
         // Update primary color
-        fetch("/api/primary_color", {
-          method: "POST",
+        fetch('/api/primary_color', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({ primaryColor }),
         }),
         // Update company name
-        fetch("/api/company_name", {
-          method: "POST",
+        fetch('/api/company_name', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({ companyName: companyName.trim() }),
         }),
@@ -101,12 +99,12 @@ const BrandSettingsModal = () => {
       // Add company logo request if there's a new logo to upload
       if (companyLogo) {
         const formData = new FormData();
-        formData.append("file", companyLogo);
+        formData.append('file', companyLogo);
         requests.push(
-          fetch("/api/company_logo", {
-            method: "POST",
+          fetch('/api/company_logo', {
+            method: 'POST',
             body: formData,
-          }),
+          })
         );
       }
 
@@ -139,8 +137,8 @@ const BrandSettingsModal = () => {
 
       setIsOpen(false);
     } catch (error) {
-      console.error("Error saving brand settings:", error);
-      alert("Error saving settings. Please try again.");
+      console.error('Error saving brand settings:', error);
+      alert('Error saving settings. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -153,8 +151,8 @@ const BrandSettingsModal = () => {
   const handleDeleteLogo = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/company_logo", {
-        method: "DELETE",
+      const response = await fetch('/api/company_logo', {
+        method: 'DELETE',
       });
 
       if (response.ok) {
@@ -173,11 +171,11 @@ const BrandSettingsModal = () => {
         });
       } else {
         const errorData = await response.json();
-        alert(errorData.message || "Delete failed");
+        alert(errorData.message || 'Delete failed');
       }
     } catch (error) {
-      console.error("Error deleting logo:", error);
-      alert("Error deleting logo. Please try again.");
+      console.error('Error deleting logo:', error);
+      alert('Error deleting logo. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -187,16 +185,16 @@ const BrandSettingsModal = () => {
     setLoading(true);
     try {
       const requests = [
-        fetch("/api/primary_color", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        fetch('/api/primary_color', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ primaryColor: defaultPrimaryColor }),
         }),
-        fetch("/api/company_name", {
-          method: "DELETE",
+        fetch('/api/company_name', {
+          method: 'DELETE',
         }),
-        fetch("/api/company_logo", {
-          method: "DELETE",
+        fetch('/api/company_logo', {
+          method: 'DELETE',
         }),
       ];
 
@@ -212,14 +210,14 @@ const BrandSettingsModal = () => {
 
       // Reset local state
       setPrimaryColor(defaultPrimaryColor);
-      setCompanyName("Furever");
+      setCompanyName('Furever');
       setCompanyLogo(null);
       setLogoPreview(null);
 
       // Update settings context
       settings.handleUpdate({
         primaryColor: defaultPrimaryColor,
-        companyName: "Furever",
+        companyName: 'Furever',
         companyLogoUrl: undefined,
       });
 
@@ -227,13 +225,13 @@ const BrandSettingsModal = () => {
       await update({
         user: {
           ...session?.user,
-          companyName: "Furever",
+          companyName: 'Furever',
           companyLogoUrl: undefined,
         },
       });
     } catch (error) {
-      console.error("Error resetting brand settings:", error);
-      alert("Error resetting settings. Please try again.");
+      console.error('Error resetting brand settings:', error);
+      alert('Error resetting settings. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -243,12 +241,7 @@ const BrandSettingsModal = () => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" className="invisible p-1 sm:visible">
-          <Image
-            src={BrandSettingsIcon}
-            alt="Brand settings"
-            width={12}
-            height={12}
-          />
+          <Image src={BrandSettingsIcon} alt="Brand settings" width={12} height={12} />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -272,9 +265,7 @@ const BrandSettingsModal = () => {
                   id="color-picker"
                 />
                 <span
-                  onClick={() =>
-                    document.getElementById("color-picker")?.click()
-                  }
+                  onClick={() => document.getElementById('color-picker')?.click()}
                   className="inline-block h-8 w-8 cursor-pointer rounded-md border"
                   style={{ backgroundColor: primaryColor }}
                   title="Custom color picker"
@@ -308,12 +299,7 @@ const BrandSettingsModal = () => {
             <Label>Company logo</Label>
             {logoPreview && (
               <div className="group relative h-16 w-16 overflow-hidden rounded-lg bg-gray-100">
-                <Image
-                  src={logoPreview}
-                  alt="Company Logo"
-                  fill
-                  className="object-cover"
-                />
+                <Image src={logoPreview} alt="Company Logo" fill className="object-cover" />
                 <button
                   type="button"
                   onClick={handleDeleteLogo}
@@ -341,9 +327,7 @@ const BrandSettingsModal = () => {
               onChange={handleLogoSelect}
               className="hidden"
             />
-            <p className="text-xs text-gray-500">
-              Upload an image file (max 512KB)
-            </p>
+            <p className="text-xs text-gray-500">Upload an image file (max 512KB)</p>
           </div>
         </div>
 
@@ -353,11 +337,7 @@ const BrandSettingsModal = () => {
             Reset
           </Button>
           <div className="flex space-x-2">
-            <Button
-              variant="secondary"
-              onClick={handleCancel}
-              disabled={loading}
-            >
+            <Button variant="secondary" onClick={handleCancel} disabled={loading}>
               Cancel
             </Button>
             <Button
@@ -367,12 +347,9 @@ const BrandSettingsModal = () => {
               type="submit"
             >
               {loading ? (
-                <LoaderCircle
-                  className="mr-1 animate-spin items-center"
-                  size={20}
-                />
+                <LoaderCircle className="mr-1 animate-spin items-center" size={20} />
               ) : (
-                "Save"
+                'Save'
               )}
             </Button>
           </div>

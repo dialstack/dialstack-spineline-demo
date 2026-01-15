@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Container from "@/app/components/Container";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Container from '@/app/components/Container';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -12,7 +12,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   LoaderCircle,
   ChevronRight,
@@ -21,19 +21,19 @@ import {
   Search,
   Plus,
   Users,
-} from "lucide-react";
-import type { Patient } from "@/app/models/patient";
-import { formatPhone } from "@/lib/phone";
-import { PatientPanel } from "@/app/components/patients/PatientPanel";
+} from 'lucide-react';
+import type { Patient } from '@/app/models/patient';
+import { formatPhone } from '@/lib/phone';
+import { PatientPanel } from '@/app/components/patients/PatientPanel';
 
 /**
  * Fetch patients from the API
  */
 const fetchPatients = async (): Promise<Patient[]> => {
-  const res = await fetch("/api/patients", {
-    method: "GET",
+  const res = await fetch('/api/patients', {
+    method: 'GET',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
@@ -48,10 +48,10 @@ const fetchPatients = async (): Promise<Patient[]> => {
  * Create a new patient
  */
 const createPatient = async (data: Partial<Patient>): Promise<Patient> => {
-  const res = await fetch("/api/patients", {
-    method: "POST",
+  const res = await fetch('/api/patients', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(data),
   });
@@ -67,12 +67,12 @@ const createPatient = async (data: Partial<Patient>): Promise<Patient> => {
  * Format date to a readable string
  */
 const formatDate = (date: Date | string | undefined): string => {
-  if (!date) return "—";
+  if (!date) return '—';
   const d = new Date(date);
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 };
 
@@ -80,12 +80,12 @@ const formatDate = (date: Date | string | undefined): string => {
  * Format status with proper capitalization
  */
 const formatStatus = (status: string | undefined): string => {
-  if (!status) return "Active";
+  if (!status) return 'Active';
   return status.charAt(0).toUpperCase() + status.slice(1);
 };
 
-type SortColumn = "name" | "email" | "phone" | "dob" | "status" | null;
-type SortDirection = "asc" | "desc";
+type SortColumn = 'name' | 'email' | 'phone' | 'dob' | 'status' | null;
+type SortDirection = 'asc' | 'desc';
 
 /**
  * Patients CRM page
@@ -94,19 +94,17 @@ type SortDirection = "asc" | "desc";
  */
 export default function Patients() {
   const queryClient = useQueryClient();
-  const [selectedPatientId, setSelectedPatientId] = useState<number | null>(
-    null,
-  );
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortColumn, setSortColumn] = useState<SortColumn>("name");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortColumn, setSortColumn] = useState<SortColumn>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const {
     data: patients,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["patients"],
+    queryKey: ['patients'],
     queryFn: fetchPatients,
   });
 
@@ -120,7 +118,7 @@ export default function Patients() {
   const createMutation = useMutation({
     mutationFn: createPatient,
     onSuccess: (createdPatient) => {
-      queryClient.invalidateQueries({ queryKey: ["patients"] });
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
       setSelectedPatientId(createdPatient.id!);
     },
   });
@@ -128,18 +126,18 @@ export default function Patients() {
   // Handle adding a new patient
   const handleAddPatient = () => {
     createMutation.mutate({
-      first_name: "New",
-      last_name: "Patient",
+      first_name: 'New',
+      last_name: 'Patient',
     });
   };
 
   // Handle column sorting
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortColumn(column);
-      setSortDirection("asc");
+      setSortDirection('asc');
     }
   };
 
@@ -150,47 +148,42 @@ export default function Patients() {
     let result = patients.filter((patient) => {
       if (!searchQuery) return true;
       const query = searchQuery.toLowerCase();
-      const fullName =
-        `${patient.first_name} ${patient.last_name}`.toLowerCase();
-      const email = patient.email?.toLowerCase() || "";
-      const phone = patient.phone || "";
-      return (
-        fullName.includes(query) ||
-        email.includes(query) ||
-        phone.includes(query)
-      );
+      const fullName = `${patient.first_name} ${patient.last_name}`.toLowerCase();
+      const email = patient.email?.toLowerCase() || '';
+      const phone = patient.phone || '';
+      return fullName.includes(query) || email.includes(query) || phone.includes(query);
     });
 
     if (sortColumn) {
       result = [...result].sort((a, b) => {
-        let aVal: string | number = "";
-        let bVal: string | number = "";
+        let aVal: string | number = '';
+        let bVal: string | number = '';
 
         switch (sortColumn) {
-          case "name":
+          case 'name':
             aVal = `${a.first_name} ${a.last_name}`.toLowerCase();
             bVal = `${b.first_name} ${b.last_name}`.toLowerCase();
             break;
-          case "email":
-            aVal = a.email?.toLowerCase() || "";
-            bVal = b.email?.toLowerCase() || "";
+          case 'email':
+            aVal = a.email?.toLowerCase() || '';
+            bVal = b.email?.toLowerCase() || '';
             break;
-          case "phone":
-            aVal = a.phone || "";
-            bVal = b.phone || "";
+          case 'phone':
+            aVal = a.phone || '';
+            bVal = b.phone || '';
             break;
-          case "dob":
+          case 'dob':
             aVal = a.date_of_birth ? new Date(a.date_of_birth).getTime() : 0;
             bVal = b.date_of_birth ? new Date(b.date_of_birth).getTime() : 0;
             break;
-          case "status":
-            aVal = a.status || "active";
-            bVal = b.status || "active";
+          case 'status':
+            aVal = a.status || 'active';
+            bVal = b.status || 'active';
             break;
         }
 
-        if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+        if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
         return 0;
       });
     }
@@ -202,22 +195,17 @@ export default function Patients() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't interfere with input fields
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
 
-      if (e.key === "Escape" && selectedPatientId) {
+      if (e.key === 'Escape' && selectedPatientId) {
         setSelectedPatientId(null);
       }
 
-      if (e.key === "ArrowDown" && filteredPatients.length > 0) {
+      if (e.key === 'ArrowDown' && filteredPatients.length > 0) {
         e.preventDefault();
-        const currentIndex = filteredPatients.findIndex(
-          (p) => p.id === selectedPatient?.id,
-        );
+        const currentIndex = filteredPatients.findIndex((p) => p.id === selectedPatient?.id);
         const nextPatient = filteredPatients[currentIndex + 1];
         if (nextPatient) {
           setSelectedPatientId(nextPatient.id!);
@@ -226,11 +214,9 @@ export default function Patients() {
         }
       }
 
-      if (e.key === "ArrowUp" && filteredPatients.length > 0) {
+      if (e.key === 'ArrowUp' && filteredPatients.length > 0) {
         e.preventDefault();
-        const currentIndex = filteredPatients.findIndex(
-          (p) => p.id === selectedPatient?.id,
-        );
+        const currentIndex = filteredPatients.findIndex((p) => p.id === selectedPatient?.id);
         const prevPatient = filteredPatients[currentIndex - 1];
         if (prevPatient) {
           setSelectedPatientId(prevPatient.id!);
@@ -238,14 +224,14 @@ export default function Patients() {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedPatient, selectedPatientId, filteredPatients]);
 
   // Render sort indicator
   const renderSortIndicator = (column: SortColumn) => {
     if (sortColumn !== column) return null;
-    return sortDirection === "asc" ? (
+    return sortDirection === 'asc' ? (
       <ChevronUp className="h-4 w-4" />
     ) : (
       <ChevronDown className="h-4 w-4" />
@@ -256,7 +242,7 @@ export default function Patients() {
     <>
       <div
         className={`transition-all duration-300 ease-out ${
-          selectedPatient ? "-translate-x-[190px]" : ""
+          selectedPatient ? '-translate-x-[190px]' : ''
         }`}
       >
         {/* Header with search and add button */}
@@ -273,10 +259,7 @@ export default function Patients() {
             />
           </div>
 
-          <Button
-            onClick={handleAddPatient}
-            disabled={createMutation.isPending}
-          >
+          <Button onClick={handleAddPatient} disabled={createMutation.isPending}>
             <Plus className="h-4 w-4 mr-2" />
             Add Patient
           </Button>
@@ -292,9 +275,7 @@ export default function Patients() {
 
           {error && (
             <div className="py-8 text-center">
-              <p className="text-sm text-destructive">
-                Error loading patients. Please try again.
-              </p>
+              <p className="text-sm text-destructive">Error loading patients. Please try again.</p>
             </div>
           )}
 
@@ -307,10 +288,7 @@ export default function Patients() {
               <p className="text-sm text-muted-foreground mb-4">
                 Add your first patient to get started.
               </p>
-              <Button
-                onClick={handleAddPatient}
-                disabled={createMutation.isPending}
-              >
+              <Button onClick={handleAddPatient} disabled={createMutation.isPending}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Patient
               </Button>
@@ -323,9 +301,7 @@ export default function Patients() {
             patients.length > 0 &&
             filteredPatients.length === 0 && (
               <div className="py-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No patients match your search.
-                </p>
+                <p className="text-sm text-muted-foreground">No patients match your search.</p>
               </div>
             )}
 
@@ -335,47 +311,47 @@ export default function Patients() {
                 <TableRow>
                   <TableHead
                     className="cursor-pointer select-none hover:bg-muted/50"
-                    onClick={() => handleSort("name")}
+                    onClick={() => handleSort('name')}
                   >
                     <div className="flex items-center gap-1">
                       Name
-                      {renderSortIndicator("name")}
+                      {renderSortIndicator('name')}
                     </div>
                   </TableHead>
                   <TableHead
                     className="cursor-pointer select-none hover:bg-muted/50"
-                    onClick={() => handleSort("email")}
+                    onClick={() => handleSort('email')}
                   >
                     <div className="flex items-center gap-1">
                       Email
-                      {renderSortIndicator("email")}
+                      {renderSortIndicator('email')}
                     </div>
                   </TableHead>
                   <TableHead
                     className="cursor-pointer select-none hover:bg-muted/50"
-                    onClick={() => handleSort("phone")}
+                    onClick={() => handleSort('phone')}
                   >
                     <div className="flex items-center gap-1">
                       Phone
-                      {renderSortIndicator("phone")}
+                      {renderSortIndicator('phone')}
                     </div>
                   </TableHead>
                   <TableHead
                     className="cursor-pointer select-none hover:bg-muted/50"
-                    onClick={() => handleSort("dob")}
+                    onClick={() => handleSort('dob')}
                   >
                     <div className="flex items-center gap-1">
                       Date of Birth
-                      {renderSortIndicator("dob")}
+                      {renderSortIndicator('dob')}
                     </div>
                   </TableHead>
                   <TableHead
                     className="cursor-pointer select-none hover:bg-muted/50"
-                    onClick={() => handleSort("status")}
+                    onClick={() => handleSort('status')}
                   >
                     <div className="flex items-center gap-1">
                       Status
-                      {renderSortIndicator("status")}
+                      {renderSortIndicator('status')}
                     </div>
                   </TableHead>
                   <TableHead className="w-10"></TableHead>
@@ -387,19 +363,17 @@ export default function Patients() {
                     key={patient.id}
                     className={`cursor-pointer transition-colors ${
                       selectedPatient?.id === patient.id
-                        ? "bg-accent-subdued border-l-2 border-l-accent"
-                        : "hover:bg-muted/50 border-l-2 border-l-transparent"
+                        ? 'bg-accent-subdued border-l-2 border-l-accent'
+                        : 'hover:bg-muted/50 border-l-2 border-l-transparent'
                     }`}
                     onClick={() => setSelectedPatientId(patient.id!)}
                   >
                     <TableCell className="font-medium">
                       {patient.first_name} {patient.last_name}
                     </TableCell>
+                    <TableCell className="text-muted-foreground">{patient.email || '—'}</TableCell>
                     <TableCell className="text-muted-foreground">
-                      {patient.email || "—"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {patient.phone ? formatPhone(patient.phone) : "—"}
+                      {patient.phone ? formatPhone(patient.phone) : '—'}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDate(patient.date_of_birth)}
@@ -407,9 +381,9 @@ export default function Patients() {
                     <TableCell>
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                          patient.status === "inactive"
-                            ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                            : "bg-accent-subdued text-accent dark:bg-accent/20 dark:text-accent"
+                          patient.status === 'inactive'
+                            ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                            : 'bg-accent-subdued text-accent dark:bg-accent/20 dark:text-accent'
                         }`}
                       >
                         {formatStatus(patient.status)}
@@ -427,10 +401,7 @@ export default function Patients() {
       </div>
 
       {/* Patient details panel */}
-      <PatientPanel
-        patient={selectedPatient}
-        onClose={() => setSelectedPatientId(null)}
-      />
+      <PatientPanel patient={selectedPatient} onClose={() => setSelectedPatientId(null)} />
     </>
   );
 }

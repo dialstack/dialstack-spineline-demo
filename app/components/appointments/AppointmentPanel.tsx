@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -10,17 +10,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Calendar,
   Clock,
@@ -31,29 +31,25 @@ import {
   LoaderCircle,
   FileText,
   Stethoscope,
-} from "lucide-react";
-import { useDialstackContext } from "@/app/hooks/EmbeddedComponentProvider";
-import type {
-  Appointment,
-  AppointmentStatus,
-  AppointmentType,
-} from "@/app/models/appointment";
-import type { Patient } from "@/app/models/patient";
-import type { Provider } from "@/app/models/provider";
+} from 'lucide-react';
+import { useDialstackContext } from '@/app/hooks/EmbeddedComponentProvider';
+import type { Appointment, AppointmentStatus, AppointmentType } from '@/app/models/appointment';
+import type { Patient } from '@/app/models/patient';
+import type { Provider } from '@/app/models/provider';
 
 const STATUS_OPTIONS: { value: AppointmentStatus; label: string }[] = [
-  { value: "pending", label: "Pending" },
-  { value: "accepted", label: "Accepted" },
-  { value: "cancelled", label: "Cancelled" },
-  { value: "declined", label: "Declined" },
-  { value: "no_show", label: "No Show" },
+  { value: 'pending', label: 'Pending' },
+  { value: 'accepted', label: 'Accepted' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'declined', label: 'Declined' },
+  { value: 'no_show', label: 'No Show' },
 ];
 
 const TYPE_OPTIONS: { value: AppointmentType; label: string }[] = [
-  { value: "initial", label: "Initial" },
-  { value: "adjustment", label: "Adjustment" },
-  { value: "walk_in", label: "Walk-in" },
-  { value: "follow_up", label: "Follow-up" },
+  { value: 'initial', label: 'Initial' },
+  { value: 'adjustment', label: 'Adjustment' },
+  { value: 'walk_in', label: 'Walk-in' },
+  { value: 'follow_up', label: 'Follow-up' },
 ];
 
 /**
@@ -71,7 +67,7 @@ const fetchAppointment = async (id: number): Promise<Appointment> => {
  * Fetch patients
  */
 const fetchPatients = async (): Promise<Patient[]> => {
-  const res = await fetch("/api/patients");
+  const res = await fetch('/api/patients');
   if (!res.ok) {
     throw new Error(`Failed to fetch patients: ${res.status}`);
   }
@@ -82,7 +78,7 @@ const fetchPatients = async (): Promise<Patient[]> => {
  * Fetch providers
  */
 const fetchProviders = async (): Promise<Provider[]> => {
-  const res = await fetch("/api/providers");
+  const res = await fetch('/api/providers');
   if (!res.ok) {
     throw new Error(`Failed to fetch providers: ${res.status}`);
   }
@@ -100,8 +96,8 @@ const updateAppointment = async ({
   data: Partial<Appointment>;
 }): Promise<Appointment> => {
   const res = await fetch(`/api/appointments/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
   if (!res.ok) {
@@ -123,7 +119,7 @@ const updateAppointment = async ({
  */
 const deleteAppointment = async (id: number): Promise<void> => {
   const res = await fetch(`/api/appointments/${id}`, {
-    method: "DELETE",
+    method: 'DELETE',
   });
   if (!res.ok) {
     throw new Error(`Failed to delete appointment: ${res.status}`);
@@ -140,10 +136,7 @@ interface AppointmentPanelProps {
 /**
  * Appointment details panel displayed as a right-side column.
  */
-export function AppointmentPanel({
-  appointmentId,
-  onClose,
-}: AppointmentPanelProps) {
+export function AppointmentPanel({ appointmentId, onClose }: AppointmentPanelProps) {
   const queryClient = useQueryClient();
   const { dialstackInstance } = useDialstackContext();
   const [dialstackUserId, setDialstackUserId] = useState<string | null>(null);
@@ -155,28 +148,27 @@ export function AppointmentPanel({
   const isOpen = appointmentId !== null;
 
   // Only show error if it's for the current appointment
-  const error =
-    errorState?.appointmentId === appointmentId ? errorState.message : null;
+  const error = errorState?.appointmentId === appointmentId ? errorState.message : null;
   const setError = (message: string | null) => {
     setErrorState(message ? { appointmentId, message } : null);
   };
 
   // Fetch appointment data
   const { data: appointment, isLoading: appointmentLoading } = useQuery({
-    queryKey: ["appointment", appointmentId],
+    queryKey: ['appointment', appointmentId],
     queryFn: () => fetchAppointment(appointmentId!),
     enabled: appointmentId !== null,
   });
 
   // Fetch patients for dropdown
   const { data: patients } = useQuery({
-    queryKey: ["patients"],
+    queryKey: ['patients'],
     queryFn: fetchPatients,
   });
 
   // Fetch providers for dropdown
   const { data: providers } = useQuery({
-    queryKey: ["providers"],
+    queryKey: ['providers'],
     queryFn: fetchProviders,
   });
 
@@ -184,9 +176,9 @@ export function AppointmentPanel({
   const updateMutation = useMutation({
     mutationFn: updateAppointment,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
       queryClient.invalidateQueries({
-        queryKey: ["appointment", appointmentId],
+        queryKey: ['appointment', appointmentId],
       });
       setError(null);
     },
@@ -199,7 +191,7 @@ export function AppointmentPanel({
   const deleteMutation = useMutation({
     mutationFn: deleteAppointment,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
       setIsDeleteDialogOpen(false);
       onClose();
     },
@@ -209,13 +201,13 @@ export function AppointmentPanel({
   useEffect(() => {
     async function fetchUser() {
       try {
-        const response = await fetch("/api/dialstack/user");
+        const response = await fetch('/api/dialstack/user');
         if (response.ok) {
           const user = await response.json();
           setDialstackUserId(user.id);
         }
       } catch (error) {
-        console.error("Failed to fetch DialStack user:", error);
+        console.error('Failed to fetch DialStack user:', error);
       }
     }
     fetchUser();
@@ -247,80 +239,74 @@ export function AppointmentPanel({
     try {
       await dialstackInstance.initiateCall(dialstackUserId, patient.phone);
     } catch (error) {
-      console.error("Failed to initiate call:", error);
+      console.error('Failed to initiate call:', error);
     }
   };
 
   // Format date for input
   const formatDateForInput = (date: Date | string | undefined): string => {
-    if (!date) return "";
+    if (!date) return '';
     const d = new Date(date);
-    return d.toISOString().split("T")[0];
+    return d.toISOString().split('T')[0];
   };
 
   // Format time for input (HH:MM)
   const formatTimeForInput = (date: Date | string | undefined): string => {
-    if (!date) return "";
+    if (!date) return '';
     const d = new Date(date);
-    return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
   };
 
   // Add minutes to a date and format for input
-  const addMinutesForInput = (
-    date: Date | string | undefined,
-    minutes: number,
-  ): string => {
-    if (!date) return "";
+  const addMinutesForInput = (date: Date | string | undefined, minutes: number): string => {
+    if (!date) return '';
     const d = new Date(date);
     d.setMinutes(d.getMinutes() + minutes);
     return formatTimeForInput(d);
   };
 
   // Handle date/time change
-  const handleDateTimeChange = (
-    field: "date" | "startTime" | "endTime",
-    value: string,
-  ) => {
+  const handleDateTimeChange = (field: 'date' | 'startTime' | 'endTime', value: string) => {
     if (!appointment) return;
 
     const currentStart = new Date(appointment.start_at);
     const currentEnd = new Date(appointment.end_at);
     const MIN_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
-    if (field === "date") {
+    if (field === 'date') {
       // Update both start and end dates, keep times
-      const [year, month, day] = value.split("-").map(Number);
+      const [year, month, day] = value.split('-').map(Number);
       const newStart = new Date(currentStart);
       newStart.setFullYear(year, month - 1, day);
       const newEnd = new Date(currentEnd);
       newEnd.setFullYear(year, month - 1, day);
-      handleUpdate("start_at", newStart.toISOString());
-      handleUpdate("end_at", newEnd.toISOString());
-    } else if (field === "startTime") {
-      const [hours, minutes] = value.split(":").map(Number);
+      handleUpdate('start_at', newStart.toISOString());
+      handleUpdate('end_at', newEnd.toISOString());
+    } else if (field === 'startTime') {
+      const [hours, minutes] = value.split(':').map(Number);
       const newStart = new Date(currentStart);
       newStart.setHours(hours, minutes, 0, 0);
       // Ensure at least 15 minutes before end time
       if (currentEnd.getTime() - newStart.getTime() < MIN_DURATION_MS) {
         return;
       }
-      handleUpdate("start_at", newStart.toISOString());
-    } else if (field === "endTime") {
-      const [hours, minutes] = value.split(":").map(Number);
+      handleUpdate('start_at', newStart.toISOString());
+    } else if (field === 'endTime') {
+      const [hours, minutes] = value.split(':').map(Number);
       const newEnd = new Date(currentEnd);
       newEnd.setHours(hours, minutes, 0, 0);
       // Ensure at least 15 minutes after start time
       if (newEnd.getTime() - currentStart.getTime() < MIN_DURATION_MS) {
         return;
       }
-      handleUpdate("end_at", newEnd.toISOString());
+      handleUpdate('end_at', newEnd.toISOString());
     }
   };
 
   return (
     <div
       className={`fixed top-0 right-0 bottom-0 w-[380px] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 z-40 flex flex-col shadow-2xl shadow-slate-900/10 transform transition-transform duration-300 ease-out ${
-        isOpen ? "translate-x-0" : "translate-x-full"
+        isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
       {appointmentLoading ? (
@@ -339,28 +325,24 @@ export function AppointmentPanel({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-lg font-semibold tracking-tight">
-                    {patient
-                      ? `${patient.first_name} ${patient.last_name}`
-                      : "No patient assigned"}
+                    {patient ? `${patient.first_name} ${patient.last_name}` : 'No patient assigned'}
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge
                       variant={
-                        appointment.status === "accepted"
-                          ? "success"
-                          : appointment.status === "cancelled" ||
-                              appointment.status === "declined"
-                            ? "destructive"
-                            : "secondary"
+                        appointment.status === 'accepted'
+                          ? 'success'
+                          : appointment.status === 'cancelled' || appointment.status === 'declined'
+                            ? 'destructive'
+                            : 'secondary'
                       }
                     >
-                      {STATUS_OPTIONS.find(
-                        (s) => s.value === appointment.status,
-                      )?.label || appointment.status}
+                      {STATUS_OPTIONS.find((s) => s.value === appointment.status)?.label ||
+                        appointment.status}
                     </Badge>
                     <Badge variant="outline">
-                      {TYPE_OPTIONS.find((t) => t.value === appointment.type)
-                        ?.label || appointment.type}
+                      {TYPE_OPTIONS.find((t) => t.value === appointment.type)?.label ||
+                        appointment.type}
                     </Badge>
                   </div>
                 </div>
@@ -395,12 +377,9 @@ export function AppointmentPanel({
               </div>
               <div className="p-4">
                 <Select
-                  value={appointment.patient_id?.toString() || ""}
+                  value={appointment.patient_id?.toString() || ''}
                   onValueChange={(value) =>
-                    handleUpdate(
-                      "patient_id",
-                      value ? parseInt(value, 10) : null,
-                    )
+                    handleUpdate('patient_id', value ? parseInt(value, 10) : null)
                   }
                 >
                   <SelectTrigger>
@@ -427,12 +406,9 @@ export function AppointmentPanel({
               </div>
               <div className="p-4">
                 <Select
-                  value={appointment.provider_id?.toString() || ""}
+                  value={appointment.provider_id?.toString() || ''}
                   onValueChange={(value) =>
-                    handleUpdate(
-                      "provider_id",
-                      value ? parseInt(value, 10) : null,
-                    )
+                    handleUpdate('provider_id', value ? parseInt(value, 10) : null)
                   }
                 >
                   <SelectTrigger>
@@ -460,42 +436,30 @@ export function AppointmentPanel({
               </div>
               <div className="p-4 space-y-4">
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">
-                    Date
-                  </Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Date</Label>
                   <Input
                     type="date"
                     value={formatDateForInput(appointment.start_at)}
-                    onChange={(e) =>
-                      handleDateTimeChange("date", e.target.value)
-                    }
+                    onChange={(e) => handleDateTimeChange('date', e.target.value)}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs text-muted-foreground mb-1 block">
-                      Start Time
-                    </Label>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Start Time</Label>
                     <Input
                       type="time"
                       value={formatTimeForInput(appointment.start_at)}
                       max={addMinutesForInput(appointment.end_at, -15)}
-                      onChange={(e) =>
-                        handleDateTimeChange("startTime", e.target.value)
-                      }
+                      onChange={(e) => handleDateTimeChange('startTime', e.target.value)}
                     />
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground mb-1 block">
-                      End Time
-                    </Label>
+                    <Label className="text-xs text-muted-foreground mb-1 block">End Time</Label>
                     <Input
                       type="time"
                       value={formatTimeForInput(appointment.end_at)}
                       min={addMinutesForInput(appointment.start_at, 15)}
-                      onChange={(e) =>
-                        handleDateTimeChange("endTime", e.target.value)
-                      }
+                      onChange={(e) => handleDateTimeChange('endTime', e.target.value)}
                     />
                   </div>
                 </div>
@@ -512,12 +476,10 @@ export function AppointmentPanel({
               </div>
               <div className="p-4 space-y-4">
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">
-                    Type
-                  </Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Type</Label>
                   <Select
                     value={appointment.type}
-                    onValueChange={(value) => handleUpdate("type", value)}
+                    onValueChange={(value) => handleUpdate('type', value)}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -532,12 +494,10 @@ export function AppointmentPanel({
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">
-                    Status
-                  </Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Status</Label>
                   <Select
                     value={appointment.status}
-                    onValueChange={(value) => handleUpdate("status", value)}
+                    onValueChange={(value) => handleUpdate('status', value)}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -552,13 +512,11 @@ export function AppointmentPanel({
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">
-                    Notes
-                  </Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Notes</Label>
                   <textarea
-                    value={appointment.notes || ""}
+                    value={appointment.notes || ''}
                     placeholder="Add notes..."
-                    onChange={(e) => handleUpdate("notes", e.target.value)}
+                    onChange={(e) => handleUpdate('notes', e.target.value)}
                     rows={3}
                     className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
                   />
@@ -597,8 +555,7 @@ export function AppointmentPanel({
           <DialogHeader>
             <DialogTitle>Delete Appointment</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this appointment? This action
-              cannot be undone.
+              Are you sure you want to delete this appointment? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -620,7 +577,7 @@ export function AppointmentPanel({
                   Deleting...
                 </>
               ) : (
-                "Delete"
+                'Delete'
               )}
             </Button>
           </DialogFooter>

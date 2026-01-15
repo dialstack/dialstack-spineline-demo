@@ -1,9 +1,9 @@
-import { NextRequest } from "next/server";
-import Practice from "@/app/models/practice";
-import Provider from "@/app/models/provider";
-import dbConnect from "@/lib/dbConnect";
-import { getToken } from "next-auth/jwt";
-import logger from "@/lib/logger";
+import { NextRequest } from 'next/server';
+import Practice from '@/app/models/practice';
+import Provider from '@/app/models/provider';
+import dbConnect from '@/lib/dbConnect';
+import { getToken } from 'next-auth/jwt';
+import logger from '@/lib/logger';
 
 /**
  * GET /api/providers
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const token = await getToken({ req });
 
     if (!token?.email) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response('Unauthorized', { status: 401 });
     }
 
     await dbConnect();
@@ -22,19 +22,18 @@ export async function GET(req: NextRequest) {
     const practice = await Practice.findByEmail(token.email);
 
     if (!practice || !practice.id) {
-      return new Response("Practice not found", { status: 404 });
+      return new Response('Practice not found', { status: 404 });
     }
 
     const providers = await Provider.findAllByPractice(practice.id);
 
     return new Response(JSON.stringify(providers), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
-    logger.error({ error }, "An error occurred when retrieving providers");
-    const message =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    logger.error({ error }, 'An error occurred when retrieving providers');
+    const message = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(message, { status: 500 });
   }
 }
@@ -48,13 +47,13 @@ export async function POST(req: NextRequest) {
     const token = await getToken({ req });
 
     if (!token?.email) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response('Unauthorized', { status: 401 });
     }
 
     const body = await req.json();
 
     if (!body.first_name || !body.last_name) {
-      return new Response("First name and last name are required", {
+      return new Response('First name and last name are required', {
         status: 400,
       });
     }
@@ -64,7 +63,7 @@ export async function POST(req: NextRequest) {
     const practice = await Practice.findByEmail(token.email);
 
     if (!practice || !practice.id) {
-      return new Response("Practice not found", { status: 404 });
+      return new Response('Practice not found', { status: 404 });
     }
 
     const provider = await Provider.create(practice.id, {
@@ -75,12 +74,11 @@ export async function POST(req: NextRequest) {
 
     return new Response(JSON.stringify(provider), {
       status: 201,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
-    logger.error({ error }, "An error occurred when creating provider");
-    const message =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    logger.error({ error }, 'An error occurred when creating provider');
+    const message = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(message, { status: 500 });
   }
 }

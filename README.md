@@ -216,14 +216,14 @@ Edit the generated file to add your schema changes:
 
 ```javascript
 exports.up = (pgm) => {
-  pgm.createTable("new_table", {
-    id: { type: "serial", primaryKey: true },
-    name: { type: "varchar(255)", notNull: true },
+  pgm.createTable('new_table', {
+    id: { type: 'serial', primaryKey: true },
+    name: { type: 'varchar(255)', notNull: true },
   });
 };
 
 exports.down = (pgm) => {
-  pgm.dropTable("new_table");
+  pgm.dropTable('new_table');
 };
 ```
 

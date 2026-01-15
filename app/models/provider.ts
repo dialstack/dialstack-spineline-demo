@@ -1,4 +1,4 @@
-import dbConnect from "@/lib/dbConnect";
+import dbConnect from '@/lib/dbConnect';
 
 export interface Provider {
   id?: number;
@@ -26,17 +26,14 @@ class ProviderModel {
   /**
    * Create a new provider for a practice
    */
-  static async create(
-    practiceId: number,
-    data: CreateProviderInput,
-  ): Promise<Provider> {
+  static async create(practiceId: number, data: CreateProviderInput): Promise<Provider> {
     const pool = await dbConnect();
 
     const result = await pool.query(
       `INSERT INTO providers (practice_id, first_name, last_name, specialty)
        VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [practiceId, data.first_name, data.last_name, data.specialty || null],
+      [practiceId, data.first_name, data.last_name, data.specialty || null]
     );
 
     return result.rows[0];
@@ -49,8 +46,8 @@ class ProviderModel {
     const pool = await dbConnect();
 
     const result = await pool.query(
-      "SELECT * FROM providers WHERE practice_id = $1 ORDER BY last_name ASC, first_name ASC",
-      [practiceId],
+      'SELECT * FROM providers WHERE practice_id = $1 ORDER BY last_name ASC, first_name ASC',
+      [practiceId]
     );
 
     return result.rows;
@@ -59,16 +56,13 @@ class ProviderModel {
   /**
    * Find provider by ID (with practice ownership check)
    */
-  static async findById(
-    id: number,
-    practiceId: number,
-  ): Promise<Provider | null> {
+  static async findById(id: number, practiceId: number): Promise<Provider | null> {
     const pool = await dbConnect();
 
-    const result = await pool.query(
-      "SELECT * FROM providers WHERE id = $1 AND practice_id = $2",
-      [id, practiceId],
-    );
+    const result = await pool.query('SELECT * FROM providers WHERE id = $1 AND practice_id = $2', [
+      id,
+      practiceId,
+    ]);
 
     return result.rows[0] || null;
   }
@@ -79,7 +73,7 @@ class ProviderModel {
   static async update(
     id: number,
     practiceId: number,
-    data: UpdateProviderInput,
+    data: UpdateProviderInput
   ): Promise<Provider | null> {
     const pool = await dbConnect();
 
@@ -107,10 +101,10 @@ class ProviderModel {
     values.push(id, practiceId);
 
     const result = await pool.query(
-      `UPDATE providers SET ${fields.join(", ")}
+      `UPDATE providers SET ${fields.join(', ')}
        WHERE id = $${paramCounter++} AND practice_id = $${paramCounter}
        RETURNING *`,
-      values,
+      values
     );
 
     return result.rows[0] || null;
@@ -123,8 +117,8 @@ class ProviderModel {
     const pool = await dbConnect();
 
     const result = await pool.query(
-      "DELETE FROM providers WHERE id = $1 AND practice_id = $2 RETURNING id",
-      [id, practiceId],
+      'DELETE FROM providers WHERE id = $1 AND practice_id = $2 RETURNING id',
+      [id, practiceId]
     );
 
     return result.rows.length > 0;
@@ -136,12 +130,12 @@ class ProviderModel {
   static async createDefaults(practiceId: number): Promise<Provider[]> {
     const defaults: CreateProviderInput[] = [
       {
-        first_name: "Dr.",
-        last_name: "Martinez",
-        specialty: "General Chiropractic",
+        first_name: 'Dr.',
+        last_name: 'Martinez',
+        specialty: 'General Chiropractic',
       },
-      { first_name: "Dr.", last_name: "Chen", specialty: "Sports Medicine" },
-      { first_name: "Dr.", last_name: "Johnson", specialty: "Pediatric Care" },
+      { first_name: 'Dr.', last_name: 'Chen', specialty: 'Sports Medicine' },
+      { first_name: 'Dr.', last_name: 'Johnson', specialty: 'Pediatric Care' },
     ];
 
     const providers: Provider[] = [];

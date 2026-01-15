@@ -4,11 +4,11 @@
  */
 
 export async function up(pgm) {
-  pgm.addColumn("practices", {
-    dialstack_account_id: { type: "varchar(50)" },
+  pgm.addColumn('practices', {
+    dialstack_account_id: { type: 'varchar(50)' },
   });
 }
 
 export async function down(pgm) {
-  pgm.dropColumn("practices", "dialstack_account_id");
+  pgm.dropColumn('practices', 'dialstack_account_id');
 }

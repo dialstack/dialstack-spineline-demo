@@ -4,7 +4,7 @@
  */
 
 export interface PatientActivity {
-  type: "appointment" | "note";
+  type: 'appointment' | 'note';
   title: string;
   date: Date;
 }
@@ -16,14 +16,14 @@ export interface PatientActivitySummary {
 }
 
 const APPOINTMENT_TYPES = [
-  "Initial Consultation",
-  "Follow-up Adjustment",
-  "Spinal Assessment",
-  "Wellness Check",
-  "Re-evaluation",
+  'Initial Consultation',
+  'Follow-up Adjustment',
+  'Spinal Assessment',
+  'Wellness Check',
+  'Re-evaluation',
 ];
 
-const NOTE_TYPES = ["Progress Note", "Treatment Plan Update", "X-ray Review"];
+const NOTE_TYPES = ['Progress Note', 'Treatment Plan Update', 'X-ray Review'];
 
 /**
  * Simple seeded pseudo-random number generator.
@@ -41,9 +41,7 @@ function createSeededRandom(seed: number) {
  * Generate deterministic fake activities and balance for a patient.
  * Same patient ID always produces the same results.
  */
-export function generatePatientActivity(
-  patientId: number,
-): PatientActivitySummary {
+export function generatePatientActivity(patientId: number): PatientActivitySummary {
   const random = createSeededRandom(patientId);
   const now = new Date();
 
@@ -51,15 +49,10 @@ export function generatePatientActivity(
   const lastDaysAgo = Math.floor(random() * 30);
   const lastDate = new Date(now);
   lastDate.setDate(lastDate.getDate() - lastDaysAgo);
-  lastDate.setHours(
-    9 + Math.floor(random() * 8),
-    Math.floor(random() * 60),
-    0,
-    0,
-  );
+  lastDate.setHours(9 + Math.floor(random() * 8), Math.floor(random() * 60), 0, 0);
 
   const lastActivity: PatientActivity = {
-    type: random() > 0.3 ? "appointment" : "note",
+    type: random() > 0.3 ? 'appointment' : 'note',
     title:
       random() > 0.3
         ? APPOINTMENT_TYPES[Math.floor(random() * APPOINTMENT_TYPES.length)]
@@ -76,18 +69,15 @@ export function generatePatientActivity(
 
   const nextActivity: PatientActivity | null = hasNext
     ? {
-        type: "appointment",
-        title:
-          APPOINTMENT_TYPES[Math.floor(random() * APPOINTMENT_TYPES.length)],
+        type: 'appointment',
+        title: APPOINTMENT_TYPES[Math.floor(random() * APPOINTMENT_TYPES.length)],
         date: nextDate,
       }
     : null;
 
   // Generate outstanding balance (70% chance of $0, otherwise $25-$500)
   const hasBalance = random() > 0.7;
-  const outstandingBalance = hasBalance
-    ? Math.round((random() * 475 + 25) * 100) / 100
-    : 0;
+  const outstandingBalance = hasBalance ? Math.round((random() * 475 + 25) * 100) / 100 : 0;
 
   return { lastActivity, nextActivity, outstandingBalance };
 }

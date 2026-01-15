@@ -1,28 +1,20 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import {
-  Phone,
-  User,
-  Calendar,
-  UserPlus,
-  FileText,
-  Loader2,
-  Clock,
-} from "lucide-react";
-import { formatPhone } from "@/lib/phone";
-import { CallHistory } from "@dialstack/sdk";
-import EmbeddedComponentContainer from "@/app/components/EmbeddedComponentContainer";
-import { PatientQuickInfo } from "@/app/components/patients/PatientQuickInfo";
-import type { IncomingCallWithPatient } from "@/app/hooks/useCallEvents";
+} from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Phone, User, Calendar, UserPlus, FileText, Loader2, Clock } from 'lucide-react';
+import { formatPhone } from '@/lib/phone';
+import { CallHistory } from '@dialstack/sdk';
+import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
+import { PatientQuickInfo } from '@/app/components/patients/PatientQuickInfo';
+import type { IncomingCallWithPatient } from '@/app/hooks/useCallEvents';
 
 interface ScreenPopPanelProps {
   /** Current incoming call data (null when no call) */
@@ -48,7 +40,7 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
 
   const handleCreatePatient = () => {
     // Navigate to patients page with pre-filled phone number
-    const phone = encodeURIComponent(call?.call.from_number || "");
+    const phone = encodeURIComponent(call?.call.from_number || '');
     router.push(`/patients?new=true&phone=${phone}`);
     onDismiss();
   };
@@ -67,10 +59,10 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
   const formatDOB = (dob?: Date | string) => {
     if (!dob) return null;
     const date = new Date(dob);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     });
   };
 
@@ -99,7 +91,7 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
                   Incoming Call
                 </SheetTitle>
                 <SheetDescription className="text-sm text-muted-foreground">
-                  {call?.call.from_name || "Unknown Caller"}
+                  {call?.call.from_name || 'Unknown Caller'}
                 </SheetDescription>
               </div>
             </div>
@@ -120,9 +112,7 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
           {call?.isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 text-accent animate-spin" />
-              <span className="ml-2 text-muted-foreground">
-                Looking up patient...
-              </span>
+              <span className="ml-2 text-muted-foreground">Looking up patient...</span>
             </div>
           ) : call?.patient ? (
             <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -137,7 +127,7 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
                       {call.patient.first_name} {call.patient.last_name}
                     </h3>
                     <p className="text-sm text-muted-foreground capitalize">
-                      {call.patient.status || "Active"} Patient
+                      {call.patient.status || 'Active'} Patient
                     </p>
                   </div>
                 </div>
@@ -148,27 +138,19 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
                 {call.patient.date_of_birth && (
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Date of Birth</span>
-                    <span className="font-medium">
-                      {formatDOB(call.patient.date_of_birth)}
-                    </span>
+                    <span className="font-medium">{formatDOB(call.patient.date_of_birth)}</span>
                   </div>
                 )}
                 {call.patient.email && (
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-muted-foreground shrink-0">
-                      Email
-                    </span>
-                    <span className="font-medium text-right break-all">
-                      {call.patient.email}
-                    </span>
+                    <span className="text-muted-foreground shrink-0">Email</span>
+                    <span className="font-medium text-right break-all">{call.patient.email}</span>
                   </div>
                 )}
                 {call.patient.registration_date && (
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Patient Since</span>
-                    <span className="font-medium">
-                      {formatDOB(call.patient.registration_date)}
-                    </span>
+                    <span className="font-medium">{formatDOB(call.patient.registration_date)}</span>
                   </div>
                 )}
               </div>
@@ -182,17 +164,15 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
               <div className="p-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2 mb-3">
                   <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Recent Calls
-                  </span>
+                  <span className="text-sm font-medium text-muted-foreground">Recent Calls</span>
                 </div>
                 <EmbeddedComponentContainer componentName="CallHistory">
                   <CallHistory
-                    phoneNumber={call?.call.from_number || ""}
+                    phoneNumber={call?.call.from_number || ''}
                     limit={3}
                     classes={{
-                      base: "rounded-lg",
-                      item: "rounded-md text-sm",
+                      base: 'rounded-lg',
+                      item: 'rounded-md text-sm',
                     }}
                   />
                 </EmbeddedComponentContainer>
@@ -203,9 +183,7 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
               <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 rounded-full bg-slate-100 dark:bg-slate-800">
                 <User className="w-6 h-6 text-muted-foreground" />
               </div>
-              <p className="text-muted-foreground mb-1">
-                No matching patient found
-              </p>
+              <p className="text-muted-foreground mb-1">No matching patient found</p>
               <p className="text-xs text-muted-foreground/70">
                 Create a new patient record for this caller
               </p>
@@ -221,30 +199,18 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
                   View Patient
                 </Button>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleAddNote}
-                    className="w-full"
-                  >
+                  <Button variant="outline" onClick={handleAddNote} className="w-full">
                     <FileText className="w-4 h-4 mr-1.5" />
                     Add Note
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleSchedule}
-                    className="w-full"
-                  >
+                  <Button variant="outline" onClick={handleSchedule} className="w-full">
                     <Calendar className="w-4 h-4 mr-1.5" />
                     Schedule
                   </Button>
                 </div>
               </>
             ) : (
-              <Button
-                onClick={handleCreatePatient}
-                className="w-full"
-                disabled={call?.isLoading}
-              >
+              <Button onClick={handleCreatePatient} className="w-full" disabled={call?.isLoading}>
                 <UserPlus className="w-4 h-4 mr-2" />
                 Create New Patient
               </Button>

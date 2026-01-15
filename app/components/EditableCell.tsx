@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Input } from "@/components/ui/input";
-import { LoaderCircle, X } from "lucide-react";
-import type { Patient } from "@/app/models/patient";
+import * as React from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Input } from '@/components/ui/input';
+import { LoaderCircle, X } from 'lucide-react';
+import type { Patient } from '@/app/models/patient';
 
 type EditableCellProps = {
   patient: Patient;
   field: keyof Patient;
-  type?: "text" | "email" | "date" | "tel" | "select";
+  type?: 'text' | 'email' | 'date' | 'tel' | 'select';
   options?: { value: string; label: string }[];
   /** Format raw value for display (when not editing) */
   formatDisplay?: (value: unknown) => string;
@@ -25,14 +25,10 @@ type EditableCellProps = {
 /**
  * Update a patient field via the API
  */
-async function updatePatient(
-  patientId: number,
-  field: string,
-  value: unknown,
-): Promise<Patient> {
+async function updatePatient(patientId: number, field: string, value: unknown): Promise<Patient> {
   const res = await fetch(`/api/patients/${patientId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ [field]: value }),
   });
 
@@ -50,16 +46,16 @@ async function updatePatient(
 export function EditableCell({
   patient,
   field,
-  type = "text",
+  type = 'text',
   options,
   formatDisplay,
   formatInput,
   formatOnChange,
   parseValue,
-  className = "",
+  className = '',
 }: EditableCellProps) {
   const [isEditing, setIsEditing] = React.useState(false);
-  const [value, setValue] = React.useState<string>("");
+  const [value, setValue] = React.useState<string>('');
   const [error, setError] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement | HTMLSelectElement>(null);
   const queryClient = useQueryClient();
@@ -73,14 +69,14 @@ export function EditableCell({
       return formatDisplay(rawValue);
     }
     if (rawValue === null || rawValue === undefined) {
-      return "—";
+      return '—';
     }
-    if (type === "date" && rawValue) {
+    if (type === 'date' && rawValue) {
       const d = new Date(rawValue as string);
-      return d.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
+      return d.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
       });
     }
     return String(rawValue);
@@ -89,31 +85,30 @@ export function EditableCell({
   // Format value for input (what user edits)
   const inputValue = React.useMemo(() => {
     if (rawValue === null || rawValue === undefined) {
-      return "";
+      return '';
     }
     if (formatInput) {
       const formatted = formatInput(rawValue);
-      return formatted === "—" ? "" : formatted;
+      return formatted === '—' ? '' : formatted;
     }
-    if (formatDisplay && type === "tel") {
+    if (formatDisplay && type === 'tel') {
       // For phone fields, use display format for editing too
       const formatted = formatDisplay(rawValue);
-      return formatted === "—" ? "" : formatted;
+      return formatted === '—' ? '' : formatted;
     }
-    if (type === "date" && rawValue) {
+    if (type === 'date' && rawValue) {
       // Format as YYYY-MM-DD for date input
       const d = new Date(rawValue as string);
-      return d.toISOString().split("T")[0];
+      return d.toISOString().split('T')[0];
     }
     return String(rawValue);
   }, [rawValue, type, formatInput, formatDisplay]);
 
   // Mutation for saving
   const mutation = useMutation({
-    mutationFn: (newValue: unknown) =>
-      updatePatient(patient.id!, String(field), newValue),
+    mutationFn: (newValue: unknown) => updatePatient(patient.id!, String(field), newValue),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["patients"] });
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
       setIsEditing(false);
       setError(false);
     },
@@ -136,9 +131,9 @@ export function EditableCell({
     // Parse the value appropriately
     let parsedValue: unknown = value;
 
-    if (type === "date") {
+    if (type === 'date') {
       parsedValue = value || null;
-    } else if (value === "") {
+    } else if (value === '') {
       parsedValue = null;
     } else if (parseValue) {
       // Use custom parser (e.g., for phone numbers to E.164)
@@ -167,10 +162,10 @@ export function EditableCell({
 
   // Handle key presses
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       handleSave();
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       handleCancel();
     }
   };
@@ -197,7 +192,7 @@ export function EditableCell({
 
   // Edit mode
   if (isEditing) {
-    if (type === "select" && options) {
+    if (type === 'select' && options) {
       return (
         <select
           ref={inputRef as React.RefObject<HTMLSelectElement>}
@@ -206,7 +201,7 @@ export function EditableCell({
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
           className={`h-8 rounded border bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${
-            error ? "border-destructive" : "border-input"
+            error ? 'border-destructive' : 'border-input'
           } ${className}`}
         >
           {options.map((opt) => (
@@ -219,21 +214,19 @@ export function EditableCell({
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = formatOnChange
-        ? formatOnChange(e.target.value)
-        : e.target.value;
+      const newValue = formatOnChange ? formatOnChange(e.target.value) : e.target.value;
       setValue(newValue);
     };
 
     return (
       <Input
         ref={inputRef as React.RefObject<HTMLInputElement>}
-        type={type === "tel" ? "text" : type}
+        type={type === 'tel' ? 'text' : type}
         value={value}
         onChange={handleChange}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
-        className={`h-8 px-2 text-sm ${error ? "border-destructive" : ""} ${className}`}
+        className={`h-8 px-2 text-sm ${error ? 'border-destructive' : ''} ${className}`}
       />
     );
   }

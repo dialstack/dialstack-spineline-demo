@@ -1,10 +1,10 @@
-import { createContext } from "react";
+import { createContext } from 'react';
 
-import type { Settings } from "@/types/settings";
+import type { Settings } from '@/types/settings';
 
 export const defaultSettings: Settings = {
-  locale: "en-US",
-  theme: "light",
+  locale: 'en-US',
+  theme: 'light',
 };
 
 export interface SettingsContextType {

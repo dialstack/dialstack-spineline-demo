@@ -1,5 +1,5 @@
-"use client";
-import React, { createContext, useContext, useState, useCallback } from "react";
+'use client';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 
 type IToolsContext = {
   open: boolean;
@@ -15,14 +15,10 @@ export const useToolsContext = () => {
   return useContext(ToolsContext);
 };
 
-export const ToolsPanelProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  const localWindow = typeof window !== "undefined" ? window : null;
+export const ToolsPanelProvider = ({ children }: { children: React.ReactNode }) => {
+  const localWindow = typeof window !== 'undefined' ? window : null;
   const [open, setOpen] = useState<boolean>(
-    Boolean(Number(localWindow?.localStorage.getItem("toolsOpen"))),
+    Boolean(Number(localWindow?.localStorage.getItem('toolsOpen')))
   );
 
   const handleOpenChange = useCallback(
@@ -34,19 +30,17 @@ export const ToolsPanelProvider = ({
       setOpen(toolsOpen);
 
       if (toolsOpen) {
-        localWindow.localStorage.setItem("toolsOpen", "1");
+        localWindow.localStorage.setItem('toolsOpen', '1');
         setOpen(true);
       } else {
-        localWindow.localStorage.setItem("toolsOpen", "0");
+        localWindow.localStorage.setItem('toolsOpen', '0');
         setOpen(false);
       }
     },
-    [localWindow],
+    [localWindow]
   );
 
   return (
-    <ToolsContext.Provider value={{ open, handleOpenChange }}>
-      {children}
-    </ToolsContext.Provider>
+    <ToolsContext.Provider value={{ open, handleOpenChange }}>{children}</ToolsContext.Provider>
   );
 };

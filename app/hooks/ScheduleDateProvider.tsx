@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface ScheduleDateContextType {
   selectedDate: Date;
@@ -26,9 +26,7 @@ export function ScheduleDateProvider({ children }: { children: ReactNode }) {
 export function useScheduleDate() {
   const context = useContext(ScheduleDateContext);
   if (!context) {
-    throw new Error(
-      "useScheduleDate must be used within a ScheduleDateProvider",
-    );
+    throw new Error('useScheduleDate must be used within a ScheduleDateProvider');
   }
   return context;
 }

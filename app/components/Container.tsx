@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 type ContainerProps = {
   children: React.ReactNode;
@@ -7,9 +7,7 @@ type ContainerProps = {
 
 const Container = ({ children, className }: ContainerProps) => {
   return (
-    <div className={`bg-screen-foreground ${className} rounded-lg border p-4`}>
-      {children}
-    </div>
+    <div className={`bg-screen-foreground ${className} rounded-lg border p-4`}>{children}</div>
   );
 };
 

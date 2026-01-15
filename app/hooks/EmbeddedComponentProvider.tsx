@@ -1,5 +1,5 @@
-import React, { createContext, useContext } from "react";
-import type { DialStackInstance } from "@dialstack/sdk";
+import React, { createContext, useContext } from 'react';
+import type { DialStackInstance } from '@dialstack/sdk';
 
 type IDialstackContext = {
   dialstackInstance: DialStackInstance | null;
@@ -22,8 +22,6 @@ export const EmbeddedComponentProvider = ({
   dialstackInstance: DialStackInstance | null;
 }) => {
   return (
-    <DialstackContext.Provider value={{ dialstackInstance }}>
-      {children}
-    </DialstackContext.Provider>
+    <DialstackContext.Provider value={{ dialstackInstance }}>{children}</DialstackContext.Provider>
   );
 };

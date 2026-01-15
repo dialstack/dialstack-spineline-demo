@@ -1,6 +1,6 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { getDialstack } from "@/lib/dialstack";
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { getDialstack } from '@/lib/dialstack';
 
 export async function POST() {
   try {
@@ -9,9 +9,9 @@ export async function POST() {
     if (!session?.user?.dialstackAccountId) {
       return new Response(
         JSON.stringify({
-          error: "No authenticated user found",
+          error: 'No authenticated user found',
         }),
-        { status: 401 },
+        { status: 401 }
       );
     }
 
@@ -25,15 +25,11 @@ export async function POST() {
       JSON.stringify({
         client_secret: dialstackSession.client_secret,
       }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error(
-      "An error occurred when calling the DialStack API to create a session",
-      error,
-    );
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+    console.error('An error occurred when calling the DialStack API to create a session', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
     });

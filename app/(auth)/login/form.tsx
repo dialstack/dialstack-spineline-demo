@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { ArrowRight, Loader2 } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -14,9 +14,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { UserFormSchema } from "@/lib/forms";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { UserFormSchema } from '@/lib/forms';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -24,32 +24,32 @@ export default function LoginForm() {
   const form = useForm<z.infer<typeof UserFormSchema>>({
     resolver: zodResolver(UserFormSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
   const onSubmit = async (values: z.infer<typeof UserFormSchema>) => {
     try {
-      const result = await signIn("login", {
+      const result = await signIn('login', {
         email: values.email,
         password: values.password,
         redirect: false,
       });
 
       if (result?.error) {
-        form.setError("root", {
-          type: "manual",
-          message: "Invalid email or password. Please try again.",
+        form.setError('root', {
+          type: 'manual',
+          message: 'Invalid email or password. Please try again.',
         });
       } else if (result?.ok) {
-        router.push("/home");
+        router.push('/home');
       }
     } catch (error: unknown) {
-      console.error("An error occurred when signing in", error);
-      form.setError("root", {
-        type: "manual",
-        message: "An unexpected error occurred. Please try again.",
+      console.error('An error occurred when signing in', error);
+      form.setError('root', {
+        type: 'manual',
+        message: 'An unexpected error occurred. Please try again.',
       });
     }
   };
@@ -101,7 +101,7 @@ export default function LoginForm() {
         <Button
           type="submit"
           disabled={form.formState.isSubmitting}
-          className={"w-full rounded-md p-2 font-bold text-white"}
+          className={'w-full rounded-md p-2 font-bold text-white'}
         >
           {!form.formState.isSubmitting && (
             <div className="flex flex-row gap-x-[6px] text-base font-medium">
@@ -116,9 +116,7 @@ export default function LoginForm() {
           )}
         </Button>
         {form.formState.errors.root && (
-          <p className="text-sm text-red-500">
-            {form.formState.errors.root.message}
-          </p>
+          <p className="text-sm text-red-500">{form.formState.errors.root.message}</p>
         )}
       </form>
     </Form>

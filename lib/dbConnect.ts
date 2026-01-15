@@ -1,5 +1,5 @@
-import { Pool } from "pg";
-import logger from "@/lib/logger";
+import { Pool } from 'pg';
+import logger from '@/lib/logger';
 
 let pool: Pool | null = null;
 
@@ -16,14 +16,14 @@ export default async function dbConnect(): Promise<Pool> {
   if (!pool) {
     const databaseSecret = process.env.DATABASE_SECRET;
     const dbHost = process.env.DB_HOST;
-    const dbPort = process.env.DB_PORT || "5432";
+    const dbPort = process.env.DB_PORT || '5432';
     const dbName = process.env.DB_NAME;
 
     if (!databaseSecret) {
-      throw new Error("DATABASE_SECRET environment variable is not set");
+      throw new Error('DATABASE_SECRET environment variable is not set');
     }
     if (!dbHost || !dbName) {
-      throw new Error("DB_HOST and DB_NAME environment variables must be set");
+      throw new Error('DB_HOST and DB_NAME environment variables must be set');
     }
 
     // Parse RDS-managed secret JSON (contains only username and password)
@@ -32,7 +32,7 @@ export default async function dbConnect(): Promise<Pool> {
     const connectionString = `postgresql://${encodeURIComponent(secret.username)}:${encodeURIComponent(secret.password)}@${dbHost}:${dbPort}/${dbName}`;
 
     // SSL is enabled by default - set DB_SSL_ENABLED=false to disable
-    const sslEnabled = process.env.DB_SSL_ENABLED !== "false";
+    const sslEnabled = process.env.DB_SSL_ENABLED !== 'false';
 
     pool = new Pool({
       connectionString,
@@ -49,8 +49,8 @@ export default async function dbConnect(): Promise<Pool> {
     });
 
     // Handle pool errors
-    pool.on("error", (err) => {
-      logger.error({ err }, "Unexpected error on idle client");
+    pool.on('error', (err) => {
+      logger.error({ err }, 'Unexpected error on idle client');
     });
   }
 

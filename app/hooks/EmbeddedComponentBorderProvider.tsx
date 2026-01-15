@@ -1,37 +1,26 @@
-"use client";
+'use client';
 
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 type IEmbeddedComponentBorderContext = {
   enableBorder: boolean;
   handleEnableBorderChange: (enableBorder: boolean) => void;
 };
 
-const EmbeddedComponentBorderContext =
-  createContext<IEmbeddedComponentBorderContext>({
-    enableBorder: false,
-    handleEnableBorderChange: () => {},
-  });
+const EmbeddedComponentBorderContext = createContext<IEmbeddedComponentBorderContext>({
+  enableBorder: false,
+  handleEnableBorderChange: () => {},
+});
 
 export const useEmbeddedComponentBorder = () => {
   return useContext(EmbeddedComponentBorderContext);
 };
 
-export const EmbeddedComponentBorderProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  const localWindow = typeof window !== "undefined" ? window : null;
+export const EmbeddedComponentBorderProvider = ({ children }: { children: React.ReactNode }) => {
+  const localWindow = typeof window !== 'undefined' ? window : null;
 
   const [enableBorder, setEnableBorder] = useState<boolean>(
-    Boolean(Number(localWindow?.localStorage.getItem("enableBorder"))),
+    Boolean(Number(localWindow?.localStorage.getItem('enableBorder')))
   );
 
   const handleEnableBorderChange = useCallback(
@@ -41,20 +30,20 @@ export const EmbeddedComponentBorderProvider = ({
       }
 
       if (enableBorder) {
-        localWindow.localStorage.setItem("enableBorder", "1");
+        localWindow.localStorage.setItem('enableBorder', '1');
         setEnableBorder(true);
       } else {
-        localWindow.localStorage.setItem("enableBorder", "0");
+        localWindow.localStorage.setItem('enableBorder', '0');
         setEnableBorder(false);
       }
     },
-    [localWindow],
+    [localWindow]
   );
 
   useEffect(() => {
     const handleToggleBorder = (e: KeyboardEvent) => {
-      if (e.key === "b" && e.metaKey && localWindow) {
-        if (Number(localWindow.localStorage.getItem("enableBorder"))) {
+      if (e.key === 'b' && e.metaKey && localWindow) {
+        if (Number(localWindow.localStorage.getItem('enableBorder'))) {
           handleEnableBorderChange(false);
         } else {
           handleEnableBorderChange(true);
@@ -63,14 +52,12 @@ export const EmbeddedComponentBorderProvider = ({
     };
 
     // Keyboard shortcut to enable/disable border
-    document.addEventListener("keydown", handleToggleBorder);
-    return () => document.removeEventListener("keydown", handleToggleBorder);
+    document.addEventListener('keydown', handleToggleBorder);
+    return () => document.removeEventListener('keydown', handleToggleBorder);
   }, [handleEnableBorderChange, localWindow]);
 
   return (
-    <EmbeddedComponentBorderContext.Provider
-      value={{ enableBorder, handleEnableBorderChange }}
-    >
+    <EmbeddedComponentBorderContext.Provider value={{ enableBorder, handleEnableBorderChange }}>
       {children}
     </EmbeddedComponentBorderContext.Provider>
   );

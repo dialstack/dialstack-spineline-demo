@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Form,
@@ -7,16 +7,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { UserFormSchema } from "@/lib/forms";
-import { ArrowRight, Loader2 } from "lucide-react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+} from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { UserFormSchema } from '@/lib/forms';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function Signup() {
   const router = useRouter();
@@ -24,14 +24,14 @@ export default function Signup() {
   const form = useForm<z.infer<typeof UserFormSchema>>({
     resolver: zodResolver(UserFormSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
   const onSubmit = async (values: z.infer<typeof UserFormSchema>) => {
     try {
-      const result = await signIn("signup", {
+      const result = await signIn('signup', {
         email: values.email,
         password: values.password,
         redirect: false,
@@ -39,15 +39,15 @@ export default function Signup() {
 
       if (result?.error) {
         // Just assume the error is because the email is already in use
-        form.setError("root", {
-          type: "manual",
-          message: "The email is already in use.",
+        form.setError('root', {
+          type: 'manual',
+          message: 'The email is already in use.',
         });
       } else if (result?.ok) {
-        router.push("/home");
+        router.push('/home');
       }
     } catch (error: unknown) {
-      console.error("An error occurred when signing in", error);
+      console.error('An error occurred when signing in', error);
     }
   };
 
@@ -99,10 +99,9 @@ export default function Signup() {
             <Button
               type="submit"
               disabled={form.formState.isSubmitting}
-              className={"w-full rounded-md font-bold text-white"}
+              className={'w-full rounded-md font-bold text-white'}
             >
-              {form.formState.isSubmitting ||
-              form.formState.isSubmitSuccessful ? (
+              {form.formState.isSubmitting || form.formState.isSubmitSuccessful ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading...
                 </>
@@ -114,9 +113,7 @@ export default function Signup() {
               )}
             </Button>
             {form.formState.errors.root && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.root.message}
-              </p>
+              <p className="text-sm text-red-500">{form.formState.errors.root.message}</p>
             )}
           </form>
         </Form>

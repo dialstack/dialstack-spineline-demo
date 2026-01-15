@@ -1,45 +1,44 @@
-"use client";
+'use client';
 
-import { usePathname } from "next/navigation";
-import Image from "next/image";
-import { File as FileIcon, PanelLeftClose, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Sparkles } from "lucide-react";
-import { useEmbeddedComponentBorder } from "../hooks/EmbeddedComponentBorderProvider";
-import { useToolsContext } from "../hooks/ToolsPanelProvider";
-import * as React from "react";
-import LocaleSelector from "./Tools/LocaleSelector";
-import ThemePicker from "./Tools/ThemePicker";
-import BrandSettingsModal from "./BrandSettingsModal";
-import CreateTestPatientsButton from "./testdata/CreateTestPatientsButton";
-import CreateTestAppointmentsButton from "./testdata/CreateTestAppointmentsButton";
-import ClearTodayScheduleButton from "./testdata/ClearTodayScheduleButton";
-import SpinelineLogo from "@/public/spineline_logo.png";
+import { usePathname } from 'next/navigation';
+import Image from 'next/image';
+import { File as FileIcon, PanelLeftClose, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Sparkles } from 'lucide-react';
+import { useEmbeddedComponentBorder } from '../hooks/EmbeddedComponentBorderProvider';
+import { useToolsContext } from '../hooks/ToolsPanelProvider';
+import * as React from 'react';
+import LocaleSelector from './Tools/LocaleSelector';
+import ThemePicker from './Tools/ThemePicker';
+import BrandSettingsModal from './BrandSettingsModal';
+import CreateTestPatientsButton from './testdata/CreateTestPatientsButton';
+import CreateTestAppointmentsButton from './testdata/CreateTestAppointmentsButton';
+import ClearTodayScheduleButton from './testdata/ClearTodayScheduleButton';
+import SpinelineLogo from '@/public/spineline_logo.png';
 
 const ToolsPanel = () => {
   const pathname = usePathname();
 
-  const { handleEnableBorderChange, enableBorder } =
-    useEmbeddedComponentBorder();
+  const { handleEnableBorderChange, enableBorder } = useEmbeddedComponentBorder();
   const { handleOpenChange } = useToolsContext();
   const [border, setBorder] = React.useState(true);
 
   const actions = [
     {
-      description: "Create test patients",
-      href: "/patients",
+      description: 'Create test patients',
+      href: '/patients',
       component: CreateTestPatientsButton,
     },
     {
-      description: "Create test appointments",
-      href: "/home",
+      description: 'Create test appointments',
+      href: '/home',
       component: CreateTestAppointmentsButton,
     },
     {
-      description: "Clear schedule",
-      href: "/home",
+      description: 'Clear schedule',
+      href: '/home',
       component: ClearTodayScheduleButton,
     },
   ];
@@ -59,7 +58,7 @@ const ToolsPanel = () => {
               //   {action.description}
               // </Button>
               <action.component key={action.description} />
-            ),
+            )
         )}
       </div>
     );
@@ -131,7 +130,7 @@ const ToolsPanel = () => {
           onClick={() => handleOpenChange(false)}
         >
           <PanelLeftClose size={20} />
-          Close{" "}
+          Close{' '}
         </Button>
       </div>
     </div>

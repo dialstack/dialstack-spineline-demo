@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import logger from "./lib/logger";
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import logger from './lib/logger';
 
-const isDevelopment = process.env.NODE_ENV === "development";
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 /**
  * Next.js proxy for request logging
@@ -34,29 +34,28 @@ export function proxy(request: NextRequest) {
       path: pathname,
       duration_ms: duration.toString(),
       status_code: response.status.toString(),
-      user_agent: headers.get("user-agent") || undefined,
-      source_ip:
-        headers.get("x-forwarded-for") || headers.get("x-real-ip") || undefined,
+      user_agent: headers.get('user-agent') || undefined,
+      source_ip: headers.get('x-forwarded-for') || headers.get('x-real-ip') || undefined,
       request: {
         method,
         url: pathname,
         headers: {
-          host: headers.get("host") || undefined,
-          "user-agent": headers.get("user-agent") || undefined,
-          accept: headers.get("accept") || undefined,
-          "accept-language": headers.get("accept-language") || undefined,
-          "accept-encoding": headers.get("accept-encoding") || undefined,
-          connection: headers.get("connection") || undefined,
-          "x-forwarded-for": headers.get("x-forwarded-for") || undefined,
-          "x-forwarded-proto": headers.get("x-forwarded-proto") || undefined,
-          "x-real-ip": headers.get("x-real-ip") || undefined,
+          host: headers.get('host') || undefined,
+          'user-agent': headers.get('user-agent') || undefined,
+          accept: headers.get('accept') || undefined,
+          'accept-language': headers.get('accept-language') || undefined,
+          'accept-encoding': headers.get('accept-encoding') || undefined,
+          connection: headers.get('connection') || undefined,
+          'x-forwarded-for': headers.get('x-forwarded-for') || undefined,
+          'x-forwarded-proto': headers.get('x-forwarded-proto') || undefined,
+          'x-real-ip': headers.get('x-real-ip') || undefined,
         },
       },
       response: {
         statusCode: response.status.toString(),
         headers: {
-          "content-type": response.headers.get("content-type") || undefined,
-          "content-length": response.headers.get("content-length") || undefined,
+          'content-type': response.headers.get('content-type') || undefined,
+          'content-length': response.headers.get('content-length') || undefined,
         },
       },
     });
@@ -75,6 +74,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

@@ -1,6 +1,6 @@
-import { Globe } from "lucide-react";
-import Container from "@/app/components/Container";
-import LocaleSelector from "@/app/components/Tools/LocaleSelector";
+import { Globe } from 'lucide-react';
+import Container from '@/app/components/Container';
+import LocaleSelector from '@/app/components/Tools/LocaleSelector';
 
 const changeLocale = async () => {
   return [null, RenderActionMenu];
@@ -16,9 +16,9 @@ const RenderActionMenu = (exit: () => void) => {
 };
 
 const config = {
-  name: "Change locale",
+  name: 'Change locale',
   icon: Globe,
-  description: "Changes the browser locale.",
+  description: 'Changes the browser locale.',
   action: changeLocale,
 };
 

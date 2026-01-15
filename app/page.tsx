@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, CalendarCheck, Phone, Quote, Users } from "lucide-react";
-import { useSession } from "next-auth/react";
-import SpinelineIcon from "@/public/spineline_icon.webp";
-import TestimonialImage from "@/public/testimonial.webp";
-import TestimonialPortrait from "@/public/testimonial-portrait.webp";
-import DashboardImage from "@/public/dashboard.webp";
-import HeroImage from "@/public/landing-page.webp";
+import Image from 'next/image';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, CalendarCheck, Phone, Quote, Users } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import SpinelineIcon from '@/public/spineline_icon.webp';
+import TestimonialImage from '@/public/testimonial.webp';
+import TestimonialPortrait from '@/public/testimonial-portrait.webp';
+import DashboardImage from '@/public/dashboard.webp';
+import HeroImage from '@/public/landing-page.webp';
 
 function Card({
   icon,
@@ -34,7 +34,7 @@ function Card({
 function AuthButtons() {
   const { data: session, status } = useSession();
 
-  if (status === "authenticated" && session?.user) {
+  if (status === 'authenticated' && session?.user) {
     return (
       <Link href="/home">
         <Button size="lg" className="items-center gap-x-1">
@@ -48,12 +48,7 @@ function AuthButtons() {
   return (
     <>
       <Link href="/login">
-        <Button
-          variant="secondary"
-          className="bg-white"
-          size="lg"
-          data-testid="login-button"
-        >
+        <Button variant="secondary" className="bg-white" size="lg" data-testid="login-button">
           Log in
         </Button>
       </Link>
@@ -85,9 +80,7 @@ export default function LandingPage() {
                 className="h-full w-full"
               />
             </div>
-            <p className="text-2xl font-bold text-white drop-shadow-lg">
-              Spineline
-            </p>
+            <p className="text-2xl font-bold text-white drop-shadow-lg">Spineline</p>
           </div>
 
           <div className="max-w-[700px] py-8 sm:py-16">
@@ -95,8 +88,8 @@ export default function LandingPage() {
               Practice management that has your back.
             </h1>
             <p className="pt-4 text-center text-xl text-white drop-shadow sm:text-[24px]">
-              Spineline runs your clinic, so you can treat your patients. Join
-              hundreds of thriving practices today.
+              Spineline runs your clinic, so you can treat your patients. Join hundreds of thriving
+              practices today.
             </p>
           </div>
           <div className="flex h-[52px] flex-row gap-x-4">
@@ -158,9 +151,8 @@ export default function LandingPage() {
             />
             <div className="flex flex-col gap-y-6">
               <p className="relative text-2xl font-bold text-primary sm:text-3xl">
-                &ldquo;Spineline has transformed how we manage our practice! The
-                embedded phone system means we never miss a patient call, and
-                scheduling is seamless.&rdquo;
+                &ldquo;Spineline has transformed how we manage our practice! The embedded phone
+                system means we never miss a patient call, and scheduling is seamless.&rdquo;
                 <Quote
                   fill="var(--accent)"
                   strokeWidth={0}
@@ -191,19 +183,13 @@ export default function LandingPage() {
         <div className="mx-auto max-w-screen-lg px-4">
           <div className="flex flex-col items-center gap-12 pb-40 pt-12 text-white sm:flex-row sm:pb-32 sm:pt-20">
             <div>
-              <h2 className="mb-2 text-left text-4xl font-bold">
-                Get started today.
-              </h2>
+              <h2 className="mb-2 text-left text-4xl font-bold">Get started today.</h2>
               <p className="mb-6 text-left text-xl sm:text-2xl">
-                Join thousands of chiropractors using Spineline to streamline
-                their practice. Simple setup, powerful features.
+                Join thousands of chiropractors using Spineline to streamline their practice. Simple
+                setup, powerful features.
               </p>
               <Link href="/signup">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="gap-1.5 text-primary"
-                >
+                <Button variant="secondary" size="lg" className="gap-1.5 text-primary">
                   Get started
                   <ArrowRight size={22} />
                 </Button>
@@ -225,13 +211,9 @@ export default function LandingPage() {
       <div className="fixed bottom-0 right-[50%] flex w-full translate-x-2/4 flex-col gap-3 bg-gradient-to-tr from-[#6B2CFF] to-[#FF1593] px-2 py-3 shadow-xl sm:bottom-5 sm:w-[calc(100%-24px)] sm:flex-row sm:rounded-lg sm:px-6 lg:w-[1000px]">
         <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/dialstack-logo.svg"
-            alt="DialStack"
-            className="hidden h-6 sm:block"
-          />
+          <img src="/dialstack-logo.svg" alt="DialStack" className="hidden h-6 sm:block" />
           <p className="text-sm text-white">
-            This site is a demo for{" "}
+            This site is a demo for{' '}
             <a
               className="border-b border-white/60 text-white transition hover:border-white/90"
               href="https://dialstack.ai/"

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Dialog,
@@ -7,22 +7,22 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import ImageStep1 from "@/public/onboarding-images/step-1.png";
-import ImageStep2 from "@/public/onboarding-images/step-2.png";
-import ImageStep3 from "@/public/onboarding-images/step-3.png";
-import PointingHand from "@/public/onboarding-images/pointinghand.png";
-import { ArrowRight } from "lucide-react";
-import { useSearchParams, useRouter } from "next/navigation";
-import * as React from "react";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import ImageStep1 from '@/public/onboarding-images/step-1.png';
+import ImageStep2 from '@/public/onboarding-images/step-2.png';
+import ImageStep3 from '@/public/onboarding-images/step-3.png';
+import PointingHand from '@/public/onboarding-images/pointinghand.png';
+import { ArrowRight } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import * as React from 'react';
 
 const OnboardingDialog = () => {
   // Look for showNux query param in the URL.
   const searchParams = useSearchParams();
   const router = useRouter();
-  let showNux = searchParams.get("shownux") === "true";
+  let showNux = searchParams.get('shownux') === 'true';
 
   // Check browser width, and don't show NUX if on mobile device.
   if (window.innerWidth < 640) {
@@ -34,25 +34,24 @@ const OnboardingDialog = () => {
 
   const onboardingSteps = [
     {
-      title: "Welcome to Furever!",
-      description: "Take a quick tour to learn more.",
-      imageClassName: "scale-[0.85]",
-      cursorClassName: "opacity-0",
+      title: 'Welcome to Furever!',
+      description: 'Take a quick tour to learn more.',
+      imageClassName: 'scale-[0.85]',
+      cursorClassName: 'opacity-0',
       imageURL: ImageStep1,
     },
     {
-      title: "Explore components on different pages.",
-      description:
-        "Components can be found in Payments, Payouts, Finances, and My Account.",
-      imageClassName: "scale-[1.6] translate-x-[280px] translate-y-[25px]",
-      cursorClassName: "opacity-100 translate-x-[60px] translate-y-[-160px]",
+      title: 'Explore components on different pages.',
+      description: 'Components can be found in Payments, Payouts, Finances, and My Account.',
+      imageClassName: 'scale-[1.6] translate-x-[280px] translate-y-[25px]',
+      cursorClassName: 'opacity-100 translate-x-[60px] translate-y-[-160px]',
       imageURL: ImageStep2,
     },
     {
-      title: "View component outlines",
-      description: "Turn on borders to visualize Connect embedded components.",
-      imageClassName: "scale-[1.8] translate-x-[450px] translate-y-[-450px]",
-      cursorClassName: "opacity-100 translate-x-[208px] translate-y-[-75px]",
+      title: 'View component outlines',
+      description: 'Turn on borders to visualize Connect embedded components.',
+      imageClassName: 'scale-[1.8] translate-x-[450px] translate-y-[-450px]',
+      cursorClassName: 'opacity-100 translate-x-[208px] translate-y-[-75px]',
       imageURL: ImageStep3,
     },
   ];
@@ -64,7 +63,7 @@ const OnboardingDialog = () => {
     } else {
       // Close the modal and remove query param
       setOpenNux(false);
-      router.replace("/home");
+      router.replace('/home');
     }
   };
 
@@ -82,10 +81,7 @@ const OnboardingDialog = () => {
 
     // If not, show a back button
     return (
-      <Button
-        variant="secondary"
-        onClick={() => setCurrentStep(currentStep - 1)}
-      >
+      <Button variant="secondary" onClick={() => setCurrentStep(currentStep - 1)}>
         Back
       </Button>
     );
@@ -119,7 +115,7 @@ const OnboardingDialog = () => {
 
   const renderProgressIndicator = () => {
     const progressDot = (isActive: boolean) => {
-      const bg = isActive ? "bg-[#675DFF]" : "bg-neutral-200";
+      const bg = isActive ? 'bg-[#675DFF]' : 'bg-neutral-200';
       return <div className={`h-2.5 w-2.5 rounded-full ${bg}`}></div>;
     };
 
@@ -155,9 +151,7 @@ const OnboardingDialog = () => {
             />
           </div>
           <DialogHeader className="p-5">
-            <DialogTitle className="text-2xl">
-              {onboardingSteps[currentStep].title}
-            </DialogTitle>
+            <DialogTitle className="text-2xl">{onboardingSteps[currentStep].title}</DialogTitle>
             <DialogDescription className="text-lg">
               {onboardingSteps[currentStep].description}
             </DialogDescription>

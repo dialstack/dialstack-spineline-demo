@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useCallEvents } from "@/app/hooks/useCallEvents";
-import { ScreenPopPanel } from "./ScreenPopPanel";
+import { useCallEvents } from '@/app/hooks/useCallEvents';
+import { ScreenPopPanel } from './ScreenPopPanel';
 
 interface ScreenPopProviderProps {
   children: React.ReactNode;

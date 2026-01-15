@@ -1,4 +1,4 @@
-import { DialStack } from "@dialstack/sdk/server";
+import { DialStack } from '@dialstack/sdk/server';
 
 // Lazy initialization to avoid build-time errors when env vars aren't set
 let _dialstack: DialStack | null = null;

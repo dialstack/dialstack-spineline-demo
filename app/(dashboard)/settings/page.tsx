@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { LoaderCircle } from "lucide-react";
-import Container from "@/app/components/Container";
-import EditPasswordButton from "@/app/components/EditPasswordButton";
-import EditEmailButton from "@/app/components/EditEmailButton";
+import * as React from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { LoaderCircle } from 'lucide-react';
+import Container from '@/app/components/Container';
+import EditPasswordButton from '@/app/components/EditPasswordButton';
+import EditEmailButton from '@/app/components/EditEmailButton';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { fetchAccountInfo, updateTimezone } from "@/lib/api/account";
+} from '@/components/ui/select';
+import { fetchAccountInfo, updateTimezone } from '@/lib/api/account';
 
 const US_TIMEZONES = [
-  { value: "America/New_York", label: "Eastern Time (ET)" },
-  { value: "America/Chicago", label: "Central Time (CT)" },
-  { value: "America/Denver", label: "Mountain Time (MT)" },
-  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
-  { value: "America/Anchorage", label: "Alaska Time (AKT)" },
-  { value: "Pacific/Honolulu", label: "Hawaii Time (HT)" },
+  { value: 'America/New_York', label: 'Eastern Time (ET)' },
+  { value: 'America/Chicago', label: 'Central Time (CT)' },
+  { value: 'America/Denver', label: 'Mountain Time (MT)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+  { value: 'America/Anchorage', label: 'Alaska Time (AKT)' },
+  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HT)' },
 ];
 
 export default function Settings() {
@@ -32,20 +32,20 @@ export default function Settings() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["accountInfo"],
+    queryKey: ['accountInfo'],
     queryFn: fetchAccountInfo,
   });
 
   const timezoneMutation = useMutation({
     mutationFn: updateTimezone,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accountInfo"] });
+      queryClient.invalidateQueries({ queryKey: ['accountInfo'] });
     },
   });
 
-  const practiceName = accountData?.businessName || "";
-  const email = accountData?.email || "";
-  const timezone = accountData?.timezone || "America/New_York";
+  const practiceName = accountData?.businessName || '';
+  const email = accountData?.email || '';
+  const timezone = accountData?.timezone || 'America/New_York';
 
   return (
     <>
@@ -96,9 +96,7 @@ export default function Settings() {
                 </SelectContent>
               </Select>
               {timezoneMutation.isError && (
-                <div className="mt-1 text-sm text-red-600">
-                  Failed to save timezone
-                </div>
+                <div className="mt-1 text-sm text-red-600">Failed to save timezone</div>
               )}
             </div>
           </div>

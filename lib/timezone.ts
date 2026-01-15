@@ -3,14 +3,8 @@
  * All functions use date-fns and date-fns-tz for timezone operations.
  */
 
-import { toZonedTime, fromZonedTime, format } from "date-fns-tz";
-import {
-  startOfDay,
-  endOfDay,
-  getHours,
-  getMinutes,
-  addMinutes,
-} from "date-fns";
+import { toZonedTime, fromZonedTime, format } from 'date-fns-tz';
+import { startOfDay, endOfDay, getHours, getMinutes, addMinutes } from 'date-fns';
 
 /**
  * Get start of day (midnight) for a date in the browser's local timezone.
@@ -74,11 +68,7 @@ export function getDayEndUTC(localDate: Date, timezone: string): Date {
  * @param timezone - IANA timezone string (e.g., "America/New_York")
  * @param formatStr - date-fns format string
  */
-export function formatInTimezone(
-  date: Date,
-  timezone: string,
-  formatStr: string,
-): string {
+export function formatInTimezone(date: Date, timezone: string, formatStr: string): string {
   return format(toZonedTime(date, timezone), formatStr, { timeZone: timezone });
 }
 
@@ -88,7 +78,7 @@ export function formatInTimezone(
  */
 export function getTimeInTimezone(
   utcDate: Date,
-  timezone: string,
+  timezone: string
 ): { hours: number; minutes: number } {
   const zonedDate = toZonedTime(utcDate, timezone);
   return {
@@ -110,7 +100,7 @@ export function getMinutesSinceHour(
   utcDate: Date,
   timezone: string,
   startHour: number,
-  endHour: number,
+  endHour: number
 ): number {
   const { hours, minutes } = getTimeInTimezone(utcDate, timezone);
 
@@ -131,7 +121,7 @@ export function getMinutesSinceHour(
 export function createUTCFromMinutes(
   localDate: Date,
   minutesFromMidnight: number,
-  timezone: string,
+  timezone: string
 ): Date {
   const zonedDateTime = addMinutes(startOfDay(localDate), minutesFromMidnight);
   return fromZonedTime(zonedDateTime, timezone);

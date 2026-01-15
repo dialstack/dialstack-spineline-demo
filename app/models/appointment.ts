@@ -1,19 +1,10 @@
-import dbConnect from "@/lib/dbConnect";
+import dbConnect from '@/lib/dbConnect';
 
 // Appointment status values
-export type AppointmentStatus =
-  | "pending"
-  | "accepted"
-  | "cancelled"
-  | "declined"
-  | "no_show";
+export type AppointmentStatus = 'pending' | 'accepted' | 'cancelled' | 'declined' | 'no_show';
 
 // Appointment type values
-export type AppointmentType =
-  | "initial"
-  | "adjustment"
-  | "walk_in"
-  | "follow_up";
+export type AppointmentType = 'initial' | 'adjustment' | 'walk_in' | 'follow_up';
 
 // Appointment interface for TypeScript typing
 export interface Appointment {
@@ -65,7 +56,7 @@ class AppointmentModel {
   // Create a new appointment for a practice
   static async create(
     practiceId: number,
-    appointmentData: CreateAppointmentInput,
+    appointmentData: CreateAppointmentInput
   ): Promise<Appointment> {
     const pool = await dbConnect();
 
@@ -88,7 +79,7 @@ class AppointmentModel {
           appointmentData.customer_email,
           appointmentData.notes,
           appointmentData.idempotency_key,
-        ],
+        ]
       );
 
       return result.rows[0];
@@ -100,21 +91,19 @@ class AppointmentModel {
   // Find appointment by idempotency key (for idempotent booking)
   static async findByIdempotencyKey(
     practiceId: number,
-    idempotencyKey: string,
+    idempotencyKey: string
   ): Promise<Appointment | null> {
     const pool = await dbConnect();
 
     try {
       const result = await pool.query(
-        "SELECT * FROM appointments WHERE practice_id = $1 AND idempotency_key = $2",
-        [practiceId, idempotencyKey],
+        'SELECT * FROM appointments WHERE practice_id = $1 AND idempotency_key = $2',
+        [practiceId, idempotencyKey]
       );
 
       return result.rows[0] || null;
     } catch (error) {
-      throw new Error(
-        `Failed to find appointment by idempotency key: ${error}`,
-      );
+      throw new Error(`Failed to find appointment by idempotency key: ${error}`);
     }
   }
 
@@ -127,7 +116,7 @@ class AppointmentModel {
     startAt: Date,
     endAt: Date,
     excludeId?: number,
-    providerId?: number | null,
+    providerId?: number | null
   ): Promise<Appointment[]> {
     const pool = await dbConnect();
 
@@ -171,7 +160,7 @@ class AppointmentModel {
   static async findByPractice(
     practiceId: number,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<Appointment[]> {
     const pool = await dbConnect();
 
@@ -182,7 +171,7 @@ class AppointmentModel {
            AND start_at < $3
            AND end_at > $2
          ORDER BY start_at ASC`,
-        [practiceId, startDate, endDate],
+        [practiceId, startDate, endDate]
       );
 
       return result.rows;
@@ -192,16 +181,13 @@ class AppointmentModel {
   }
 
   // Find appointment by ID (with practice ownership check)
-  static async findById(
-    id: number,
-    practiceId: number,
-  ): Promise<Appointment | null> {
+  static async findById(id: number, practiceId: number): Promise<Appointment | null> {
     const pool = await dbConnect();
 
     try {
       const result = await pool.query(
-        "SELECT * FROM appointments WHERE id = $1 AND practice_id = $2",
-        [id, practiceId],
+        'SELECT * FROM appointments WHERE id = $1 AND practice_id = $2',
+        [id, practiceId]
       );
 
       return result.rows[0] || null;
@@ -214,7 +200,7 @@ class AppointmentModel {
   static async updateStatus(
     id: number,
     practiceId: number,
-    status: AppointmentStatus,
+    status: AppointmentStatus
   ): Promise<Appointment | null> {
     const pool = await dbConnect();
 
@@ -224,7 +210,7 @@ class AppointmentModel {
          SET status = $3, updated_at = NOW()
          WHERE id = $1 AND practice_id = $2
          RETURNING *`,
-        [id, practiceId, status],
+        [id, practiceId, status]
       );
 
       return result.rows[0] || null;
@@ -237,7 +223,7 @@ class AppointmentModel {
   static async update(
     id: number,
     practiceId: number,
-    data: UpdateAppointmentInput,
+    data: UpdateAppointmentInput
   ): Promise<Appointment | null> {
     const pool = await dbConnect();
 
@@ -285,10 +271,10 @@ class AppointmentModel {
 
       const result = await pool.query(
         `UPDATE appointments
-         SET ${fields.join(", ")}
+         SET ${fields.join(', ')}
          WHERE id = $${paramCounter++} AND practice_id = $${paramCounter}
          RETURNING *`,
-        values,
+        values
       );
 
       return result.rows[0] || null;
@@ -303,8 +289,8 @@ class AppointmentModel {
 
     try {
       const result = await pool.query(
-        "DELETE FROM appointments WHERE id = $1 AND practice_id = $2 RETURNING id",
-        [id, practiceId],
+        'DELETE FROM appointments WHERE id = $1 AND practice_id = $2 RETURNING id',
+        [id, practiceId]
       );
 
       return result.rows.length > 0;
