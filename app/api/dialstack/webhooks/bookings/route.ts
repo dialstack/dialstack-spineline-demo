@@ -8,6 +8,8 @@ import {
 import PracticeModel from '@/app/models/practice';
 import AppointmentModel from '@/app/models/appointment';
 import PatientModel from '@/app/models/patient';
+import ProviderModel, { Provider } from '@/app/models/provider';
+import { formatProviderNotes } from '@/lib/provider-utils';
 
 // POST /api/dialstack/webhooks/bookings
 // DialStack calls this endpoint to create a new booking
@@ -80,6 +82,11 @@ export async function POST(request: NextRequest) {
   );
 
   if (existingBooking) {
+    // Look up provider for notes (if assigned)
+    const existingProvider = existingBooking.provider_id
+      ? await ProviderModel.findById(existingBooking.provider_id, practice.id)
+      : null;
+
     // Return the existing booking (idempotent response)
     return NextResponse.json<BookingResponse>({
       booking: {
@@ -94,6 +101,7 @@ export async function POST(request: NextRequest) {
                 name: existingBooking.customer_name,
               }
             : undefined,
+        notes: formatProviderNotes(existingProvider),
         created_at: existingBooking.created_at?.toISOString(),
       },
     });
@@ -103,17 +111,47 @@ export async function POST(request: NextRequest) {
   const startAt = new Date(event.booking.start_at);
   const endAt = new Date(startAt.getTime() + event.booking.duration_minutes * 60 * 1000);
 
-  // Check for conflicting appointments
-  const conflicts = await AppointmentModel.findConflicting(practice.id, startAt, endAt);
-  if (conflicts.length > 0) {
-    return NextResponse.json<WebhookErrorResponse>(
-      {
-        error: {
-          code: 'slot_unavailable',
-          message: 'The requested time slot is no longer available',
+  // Find available providers at the requested time (single query)
+  const availableProviders = await ProviderModel.findAvailableAtTime(practice.id, startAt, endAt);
+
+  // Determine selected provider
+  let selectedProvider: Provider | null = null;
+
+  if (availableProviders.length === 0) {
+    // Check if practice has any providers configured
+    const allProviders = await ProviderModel.findAllByPractice(practice.id);
+
+    if (allProviders.length === 0) {
+      // No providers configured - fall back to legacy behavior (practice-level availability)
+      const conflicts = await AppointmentModel.findConflicting(practice.id, startAt, endAt);
+      if (conflicts.length > 0) {
+        return NextResponse.json<WebhookErrorResponse>(
+          {
+            error: {
+              code: 'slot_unavailable',
+              message: 'The requested time slot is no longer available',
+            },
+          },
+          { status: 409 }
+        );
+      }
+    } else {
+      // Providers exist but all are busy
+      return NextResponse.json<WebhookErrorResponse>(
+        {
+          error: {
+            code: 'slot_unavailable',
+            message: 'No providers available at the requested time',
+          },
         },
-      },
-      { status: 409 }
+        { status: 409 }
+      );
+    }
+  } else {
+    // Select the least busy provider (first in list, sorted by appointment count)
+    selectedProvider = availableProviders[0];
+    console.log(
+      `Selected provider ${selectedProvider.id} (${selectedProvider.first_name} ${selectedProvider.last_name}) from ${availableProviders.length} available`
     );
   }
 
@@ -126,12 +164,16 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Build provider notes if a provider was selected
+  const providerNotes = formatProviderNotes(selectedProvider);
+
   // Create the appointment
   const appointment = await AppointmentModel.create(practice.id, {
     start_at: startAt,
     end_at: endAt,
     status: 'accepted',
     patient_id: patientId,
+    provider_id: selectedProvider?.id,
     customer_phone: event.booking.customer.phone,
     customer_name: event.booking.customer.name,
     customer_email: event.booking.customer.email,
@@ -150,6 +192,7 @@ export async function POST(request: NextRequest) {
           phone: event.booking.customer.phone,
           name: event.booking.customer.name,
         },
+        notes: providerNotes,
         created_at: appointment.created_at?.toISOString(),
       },
     },

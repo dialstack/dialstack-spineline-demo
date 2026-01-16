@@ -125,6 +125,40 @@ class ProviderModel {
   }
 
   /**
+   * Find providers available at a specific time (no conflicting appointments)
+   * Returns providers sorted by appointment count (least busy first) for load balancing
+   * Uses a single query instead of N+1 pattern
+   */
+  static async findAvailableAtTime(
+    practiceId: number,
+    startAt: Date,
+    endAt: Date
+  ): Promise<Provider[]> {
+    const pool = await dbConnect();
+
+    // Find available providers, sorted by total appointment count (load balancing)
+    const result = await pool.query(
+      `SELECT p.*,
+              (SELECT COUNT(*) FROM appointments a
+               WHERE a.provider_id = p.id
+               AND a.status NOT IN ('cancelled', 'declined')) as appointment_count
+       FROM providers p
+       WHERE p.practice_id = $1
+       AND NOT EXISTS (
+         SELECT 1 FROM appointments a
+         WHERE a.provider_id = p.id
+         AND a.start_at < $3 AND a.end_at > $2
+         AND a.status NOT IN ('cancelled', 'declined')
+       )
+       ORDER BY appointment_count ASC, p.last_name ASC, p.first_name ASC`,
+      [practiceId, startAt.toISOString(), endAt.toISOString()]
+    );
+
+    // Strip the appointment_count from results (not part of Provider interface)
+    return result.rows.map(({ appointment_count, ...provider }) => provider);
+  }
+
+  /**
    * Create default providers for a new practice
    */
   static async createDefaults(practiceId: number): Promise<Provider[]> {

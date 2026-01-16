@@ -2,7 +2,11 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { Pool } from 'pg';
 import { runner as migrate } from 'node-pg-migrate';
-import { generateAvailabilities } from '../lib/availability';
+import {
+  generateAvailabilities,
+  unionAvailabilitySlots,
+  AvailabilitySlot,
+} from '../lib/availability';
 
 describe('Availability Search Algorithm', () => {
   const now = new Date('2026-01-01T00:00:00Z');
@@ -236,6 +240,148 @@ describe('Availability Search Algorithm', () => {
       );
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('Multi-Provider Availability', () => {
+    it('should show full availability when one provider is free all day', () => {
+      // Provider A blocked 10-11am, Provider B blocked 11am-12pm, Provider C free all day
+      // Expected: Full 9am-5pm (C is always available)
+      const timezone = 'America/New_York';
+      const rangeStart = new Date('2026-01-15T14:00:00Z'); // 9am EST
+      const rangeEnd = new Date('2026-01-15T22:00:00Z'); // 5pm EST
+
+      // Generate availability for each provider
+      const providerASlots = generateAvailabilities(
+        timezone,
+        rangeStart,
+        rangeEnd,
+        [
+          {
+            start_at: new Date('2026-01-15T15:00:00Z'), // 10am EST
+            end_at: new Date('2026-01-15T16:00:00Z'), // 11am EST
+            status: 'accepted',
+          },
+        ],
+        now
+      );
+
+      const providerBSlots = generateAvailabilities(
+        timezone,
+        rangeStart,
+        rangeEnd,
+        [
+          {
+            start_at: new Date('2026-01-15T16:00:00Z'), // 11am EST
+            end_at: new Date('2026-01-15T17:00:00Z'), // 12pm EST
+            status: 'accepted',
+          },
+        ],
+        now
+      );
+
+      const providerCSlots = generateAvailabilities(timezone, rangeStart, rangeEnd, [], now);
+
+      // Union all provider availabilities
+      const result = unionAvailabilitySlots([providerASlots, providerBSlots, providerCSlots]);
+
+      // Should be full 9am-5pm since Provider C is always available
+      expect(result).toEqual([{ start_at: '2026-01-15T09:00:00-05:00', duration_minutes: 480 }]);
+    });
+
+    it('should show partial availability when all providers blocked same time', () => {
+      // All 3 providers blocked 10-11am
+      // Expected: 9-10am and 11am-5pm windows
+      const timezone = 'America/New_York';
+      const rangeStart = new Date('2026-01-15T14:00:00Z'); // 9am EST
+      const rangeEnd = new Date('2026-01-15T22:00:00Z'); // 5pm EST
+
+      const blockedAppointment = {
+        start_at: new Date('2026-01-15T15:00:00Z'), // 10am EST
+        end_at: new Date('2026-01-15T16:00:00Z'), // 11am EST
+        status: 'accepted',
+      };
+
+      const providerASlots = generateAvailabilities(
+        timezone,
+        rangeStart,
+        rangeEnd,
+        [blockedAppointment],
+        now
+      );
+      const providerBSlots = generateAvailabilities(
+        timezone,
+        rangeStart,
+        rangeEnd,
+        [blockedAppointment],
+        now
+      );
+      const providerCSlots = generateAvailabilities(
+        timezone,
+        rangeStart,
+        rangeEnd,
+        [blockedAppointment],
+        now
+      );
+
+      const result = unionAvailabilitySlots([providerASlots, providerBSlots, providerCSlots]);
+
+      // All providers blocked 10-11am, so availability is 9-10am and 11am-5pm
+      expect(result).toEqual([
+        { start_at: '2026-01-15T09:00:00-05:00', duration_minutes: 60 },
+        { start_at: '2026-01-15T11:00:00-05:00', duration_minutes: 360 },
+      ]);
+    });
+
+    it('should merge adjacent availability slots from different providers', () => {
+      // Provider A: 9am-11am, Provider B: 11am-1pm, Provider C: 1pm-5pm
+      // Union should merge into continuous 9am-5pm
+      const timezone = 'America/New_York';
+
+      const providerASlots: AvailabilitySlot[] = [
+        { start_at: '2026-01-15T09:00:00-05:00', duration_minutes: 120 },
+      ];
+      const providerBSlots: AvailabilitySlot[] = [
+        { start_at: '2026-01-15T11:00:00-05:00', duration_minutes: 120 },
+      ];
+      const providerCSlots: AvailabilitySlot[] = [
+        { start_at: '2026-01-15T13:00:00-05:00', duration_minutes: 240 },
+      ];
+
+      const result = unionAvailabilitySlots([providerASlots, providerBSlots, providerCSlots]);
+
+      // Adjacent/overlapping slots should merge into one continuous slot
+      expect(result).toEqual([{ start_at: '2026-01-15T09:00:00-05:00', duration_minutes: 480 }]);
+    });
+
+    it('should handle overlapping availability slots', () => {
+      // Provider A: 9am-2pm, Provider B: 11am-5pm
+      // Union should be 9am-5pm
+      const providerASlots: AvailabilitySlot[] = [
+        { start_at: '2026-01-15T09:00:00-05:00', duration_minutes: 300 }, // 9am-2pm
+      ];
+      const providerBSlots: AvailabilitySlot[] = [
+        { start_at: '2026-01-15T11:00:00-05:00', duration_minutes: 360 }, // 11am-5pm
+      ];
+
+      const result = unionAvailabilitySlots([providerASlots, providerBSlots]);
+
+      expect(result).toEqual([{ start_at: '2026-01-15T09:00:00-05:00', duration_minutes: 480 }]);
+    });
+
+    it('should return empty array when all providers have empty availability', () => {
+      const result = unionAvailabilitySlots([[], [], []]);
+      expect(result).toEqual([]);
+    });
+
+    it('should handle single provider slots', () => {
+      const providerSlots: AvailabilitySlot[] = [
+        { start_at: '2026-01-15T09:00:00-05:00', duration_minutes: 480 },
+      ];
+
+      const result = unionAvailabilitySlots([providerSlots]);
+
+      expect(result).toEqual([{ start_at: '2026-01-15T09:00:00-05:00', duration_minutes: 480 }]);
     });
   });
 });

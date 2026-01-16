@@ -22,6 +22,106 @@ export interface AvailabilitySlot {
   duration_minutes: number;
 }
 
+interface TimeEvent {
+  time: number;
+  isStart: boolean;
+}
+
+/**
+ * Union multiple provider availability slot arrays into a single availability.
+ * Any time slot where at least one provider is available is included in the result.
+ *
+ * Uses a sweep line algorithm to merge overlapping/adjacent slots efficiently.
+ *
+ * @param providerSlots - Array of availability slots per provider
+ * @returns Merged availability slots where at least one provider was available
+ */
+export function unionAvailabilitySlots(providerSlots: AvailabilitySlot[][]): AvailabilitySlot[] {
+  // If no providers or all empty, return empty
+  if (providerSlots.length === 0 || providerSlots.every((slots) => slots.length === 0)) {
+    return [];
+  }
+
+  // Flatten and convert to time events
+  const events: TimeEvent[] = [];
+  for (const slots of providerSlots) {
+    for (const slot of slots) {
+      const startMs = new Date(slot.start_at).getTime();
+      const endMs = startMs + slot.duration_minutes * 60000;
+      events.push({ time: startMs, isStart: true });
+      events.push({ time: endMs, isStart: false });
+    }
+  }
+
+  // Sort by time, with starts before ends at same time (to merge adjacent slots)
+  events.sort((a, b) => {
+    if (a.time !== b.time) return a.time - b.time;
+    // At same time: starts before ends (allows adjacent slots to merge)
+    return a.isStart ? -1 : 1;
+  });
+
+  // Extract timezone offset from first available slot (before sweep line)
+  const firstSlot = providerSlots.find((slots) => slots.length > 0)?.[0];
+  const tzMatch = firstSlot?.start_at.match(/([+-]\d{2}:\d{2})$/);
+  const tzOffset = tzMatch ? tzMatch[1] : 'Z';
+
+  // Sweep line to find union intervals
+  const result: AvailabilitySlot[] = [];
+  let activeCount = 0;
+  let unionStart: number | null = null;
+
+  for (const event of events) {
+    if (event.isStart) {
+      if (activeCount === 0) {
+        unionStart = event.time;
+      }
+      activeCount++;
+    } else {
+      activeCount--;
+      if (activeCount === 0 && unionStart !== null) {
+        const start = new Date(unionStart);
+        const durationMinutes = Math.round((event.time - unionStart) / 60000);
+        const startStr = formatDateWithOffset(start, tzOffset);
+        result.push({
+          start_at: startStr,
+          duration_minutes: durationMinutes,
+        });
+        unionStart = null;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Format a Date with a specific timezone offset string.
+ */
+function formatDateWithOffset(date: Date, offset: string): string {
+  // Parse the offset to get hours and minutes
+  const match = offset.match(/([+-])(\d{2}):(\d{2})/);
+  if (!match) {
+    return date.toISOString();
+  }
+
+  const sign = match[1] === '+' ? 1 : -1;
+  const offsetHours = parseInt(match[2], 10);
+  const offsetMinutes = parseInt(match[3], 10);
+  const totalOffsetMs = sign * (offsetHours * 60 + offsetMinutes) * 60000;
+
+  // Adjust UTC time to local time
+  const localTime = new Date(date.getTime() + totalOffsetMs);
+
+  const year = localTime.getUTCFullYear();
+  const month = String(localTime.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(localTime.getUTCDate()).padStart(2, '0');
+  const hours = String(localTime.getUTCHours()).padStart(2, '0');
+  const minutes = String(localTime.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(localTime.getUTCSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offset}`;
+}
+
 /**
  * Generate available time slots for a practice given a time range.
  *

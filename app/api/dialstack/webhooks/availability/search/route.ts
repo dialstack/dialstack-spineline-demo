@@ -9,7 +9,8 @@ import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { startOfDay, addDays } from 'date-fns';
 import PracticeModel, { getTimezone } from '@/app/models/practice';
 import AppointmentModel from '@/app/models/appointment';
-import { generateAvailabilities } from '@/lib/availability';
+import ProviderModel from '@/app/models/provider';
+import { generateAvailabilities, unionAvailabilitySlots } from '@/lib/availability';
 
 // POST /api/dialstack/webhooks/availability/search
 // DialStack calls this endpoint to search for available appointment slots
@@ -127,20 +128,59 @@ export async function POST(request: NextRequest) {
       ? await AppointmentModel.findByPractice(practice.id, queryStart, queryEnd)
       : existingAppointments;
 
-  // Generate availability windows
-  // Pass rangeStart as 'now' to show all availability in the requested range
-  // (not clipped to server's current time)
-  const availabilities = generateAvailabilities(
-    timezone,
-    rangeStart,
-    rangeEnd,
-    appointments.map((apt) => ({
+  // Fetch all providers for this practice
+  const providers = await ProviderModel.findAllByPractice(practice.id);
+
+  // Helper to convert appointments to availability input format
+  function toAvailabilityInput(apts: typeof appointments) {
+    return apts.map((apt) => ({
       start_at: apt.start_at,
       end_at: apt.end_at,
       status: apt.status,
-    })),
-    rangeStart
-  );
+    }));
+  }
+
+  // Generate availability for each provider and union them
+  // Any time where at least one provider is available is considered available overall
+  let availabilities;
+
+  if (providers.length === 0) {
+    // No providers - fall back to practice-level availability (legacy behavior)
+    availabilities = generateAvailabilities(
+      timezone,
+      rangeStart,
+      rangeEnd,
+      toAvailabilityInput(appointments),
+      rangeStart
+    );
+  } else {
+    // Group appointments by provider_id once (O(A) instead of O(P*A))
+    // Appointments with NULL provider_id are ignored (don't block any provider)
+    const appointmentsByProvider = new Map<number, typeof appointments>();
+    for (const apt of appointments) {
+      if (apt.provider_id !== null) {
+        const list = appointmentsByProvider.get(apt.provider_id) ?? [];
+        list.push(apt);
+        appointmentsByProvider.set(apt.provider_id, list);
+      }
+    }
+
+    // Generate per-provider availability and union them
+    const providerAvailabilities = providers.map((provider) => {
+      const providerAppointments = appointmentsByProvider.get(provider.id) ?? [];
+
+      return generateAvailabilities(
+        timezone,
+        rangeStart,
+        rangeEnd,
+        toAvailabilityInput(providerAppointments),
+        rangeStart
+      );
+    });
+
+    // Union all provider availabilities
+    availabilities = unionAvailabilitySlots(providerAvailabilities);
+  }
 
   return NextResponse.json<AvailabilitySearchResponse>({ availabilities });
 }
