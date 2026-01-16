@@ -7,6 +7,9 @@ const nextConfig = {
   turbopack: {
     root: '..',
   },
+  // Explicitly mark pg as external to avoid Turbopack hashing issues
+  // pg uses native bindings and must be resolved at runtime
+  serverExternalPackages: ['pg'],
 };
 
 export default nextConfig;
