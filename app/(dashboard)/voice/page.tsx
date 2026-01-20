@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import Container from '@/app/components/Container';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
-import { CallLogs, Voicemails } from '@dialstack/sdk';
+import { CallLogs, Voicemails, DialPlanViewer } from '@dialstack/sdk';
 import { useDialstackContext } from '@/app/hooks/EmbeddedComponentProvider';
 import { CalendarCheck, UserPlus, PhoneForwarded, AlertCircle, Phone } from 'lucide-react';
 import { formatPhone } from '@/lib/phone';
@@ -79,6 +79,7 @@ export default function VoicePage() {
   const { data: session } = useSession();
   const { dialstackInstance } = useDialstackContext();
   const [dialstackUserId, setDialstackUserId] = useState<string | null>(null);
+  const [dialPlanId, setDialPlanId] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState<PhoneNumber | null>(null);
   const [phoneNumberLoading, setPhoneNumberLoading] = useState(true);
 
@@ -98,6 +99,25 @@ export default function VoicePage() {
 
     if (session) {
       fetchUser();
+    }
+  }, [session]);
+
+  // Fetch the dial plan ID on mount (creates one if none exists)
+  useEffect(() => {
+    async function fetchDialPlan() {
+      try {
+        const response = await fetch('/api/dialstack/dial-plan');
+        if (response.ok) {
+          const data = await response.json();
+          setDialPlanId(data.dialPlanId);
+        }
+      } catch (error) {
+        console.error('Failed to fetch dial plan:', error);
+      }
+    }
+
+    if (session) {
+      fetchDialPlan();
     }
   }, [session]);
 
@@ -211,6 +231,18 @@ export default function VoicePage() {
             <Voicemails userId={dialstackUserId} />
           ) : (
             <p className="text-sm text-muted-foreground">Loading voicemails...</p>
+          )}
+        </EmbeddedComponentContainer>
+      </Container>
+
+      {/* Dial Plan - Embedded DialStack Component */}
+      <Container className="p-5">
+        <h2 className="text-lg font-semibold mb-4">Call Routing</h2>
+        <EmbeddedComponentContainer componentName="DialPlanViewer">
+          {dialPlanId ? (
+            <DialPlanViewer dialPlanId={dialPlanId} style={{ height: '400px' }} />
+          ) : (
+            <p className="text-sm text-muted-foreground">Loading call routing...</p>
           )}
         </EmbeddedComponentContainer>
       </Container>
