@@ -53,6 +53,30 @@ export async function GET() {
         email: session.user.email ?? undefined,
       });
       userId = newUser.id;
+
+      // Create a default extension for the new user
+      // Get account config for extension_length, then find next available number
+      const account = await dialstack.accounts.retrieve(accountId);
+      const extensionLength = account.config.extension_length ?? 3;
+      const { data: extensions } = await dialstack.extensions.list(accountId, { limit: 100 });
+
+      // Find the next available extension number starting from 100 (or 1000, etc.)
+      const startNumber = Math.pow(10, extensionLength - 1);
+      const usedNumbers = new Set(extensions.map((e) => parseInt(e.number, 10)));
+      let nextNumber = startNumber;
+      while (usedNumbers.has(nextNumber)) {
+        nextNumber++;
+      }
+
+      try {
+        await dialstack.extensions.create(accountId, {
+          number: nextNumber.toString(),
+          target: userId,
+        });
+      } catch (error) {
+        // Extension creation may fail if number conflicts (race condition), log but continue
+        console.warn('Failed to create extension for new user:', error);
+      }
     } else {
       userId = users[0].id;
     }

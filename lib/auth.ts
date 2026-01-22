@@ -1,10 +1,41 @@
 import Practice from '../app/models/practice';
 import Provider from '../app/models/provider';
-import { AuthOptions } from 'next-auth';
+import { AuthOptions, User } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import dbConnect from '@/lib/dbConnect';
 import logger from '@/lib/logger';
 import { getDialstack } from '@/lib/dialstack';
+
+/**
+ * Validates credentials and returns the user if valid.
+ * Used by both login and updateemail providers.
+ */
+async function validateCredentials(
+  email: string | undefined,
+  password: string | undefined
+): Promise<User | null> {
+  if (!email) {
+    logger.info('Could not find an email for provider');
+    return null;
+  }
+
+  const user = await Practice.findByEmail(email);
+  if (!user) {
+    return null;
+  }
+
+  const isValid = await Practice.validatePassword(user, password);
+  if (!isValid) {
+    logger.info('Invalid password');
+    return null;
+  }
+
+  return {
+    id: user.id?.toString(),
+    email: user.email,
+    dialstackAccountId: user.dialstack_account_id,
+  } as User;
+}
 
 export const authOptions: AuthOptions = {
   session: {
@@ -52,40 +83,12 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         await dbConnect();
-        let user = null;
         try {
-          const email = credentials?.email;
-          if (!email) {
-            logger.info('Could not find an email for provider');
-            return null;
-          }
-
-          user = await Practice.findByEmail(email);
-          if (!user) {
-            return null;
-          }
-
-          const password = credentials?.password;
-          if (!password) {
-            logger.info('Could not find a password');
-            return null;
-          }
-
-          const isValid = await Practice.validatePassword(user, password);
-          if (!isValid) {
-            logger.info('Invalid password');
-            return null;
-          }
+          return await validateCredentials(credentials?.email, credentials?.password);
         } catch (err) {
           logger.warn({ err }, 'Got an error authorizing a user during email update');
           return null;
         }
-
-        return {
-          id: user.id?.toString(),
-          email: user.email,
-          dialstackAccountId: user.dialstack_account_id,
-        };
       },
     }),
     CredentialsProvider({
@@ -97,34 +100,12 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         await dbConnect();
-        let user = null;
         try {
-          const email = credentials?.email;
-          const password = credentials?.password;
-          if (!email) {
-            logger.info('Could not find an email for provider');
-            return null;
-          }
-
-          user = await Practice.findByEmail(email);
-          if (!user) {
-            return null;
-          }
-
-          const isValid = await Practice.validatePassword(user, password);
-          if (!isValid) {
-            return null;
-          }
+          return await validateCredentials(credentials?.email, credentials?.password);
         } catch (err) {
           logger.warn({ err }, 'Got an error authorizing a user during login');
           return null;
         }
-
-        return {
-          id: user.id?.toString(),
-          email: user.email,
-          dialstackAccountId: user.dialstack_account_id,
-        };
       },
     }),
     CredentialsProvider({
@@ -161,9 +142,12 @@ export const authOptions: AuthOptions = {
           });
           logger.info('Practice was created');
 
-          // Create DialStack account
+          // Create DialStack account with 3-digit extensions
           logger.info('Creating DialStack account...');
-          const account = await getDialstack().accounts.create({ email });
+          const account = await getDialstack().accounts.create({
+            email,
+            config: { extension_length: 3 },
+          });
           logger.info({ accountId: account.id }, 'DialStack account created');
 
           // Store the DialStack account ID (user created on-demand when needed)
