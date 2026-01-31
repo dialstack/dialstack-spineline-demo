@@ -11,7 +11,9 @@ describe('Booking Creation - Provider Assignment', () => {
   let providers: { id: number; first_name: string; last_name: string; specialty: string }[];
 
   beforeAll(async () => {
-    container = await new PostgreSqlContainer('postgres:16-alpine').withExposedPorts(5432).start();
+    container = await new PostgreSqlContainer('public.ecr.aws/docker/library/postgres:16-alpine')
+      .withExposedPorts(5432)
+      .start();
 
     pool = new Pool({
       connectionString: container.getConnectionUri(),

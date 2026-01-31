@@ -391,7 +391,9 @@ describe('Database Integration', () => {
   let pool: Pool;
 
   beforeAll(async () => {
-    container = await new PostgreSqlContainer('postgres:16-alpine').withExposedPorts(5432).start();
+    container = await new PostgreSqlContainer('public.ecr.aws/docker/library/postgres:16-alpine')
+      .withExposedPorts(5432)
+      .start();
 
     pool = new Pool({
       connectionString: container.getConnectionUri(),

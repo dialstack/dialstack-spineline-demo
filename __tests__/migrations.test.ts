@@ -9,7 +9,9 @@ describe('Database Migrations', () => {
 
   beforeAll(async () => {
     // Start PostgreSQL container
-    container = await new PostgreSqlContainer('postgres:16-alpine').withExposedPorts(5432).start();
+    container = await new PostgreSqlContainer('public.ecr.aws/docker/library/postgres:16-alpine')
+      .withExposedPorts(5432)
+      .start();
 
     // Create connection pool
     pool = new Pool({
