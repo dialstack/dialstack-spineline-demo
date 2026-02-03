@@ -32,7 +32,10 @@ export async function GET() {
     // Check if a dial plan already exists
     // Note: There's a small race condition window if concurrent requests arrive
     // when no dial plan exists. This is acceptable since Spineline is a demo app.
-    const { data: dialPlans } = await dialstack.dialPlans.list(accountId, { limit: 1 });
+    const { data: dialPlans } = await dialstack.dialPlans.list(
+      { limit: 1 },
+      { dialstackAccount: accountId }
+    );
 
     if (dialPlans.length > 0) {
       // Return existing dial plan ID
@@ -45,20 +48,27 @@ export async function GET() {
     // No dial plan exists - create one with default configuration
 
     // Step 1: Get or create a user for the routing target
-    const { data: users } = await dialstack.users.list(accountId, { limit: 1 });
+    const { data: users } = await dialstack.users.list(
+      { limit: 1 },
+      { dialstackAccount: accountId }
+    );
     let userId: string;
 
     if (users.length === 0) {
-      const newUser = await dialstack.users.create(accountId, {
-        email: session.user.email ?? undefined,
-      });
+      const newUser = await dialstack.users.create(
+        { email: session.user.email ?? undefined },
+        { dialstackAccount: accountId }
+      );
       userId = newUser.id;
 
       // Create a default extension for the new user
       // Get account config for extension_length, then find next available number
       const account = await dialstack.accounts.retrieve(accountId);
       const extensionLength = account.config.extension_length ?? 3;
-      const { data: extensions } = await dialstack.extensions.list(accountId, { limit: 100 });
+      const { data: extensions } = await dialstack.extensions.list(
+        { limit: 100 },
+        { dialstackAccount: accountId }
+      );
 
       // Find the next available extension number starting from 100 (or 1000, etc.)
       const startNumber = Math.pow(10, extensionLength - 1);
@@ -69,10 +79,10 @@ export async function GET() {
       }
 
       try {
-        await dialstack.extensions.create(accountId, {
-          number: nextNumber.toString(),
-          target: userId,
-        });
+        await dialstack.extensions.create(
+          { number: nextNumber.toString(), target: userId },
+          { dialstackAccount: accountId }
+        );
       } catch (error) {
         // Extension creation may fail if number conflicts (race condition), log but continue
         console.warn('Failed to create extension for new user:', error);
@@ -82,12 +92,15 @@ export async function GET() {
     }
 
     // Step 2: Create a default business hours schedule
-    const schedule = await dialstack.schedules.create(accountId, {
-      name: 'Business Hours',
-      timezone: 'America/New_York',
-      ranges: DEFAULT_SCHEDULE_RANGES,
-      holidays: [],
-    });
+    const schedule = await dialstack.schedules.create(
+      {
+        name: 'Business Hours',
+        timezone: 'America/New_York',
+        ranges: DEFAULT_SCHEDULE_RANGES,
+        holidays: [],
+      },
+      { dialstackAccount: accountId }
+    );
 
     // Step 3: Create the dial plan with schedule node routing to user/voicemail
     const nodes: DialPlanNode[] = [
@@ -120,11 +133,10 @@ export async function GET() {
       },
     ];
 
-    const dialPlan = await dialstack.dialPlans.create(accountId, {
-      name: 'Main Line',
-      entry_node: 'check_hours',
-      nodes,
-    });
+    const dialPlan = await dialstack.dialPlans.create(
+      { name: 'Main Line', entry_node: 'check_hours', nodes },
+      { dialstackAccount: accountId }
+    );
 
     return new Response(JSON.stringify({ dialPlanId: dialPlan.id }), {
       status: 200,
