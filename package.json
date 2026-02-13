@@ -3,6 +3,7 @@
   "version": "0.1.1",
   "private": true,
   "scripts": {
+    "predev": "npm run build --prefix ../sdk",
     "dev": "FORCE_COLOR=1 next dev 2>&1 | pino-pretty -c -i pid,hostname -t HH:MM:ss",
     "build": "next build",
     "start": "next start",
