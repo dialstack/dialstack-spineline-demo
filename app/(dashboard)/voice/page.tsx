@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
 import Container from '@/app/components/Container';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
 import { CallLogs, Voicemails, DialPlanViewer } from '@dialstack/sdk';
@@ -76,7 +74,6 @@ interface PhoneNumber {
 }
 
 export default function VoicePage() {
-  const { data: session } = useSession();
   const { dialstackInstance } = useDialstackContext();
   const [dialstackUserId, setDialstackUserId] = useState<string | null>(null);
   const [dialPlanId, setDialPlanId] = useState<string | null>(null);
@@ -97,10 +94,8 @@ export default function VoicePage() {
       }
     }
 
-    if (session) {
-      fetchUser();
-    }
-  }, [session]);
+    fetchUser();
+  }, []);
 
   // Fetch the dial plan ID on mount (creates one if none exists)
   useEffect(() => {
@@ -116,10 +111,8 @@ export default function VoicePage() {
       }
     }
 
-    if (session) {
-      fetchDialPlan();
-    }
-  }, [session]);
+    fetchDialPlan();
+  }, []);
 
   // Fetch phone number directly from DialStack API using SDK
   useEffect(() => {
@@ -146,10 +139,6 @@ export default function VoicePage() {
       fetchPhoneNumber();
     }
   }, [dialstackInstance]);
-
-  if (!session) {
-    redirect('/');
-  }
 
   return (
     <>

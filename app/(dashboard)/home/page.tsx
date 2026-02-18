@@ -5,8 +5,6 @@ import Schedule from '@/app/components/Schedule';
 import Container from '@/app/components/Container';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
 import { AppointmentPanel } from '@/app/components/appointments/AppointmentPanel';
 import { useSelectedAppointment } from '@/app/hooks/SelectedAppointmentProvider';
 import type { Appointment } from '@/app/models/appointment';
@@ -31,13 +29,8 @@ const createAppointment = async (data: Partial<Appointment>): Promise<Appointmen
 };
 
 export default function Dashboard() {
-  const { data: session } = useSession();
   const queryClient = useQueryClient();
   const { selectedAppointmentId, setSelectedAppointmentId } = useSelectedAppointment();
-
-  if (!session) {
-    redirect('/');
-  }
 
   // Create appointment mutation
   const createMutation = useMutation({

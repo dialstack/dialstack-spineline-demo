@@ -1,6 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 import { LoaderCircle } from 'lucide-react';
 
 const LoadingView = () => {
@@ -16,12 +17,14 @@ export default function AuthenticatedAndOnboardedRoute({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { data: session } = useSession();
+  const { status } = useSession();
 
-  const isLoading = !session || !session.user;
-
-  if (isLoading) {
+  if (status === 'loading') {
     return <LoadingView />;
+  }
+
+  if (status === 'unauthenticated') {
+    redirect('/login');
   }
 
   return <>{children}</>;
