@@ -1,4 +1,5 @@
 import { defineConfig, globalIgnores } from 'eslint/config';
+import { fixupConfigRules } from '@eslint/compat';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTypescript from 'eslint-config-next/typescript';
 
@@ -12,6 +13,5 @@ export default defineConfig([
     '.yalc/**',
     '.venv/**',
   ]),
-  ...nextVitals,
-  ...nextTypescript,
+  ...fixupConfigRules([...nextVitals, ...nextTypescript]),
 ]);
