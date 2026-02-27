@@ -23,7 +23,9 @@ export async function POST() {
 
     return new Response(
       JSON.stringify({
+        account_id: accountId,
         client_secret: dialstackSession.client_secret,
+        expires_at: dialstackSession.expires_at,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );

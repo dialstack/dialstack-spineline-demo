@@ -11,6 +11,7 @@ import {
   Menu as MenuIcon,
   Sparkles as SparklesIcon,
   Phone as PhoneIcon,
+  Rocket as OnboardingIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SpinelineLogo from '@/public/spineline_logo.png';
@@ -34,6 +35,12 @@ const navigationMenuItems = [
     label: 'Voice',
     href: '/voice',
     icon: PhoneIcon,
+    paths: [],
+  },
+  {
+    label: 'Onboarding',
+    href: '/onboarding',
+    icon: OnboardingIcon,
     paths: [],
   },
   {

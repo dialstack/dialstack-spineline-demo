@@ -32,9 +32,17 @@ export const useDialstack = () => {
       setHasError(true);
       return undefined;
     } else {
-      const { client_secret: clientSecret } = await response.json();
+      const {
+        client_secret: clientSecret,
+        expires_at: expiresAt,
+        account_id: accountId,
+      } = await response.json();
       setHasError(false);
-      return clientSecret;
+      return {
+        clientSecret,
+        expiresAt,
+        accountId,
+      };
     }
   }, []);
 
