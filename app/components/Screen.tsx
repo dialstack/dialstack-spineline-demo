@@ -49,7 +49,7 @@ export default function Screen({
           <Nav />
           <div className="mt-[74px] flex h-full grow justify-center overflow-scroll overscroll-contain p-3 pb-20 sm:ml-52 sm:mt-0 sm:mt-0 sm:p-8 lg:ml-64">
             <div className="mx-auto flex max-w-[1200px] grow flex-col gap-y-4 after:pb-8 md:gap-y-5">
-              <OnboardingDialog />
+              {process.env.NEXT_PUBLIC_ENABLE_ONBOARDING === 'true' && <OnboardingDialog />}
               {children}
             </div>
           </div>

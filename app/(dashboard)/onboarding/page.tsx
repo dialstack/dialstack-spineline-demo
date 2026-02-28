@@ -3,10 +3,17 @@
 import Container from '@/app/components/Container';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
 import { AccountOnboarding } from '@dialstack/sdk';
+import { redirect } from 'next/navigation';
 import { useRouter } from 'next/navigation';
+
+const isOnboardingEnabled = process.env.NEXT_PUBLIC_ENABLE_ONBOARDING === 'true';
 
 export default function OnboardingPage() {
   const router = useRouter();
+
+  if (!isOnboardingEnabled) {
+    redirect('/home');
+  }
 
   return (
     <>

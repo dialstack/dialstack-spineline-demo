@@ -18,6 +18,8 @@ import SpinelineLogo from '@/public/spineline_logo.png';
 import { useToolsContext } from '../hooks/ToolsPanelProvider';
 import * as React from 'react';
 
+const isOnboardingEnabled = process.env.NEXT_PUBLIC_ENABLE_ONBOARDING === 'true';
+
 const navigationMenuItems = [
   {
     label: 'Home',
@@ -37,12 +39,16 @@ const navigationMenuItems = [
     icon: PhoneIcon,
     paths: [],
   },
-  {
-    label: 'Onboarding',
-    href: '/onboarding',
-    icon: OnboardingIcon,
-    paths: [],
-  },
+  ...(isOnboardingEnabled
+    ? [
+        {
+          label: 'Onboarding',
+          href: '/onboarding',
+          icon: OnboardingIcon,
+          paths: [] as string[],
+        },
+      ]
+    : []),
   {
     label: 'Account',
     href: '/settings',
