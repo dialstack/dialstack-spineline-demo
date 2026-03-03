@@ -24,6 +24,7 @@ export async function POST() {
         call_logs: { enabled: true },
         voicemails: { enabled: true },
         call_history: { enabled: true },
+        phone_numbers: { enabled: true },
         dial_plan_viewer: { enabled: true },
       },
     });
