@@ -20,6 +20,7 @@ export async function POST() {
     const dialstackSession = await getDialstack().accountSessions.create({
       account: accountId,
       components: {
+        account_onboarding: { enabled: true },
         call_logs: { enabled: true },
         voicemails: { enabled: true },
         call_history: { enabled: true },
