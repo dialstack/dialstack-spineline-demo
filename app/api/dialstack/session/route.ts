@@ -17,16 +17,24 @@ export async function POST() {
 
     const accountId = session.user.dialstackAccountId;
 
+    // Base components for voice/telephony pages
+    const components: Record<string, { enabled: boolean }> = {
+      call_logs: { enabled: true },
+      voicemails: { enabled: true },
+      call_history: { enabled: true },
+      phone_numbers: { enabled: true },
+      dial_plan_viewer: { enabled: true },
+    };
+
+    // Only grant onboarding write scopes when the feature is enabled.
+    // This limits the blast radius of the session token on non-onboarding pages.
+    if (process.env.NEXT_PUBLIC_ENABLE_ONBOARDING === 'true') {
+      components.account_onboarding = { enabled: true };
+    }
+
     const dialstackSession = await getDialstack().accountSessions.create({
       account: accountId,
-      components: {
-        account_onboarding: { enabled: true },
-        call_logs: { enabled: true },
-        voicemails: { enabled: true },
-        call_history: { enabled: true },
-        phone_numbers: { enabled: true },
-        dial_plan_viewer: { enabled: true },
-      },
+      components,
     });
 
     return new Response(
