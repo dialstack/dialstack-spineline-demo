@@ -42,7 +42,7 @@ const navigationMenuItems = [
   ...(isOnboardingEnabled
     ? [
         {
-          label: 'Onboarding',
+          label: 'Voice Onboarding',
           href: '/onboarding',
           icon: OnboardingIcon,
           paths: [] as string[],

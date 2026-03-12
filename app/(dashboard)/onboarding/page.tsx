@@ -1,9 +1,7 @@
 'use client';
 
-import Container from '@/app/components/Container';
-import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
 import type { OnboardingCollectionOptions } from '@dialstack/sdk';
-import { AccountOnboarding } from '@dialstack/sdk';
+import { OnboardingPortal } from '@dialstack/sdk';
 import { redirect } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 
@@ -21,25 +19,17 @@ export default function OnboardingPage() {
     redirect('/home');
   }
 
-  return (
-    <>
-      <h1 className="text-3xl font-bold">Account Setup</h1>
+  const handleExit = () => router.push('/home');
 
-      <Container className="p-5">
-        <EmbeddedComponentContainer componentName="AccountOnboarding">
-          <AccountOnboarding
-            onExit={() => router.push('/home')}
-            onStepChange={(event) => {
-              if (process.env.NODE_ENV === 'development') {
-                console.log('Onboarding step:', event.step);
-              }
-            }}
-            collectionOptions={devInitialStep ? { initialStep: devInitialStep } : undefined}
-            fullTermsOfServiceUrl="https://example.com/terms"
-            privacyPolicyUrl="https://example.com/privacy"
-          />
-        </EmbeddedComponentContainer>
-      </Container>
-    </>
+  return (
+    <div className="fixed inset-0 z-50 bg-background animate-in fade-in duration-500">
+      <OnboardingPortal
+        onBack={handleExit}
+        collectionOptions={devInitialStep ? { initialStep: devInitialStep } : undefined}
+        fullTermsOfServiceUrl="https://example.com/terms"
+        privacyPolicyUrl="https://example.com/privacy"
+        style={{ width: '100%', height: '100%' }}
+      />
+    </div>
   );
 }
