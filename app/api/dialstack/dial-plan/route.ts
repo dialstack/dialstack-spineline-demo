@@ -111,7 +111,6 @@ export async function GET() {
           schedule_id: schedule.id,
           open: 'reception',
           closed: 'voicemail',
-          holiday: 'voicemail',
         },
       },
       {
