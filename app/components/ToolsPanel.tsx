@@ -16,6 +16,7 @@ import BrandSettingsModal from './BrandSettingsModal';
 import CreateTestPatientsButton from './testdata/CreateTestPatientsButton';
 import CreateTestAppointmentsButton from './testdata/CreateTestAppointmentsButton';
 import ClearTodayScheduleButton from './testdata/ClearTodayScheduleButton';
+import SeedDemoDataButton from './testdata/SeedDemoDataButton';
 import SpinelineLogo from '@/public/spineline_logo.png';
 
 const ToolsPanel = () => {
@@ -32,9 +33,19 @@ const ToolsPanel = () => {
       component: CreateTestPatientsButton,
     },
     {
+      description: 'Seed demo data (patients)',
+      href: '/patients',
+      component: SeedDemoDataButton,
+    },
+    {
       description: 'Create test appointments',
       href: '/home',
       component: CreateTestAppointmentsButton,
+    },
+    {
+      description: 'Seed demo data (home)',
+      href: '/home',
+      component: SeedDemoDataButton,
     },
     {
       description: 'Clear schedule',
