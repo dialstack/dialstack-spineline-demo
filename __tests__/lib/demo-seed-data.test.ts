@@ -82,14 +82,14 @@ describe('generateDemoAppointments', () => {
     expect(appointments.length).toBeGreaterThan(0);
   });
 
-  it('Michael has ~7 appointments (6 past + 1 upcoming)', () => {
+  it('Michael has ~8 appointments (6 past + 1 today + 1 upcoming)', () => {
     const michaelAppts = appointments.filter((a) => a.patientIndex === VIP_MICHAEL_INDEX);
-    expect(michaelAppts.length).toBe(7);
+    expect(michaelAppts.length).toBe(8);
   });
 
-  it('Jeremy has ~4 appointments (3 past + 1 upcoming)', () => {
+  it('Jeremy has ~5 appointments (3 past + 1 today + 1 upcoming)', () => {
     const jeremyAppts = appointments.filter((a) => a.patientIndex === VIP_JEREMY_INDEX);
-    expect(jeremyAppts.length).toBe(4);
+    expect(jeremyAppts.length).toBe(5);
   });
 
   it('Michael appointments are mostly with Dr. Martinez', () => {
@@ -136,6 +136,17 @@ describe('generateDemoAppointments', () => {
     const future = appointments.filter((a) => a.start_at > referenceDate);
     expect(past.length).toBeGreaterThan(0);
     expect(future.length).toBeGreaterThan(0);
+  });
+
+  it('has appointments for today', () => {
+    const todayStr = referenceDate.toDateString();
+    const todayAppts = appointments.filter((a) => a.start_at.toDateString() === todayStr);
+    expect(todayAppts.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('total appointment count is between 50 and 60', () => {
+    expect(appointments.length).toBeGreaterThanOrEqual(50);
+    expect(appointments.length).toBeLessThanOrEqual(60);
   });
 
   it('throws if a required provider is missing', () => {

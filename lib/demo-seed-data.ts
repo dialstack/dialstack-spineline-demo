@@ -331,7 +331,7 @@ export function generateDemoAppointments(
     });
   };
 
-  // Michael Sharp — 6 past appointments + 1 upcoming
+  // Michael Sharp — 6 past appointments + 1 today + 1 upcoming
   addAppt(
     0,
     0,
@@ -398,9 +398,10 @@ export function generateDemoAppointments(
     'Martinez',
     'Routine adjustment. Patient maintaining good progress.'
   );
-  addAppt(0, 6, 2, 10, 0, 30, 'follow_up', 'Martinez', 'Scheduled follow-up assessment.');
+  addAppt(0, 6, 0, 10, 0, 30, 'adjustment', 'Martinez', 'Same-day spinal adjustment.');
+  addAppt(0, 7, 2, 10, 0, 30, 'follow_up', 'Martinez', 'Scheduled follow-up assessment.');
 
-  // Jeremy Charchenko — 3 past appointments + 1 upcoming
+  // Jeremy Charchenko — 3 past appointments + 1 today + 1 upcoming
   addAppt(
     1,
     0,
@@ -434,7 +435,8 @@ export function generateDemoAppointments(
     'Chen',
     'Follow-up on shoulder treatment. Good range of motion improvement.'
   );
-  addAppt(1, 3, 5, 13, 30, 30, 'adjustment', 'Chen', 'Continued shoulder rehabilitation.');
+  addAppt(1, 3, 0, 14, 0, 30, 'adjustment', 'Chen', 'Same-day shoulder adjustment.');
+  addAppt(1, 4, 5, 13, 30, 30, 'adjustment', 'Chen', 'Continued shoulder rehabilitation.');
 
   // Filler patients with appointments (indices 2-26, but only ~10 get past, ~8 get future)
   const fillerWithPast = [2, 4, 5, 7, 9, 11, 13, 15, 17, 19];
@@ -478,6 +480,35 @@ export function generateDemoAppointments(
       'Upcoming appointment.'
     );
   });
+
+  // Near-today appointments — dense coverage around day 0
+  // Day 0 (today)
+  addAppt(2, 50, 0, 9, 0, 45, 'initial', 'Johnson', 'Initial consultation for back pain.');
+  addAppt(5, 50, 0, 11, 0, 30, 'adjustment', 'Johnson', 'Routine adjustment visit.');
+  addAppt(8, 50, 0, 9, 30, 30, 'walk_in', 'Martinez', 'Walk-in for acute neck pain.');
+  addAppt(16, 50, 0, 15, 0, 30, 'follow_up', 'Chen', 'Follow-up on knee rehabilitation.');
+  addAppt(20, 50, 0, 13, 0, 30, 'adjustment', 'Martinez', 'Adjustment for lower back.');
+
+  // Day -1
+  addAppt(3, 50, -1, 9, 0, 30, 'adjustment', 'Martinez', 'Routine spinal adjustment.');
+  addAppt(6, 50, -1, 10, 0, 45, 'follow_up', 'Johnson', 'Follow-up on hip treatment.');
+  addAppt(10, 50, -1, 14, 0, 30, 'adjustment', 'Chen', 'Upper back adjustment.');
+  addAppt(21, 50, -1, 11, 0, 30, 'walk_in', 'Martinez', 'Walk-in for shoulder stiffness.');
+
+  // Day -2
+  addAppt(4, 50, -2, 9, 0, 30, 'adjustment', 'Johnson', 'Lumbar adjustment.');
+  addAppt(7, 50, -2, 13, 0, 30, 'adjustment', 'Martinez', 'Mid-back adjustment.');
+  addAppt(12, 50, -2, 15, 0, 30, 'follow_up', 'Chen', 'Follow-up on posture correction.');
+
+  // Day +1
+  addAppt(9, 50, 1, 9, 0, 30, 'adjustment', 'Martinez', 'Scheduled spinal adjustment.');
+  addAppt(11, 50, 1, 10, 30, 30, 'follow_up', 'Johnson', 'Follow-up on treatment plan.');
+  addAppt(13, 50, 1, 14, 0, 30, 'adjustment', 'Chen', 'Cervical spine adjustment.');
+  addAppt(22, 50, 1, 11, 0, 30, 'adjustment', 'Martinez', 'Routine adjustment visit.');
+
+  // Day +2 (non-VIP additions)
+  addAppt(14, 50, 2, 13, 0, 30, 'adjustment', 'Johnson', 'Thoracic adjustment.');
+  addAppt(15, 50, 2, 15, 0, 30, 'follow_up', 'Chen', 'Follow-up on treatment progress.');
 
   // Verify all providers exist (used for resolving at insert time)
   for (const appt of appointments) {
