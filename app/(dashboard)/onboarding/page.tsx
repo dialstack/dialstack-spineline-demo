@@ -60,7 +60,7 @@ export default function OnboardingPage() {
     if (!el) return router.push('/home');
     // Remove entry animation classes first, then apply exit animation
     el.classList.remove('animate-in', 'fade-in');
-    el.classList.add('animate-out', 'fade-out', 'duration-400');
+    el.classList.add('animate-out', 'fade-out', 'duration-200');
     let navigated = false;
     const navigate = () => {
       if (navigated) return;
@@ -70,13 +70,13 @@ export default function OnboardingPage() {
     };
     el.addEventListener('animationend', navigate, { once: true });
     // Fallback if animation doesn't fire (e.g., prefers-reduced-motion)
-    setTimeout(navigate, 500);
+    setTimeout(navigate, 250);
   }, [router]);
 
   return (
     <div
       ref={wrapperRef}
-      className="fixed inset-0 z-50 bg-background animate-in fade-in duration-500"
+      className="fixed inset-0 z-50 bg-background animate-in fade-in duration-200"
     >
       <OnboardingPortal
         platformName={platformName}
