@@ -33,26 +33,21 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Read phone overrides: request body > env var > fallback
+    // Only create VIP patients for known demo practices
+    const DEMO_EMAILS = (process.env.DEMO_PRACTICE_EMAILS || '')
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean);
+    const isDemoPractice = DEMO_EMAILS.includes(token.email);
+
     let michaelPhone = DEFAULT_MICHAEL_PHONE;
     let jeremyPhone = DEFAULT_JEREMY_PHONE;
 
-    try {
-      const body = await req.json();
-      if (body.michael_phone) michaelPhone = body.michael_phone;
-      if (body.jeremy_phone) jeremyPhone = body.jeremy_phone;
-    } catch {
-      // Empty body is fine — use env/fallback values
-    }
-
-    // Env vars override defaults but not explicit request body values
-    const envMichael = process.env.DEMO_PATIENT_PHONE_MICHAEL;
-    const envJeremy = process.env.DEMO_PATIENT_PHONE_JEREMY;
-    if (michaelPhone === DEFAULT_MICHAEL_PHONE && envMichael && envMichael !== 'disabled') {
-      michaelPhone = envMichael;
-    }
-    if (jeremyPhone === DEFAULT_JEREMY_PHONE && envJeremy && envJeremy !== 'disabled') {
-      jeremyPhone = envJeremy;
+    if (isDemoPractice) {
+      const envMichael = process.env.DEMO_PATIENT_PHONE_MICHAEL;
+      const envJeremy = process.env.DEMO_PATIENT_PHONE_JEREMY;
+      if (envMichael && envMichael !== 'disabled') michaelPhone = envMichael;
+      if (envJeremy && envJeremy !== 'disabled') jeremyPhone = envJeremy;
     }
 
     // Delete existing demo data (idempotent reset)
@@ -74,7 +69,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Build and create patients
-    const demoPatients = buildDemoPatients(michaelPhone, jeremyPhone);
+    const demoPatients = buildDemoPatients({ isDemoPractice, michaelPhone, jeremyPhone });
     const createdPatients: { id: number; index: number }[] = [];
 
     for (let i = 0; i < demoPatients.length; i++) {
@@ -87,7 +82,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate and create appointments
-    const demoAppointments = generateDemoAppointments(demoPatients, providers, new Date());
+    const demoAppointments = generateDemoAppointments(
+      demoPatients,
+      providers,
+      new Date(),
+      isDemoPractice
+    );
     let appointmentsCreated = 0;
 
     for (const appt of demoAppointments) {
@@ -128,10 +128,6 @@ export async function POST(req: NextRequest) {
         success: true,
         patients_created: createdPatients.length,
         appointments_created: appointmentsCreated,
-        vip_patients: [
-          { name: 'Michael Sharp', phone: michaelPhone },
-          { name: 'Jeremy Charchenko', phone: jeremyPhone },
-        ],
       }),
       { status: 201, headers: { 'Content-Type': 'application/json' } }
     );
