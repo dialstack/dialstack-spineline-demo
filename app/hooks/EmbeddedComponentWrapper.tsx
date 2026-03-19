@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext, useEffect } from 'react';
-import { DialstackComponentsProvider } from '@dialstack/sdk';
+import { DialstackComponentsProvider } from '@dialstack/sdk/react';
 import { EmbeddedComponentProvider } from '@/app/hooks/EmbeddedComponentProvider';
 import { useDialstack } from '@/app/hooks/useDialstack';
 import { SettingsContext } from '@/app/contexts/settings/SettingsContext';

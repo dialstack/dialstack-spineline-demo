@@ -2,7 +2,7 @@
 
 import { useCallback, useContext, useRef } from 'react';
 import type { OnboardingCollectionOptions } from '@dialstack/sdk';
-import { OnboardingPortal } from '@dialstack/sdk';
+import { OnboardingPortal } from '@dialstack/sdk/react';
 import { redirect } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { SettingsContext } from '@/app/contexts/settings/SettingsContext';

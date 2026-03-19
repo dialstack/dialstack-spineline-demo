@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Phone, User, Calendar, UserPlus, FileText, Loader2, Clock } from 'lucide-react';
 import { formatPhone } from '@/lib/phone';
-import { CallHistory } from '@dialstack/sdk';
+import { CallHistory } from '@dialstack/sdk/react';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
 import { PatientQuickInfo } from '@/app/components/patients/PatientQuickInfo';
 import type { IncomingCallWithPatient } from '@/app/hooks/useCallEvents';
