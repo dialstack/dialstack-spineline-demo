@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { getDialstack } from '@/lib/dialstack';
+import { getDialstackForAccount } from '@/lib/dialstack';
 
 export async function POST() {
   try {
@@ -32,7 +32,8 @@ export async function POST() {
       components.account_onboarding = { enabled: true };
     }
 
-    const dialstackSession = await getDialstack().accountSessions.create({
+    const dialstack = await getDialstackForAccount(accountId);
+    const dialstackSession = await dialstack.accountSessions.create({
       account: accountId,
       components,
     });

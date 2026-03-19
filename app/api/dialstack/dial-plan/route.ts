@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { getDialstack } from '@/lib/dialstack';
+import { getDialstackForAccount } from '@/lib/dialstack';
 import type { DialPlanNode } from '@dialstack/sdk/server';
 
 // Default business hours schedule: Monday-Friday 9am-5pm
@@ -27,7 +27,7 @@ export async function GET() {
     }
 
     const accountId = session.user.dialstackAccountId;
-    const dialstack = getDialstack();
+    const dialstack = await getDialstackForAccount(accountId);
 
     // Check if a dial plan already exists
     // Note: There's a small race condition window if concurrent requests arrive
