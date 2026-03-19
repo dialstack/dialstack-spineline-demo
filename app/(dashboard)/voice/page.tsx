@@ -114,18 +114,38 @@ export default function VoicePage() {
     fetchDialPlan();
   }, []);
 
-  // Fetch phone number directly from DialStack API using SDK
+  // Fetch the practice phone number from the location's primary DID.
+  // Falls back to the first active phone number if no location/primary DID exists.
   useEffect(() => {
     async function fetchPhoneNumber() {
       if (!dialstackInstance) return;
 
       try {
+        // Try to resolve the primary DID from the account's active location.
+        // listLocations may 403 if account_onboarding scope is not enabled,
+        // so isolate it so the fallback still works.
+        let primaryDidId: string | undefined;
+        try {
+          const locations = await dialstackInstance.listLocations();
+          primaryDidId = locations.find(
+            (l) => l.status === 'active' && l.primary_did_id
+          )?.primary_did_id;
+        } catch {
+          // Scope not available — fall through to fallback
+        }
+
+        if (primaryDidId) {
+          const phoneNum = await dialstackInstance.getPhoneNumber(primaryDidId);
+          setPhoneNumber(phoneNum);
+          return;
+        }
+
+        // Fallback: first active phone number
         const response = await dialstackInstance.fetchApi(
           '/v1/phone-numbers?limit=1&status=active'
         );
         if (response.ok) {
           const data = await response.json();
-          // API returns a list, get the first item
           setPhoneNumber(data.data?.[0] ?? null);
         }
       } catch (error) {
