@@ -1,18 +1,12 @@
 'use client';
 
 import { useCallback, useContext, useRef } from 'react';
-import type { OnboardingCollectionOptions } from '@dialstack/sdk';
-import { OnboardingPortal } from '@dialstack/sdk/react';
+import { OnboardingPortal } from '@dialstack/sdk/react/onboarding';
 import { redirect } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { SettingsContext } from '@/app/contexts/settings/SettingsContext';
 
 const isOnboardingEnabled = process.env.NEXT_PUBLIC_ENABLE_ONBOARDING === 'true';
-
-// Set NEXT_PUBLIC_ONBOARDING_INITIAL_STEP=hardware in .env to jump to a step during dev.
-const devInitialStep = process.env.NEXT_PUBLIC_ONBOARDING_INITIAL_STEP as
-  | OnboardingCollectionOptions['initialStep']
-  | undefined;
 
 /** Escape HTML special characters to prevent XSS. */
 function escapeHtml(str: string): string {
@@ -88,7 +82,6 @@ export default function OnboardingPage() {
             console.log('Onboarding step:', event.step);
           }
         }}
-        collectionOptions={devInitialStep ? { initialStep: devInitialStep } : undefined}
         fullTermsOfServiceUrl="https://example.com/terms"
         privacyPolicyUrl="https://example.com/privacy"
         style={{ width: '100%', height: '100%' }}
