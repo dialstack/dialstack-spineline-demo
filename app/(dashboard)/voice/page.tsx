@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Container from '@/app/components/Container';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
-import { CallLogs, Voicemails, DialPlanViewer } from '@dialstack/sdk/react';
+import { CallLogs, Voicemails, DialPlan } from '@dialstack/sdk/react';
 import { useDialstackContext } from '@/app/hooks/EmbeddedComponentProvider';
 import { CalendarCheck, UserPlus, PhoneForwarded, AlertCircle, Phone } from 'lucide-react';
 import { formatPhone } from '@/lib/phone';
@@ -247,9 +247,9 @@ export default function VoicePage() {
       {/* Dial Plan - Embedded DialStack Component */}
       <Container className="p-5">
         <h2 className="text-lg font-semibold mb-4">Call Routing</h2>
-        <EmbeddedComponentContainer componentName="DialPlanViewer">
+        <EmbeddedComponentContainer componentName="DialPlan">
           {dialPlanId ? (
-            <DialPlanViewer dialPlanId={dialPlanId} style={{ height: '400px' }} />
+            <DialPlan dialPlanId={dialPlanId} style={{ height: '400px' }} />
           ) : (
             <p className="text-sm text-muted-foreground">Loading call routing...</p>
           )}

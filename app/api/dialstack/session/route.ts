@@ -23,7 +23,7 @@ export async function POST() {
       voicemails: { enabled: true },
       call_history: { enabled: true },
       phone_numbers: { enabled: true },
-      dial_plan_viewer: { enabled: true },
+      dial_plan: { enabled: true },
     };
 
     // Only grant onboarding write scopes when the feature is enabled.
