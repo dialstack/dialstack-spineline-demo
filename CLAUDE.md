@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance for coding agents working with code in this repository.
 
 This application is a vertical SaaS platform for chiropractors that showcases DialStack embedded voice components, allowing businesses to handle PBX telephony directly within the platform. Because this is an example, the code needs to be simple and to-the-point, without fluff. Everything will be well documented and commented.
 
