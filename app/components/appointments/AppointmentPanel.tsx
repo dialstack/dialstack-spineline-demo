@@ -237,7 +237,7 @@ export function AppointmentPanel({ appointmentId, onClose }: AppointmentPanelPro
       return;
     }
     try {
-      await dialstackInstance.initiateCall(dialstackUserId, patient.phone);
+      await dialstackInstance.calls.create({ userId: dialstackUserId, dialString: patient.phone });
     } catch (error) {
       console.error('Failed to initiate call:', error);
     }

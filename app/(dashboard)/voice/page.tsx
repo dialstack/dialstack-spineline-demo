@@ -126,7 +126,7 @@ export default function VoicePage() {
         // so isolate it so the fallback still works.
         let primaryDidId: string | undefined;
         try {
-          const locations = await dialstackInstance.listLocations();
+          const locations = await dialstackInstance.locations.list();
           primaryDidId = locations.find(
             (l) => l.status === 'active' && l.primary_did_id
           )?.primary_did_id;
@@ -135,7 +135,7 @@ export default function VoicePage() {
         }
 
         if (primaryDidId) {
-          const phoneNum = await dialstackInstance.getPhoneNumber(primaryDidId);
+          const phoneNum = await dialstackInstance.phoneNumbers.retrieve(primaryDidId);
           setPhoneNumber(phoneNum);
           return;
         }
