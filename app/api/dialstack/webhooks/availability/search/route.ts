@@ -100,10 +100,30 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Get the practice's timezone early so we can parse dates correctly
+  const timezone = getTimezone(practice);
+
   // Parse the requested time range
+  // When the ai-agent sends date-only strings like "2026-04-14", JavaScript's
+  // new Date("2026-04-14") interprets them as UTC midnight, which shifts the
+  // range to the previous local day for North American timezones. We interpret
+  // date-only inputs as the start of that day in the practice timezone.
   const { start_at, end_at } = event.query.filter.start_at_range;
-  const rangeStart = new Date(start_at);
-  const rangeEnd = new Date(end_at);
+
+  function parseDateInput(input: string, tz: string, exclusive = false): Date {
+    // Date-only format: YYYY-MM-DD (10 chars, no T)
+    if (input.length === 10 && !input.includes('T')) {
+      const [year, month, day] = input.split('-').map(Number);
+      const local = new Date(year!, month! - 1, day!);
+      // For exclusive end bounds, advance to the start of the next day so
+      // the entire final day is included in the range.
+      return fromZonedTime(exclusive ? addDays(local, 1) : local, tz);
+    }
+    return new Date(input);
+  }
+
+  const rangeStart = parseDateInput(start_at, timezone);
+  const rangeEnd = parseDateInput(end_at, timezone, true);
 
   // Get existing appointments in this range
   const existingAppointments = await AppointmentModel.findByPractice(
@@ -111,9 +131,6 @@ export async function POST(request: NextRequest) {
     rangeStart,
     rangeEnd
   );
-
-  // Get the practice's timezone
-  const timezone = getTimezone(practice);
 
   // Calculate the range of days to iterate through in the practice's timezone
   // We need to expand the appointment query to cover all days that overlap

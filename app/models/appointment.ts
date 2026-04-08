@@ -283,6 +283,28 @@ class AppointmentModel {
     }
   }
 
+  // Find the next upcoming appointment for a patient (excludes cancelled/declined)
+  static async findNextUpcoming(
+    practiceId: number,
+    patientId: number
+  ): Promise<Pick<Appointment, 'start_at' | 'end_at' | 'status'> | null> {
+    const pool = await dbConnect();
+
+    try {
+      const result = await pool.query(
+        `SELECT start_at, end_at, status FROM appointments
+         WHERE practice_id = $1 AND patient_id = $2 AND start_at > NOW()
+         AND status NOT IN ('cancelled', 'declined')
+         ORDER BY start_at ASC LIMIT 1`,
+        [practiceId, patientId]
+      );
+
+      return result.rows[0] || null;
+    } catch (error) {
+      throw new Error(`Failed to find next upcoming appointment: ${error}`);
+    }
+  }
+
   // Delete appointment (with practice ownership check)
   static async delete(id: number, practiceId: number): Promise<boolean> {
     const pool = await dbConnect();
