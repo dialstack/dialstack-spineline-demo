@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { getDialstackForAccount } from '@/lib/dialstack';
+import { getDialstack } from '@/lib/dialstack';
 
 // Fetch the DialStack user for the current practice, creating it if it doesn't exist
 export async function GET() {
@@ -19,7 +19,7 @@ export async function GET() {
     const accountId = session.user.dialstackAccountId;
     const email = session.user.email;
 
-    const dialstack = await getDialstackForAccount(accountId);
+    const dialstack = getDialstack();
 
     // Fetch users for this account
     const { data: users } = await dialstack.users.list({}, { dialstackAccount: accountId });
