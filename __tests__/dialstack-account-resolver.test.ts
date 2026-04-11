@@ -16,7 +16,7 @@ describe('getDialstack', () => {
   beforeEach(() => {
     vi.resetModules();
     mockRetrieve.mockReset();
-    process.env.DIALSTACK_SECRET_KEY = 'sk_live_test';
+    process.env.DIALSTACK_SECRET_KEY = 'sk_test_sandbox';
   });
 
   it('returns a singleton client without probing the API', async () => {
