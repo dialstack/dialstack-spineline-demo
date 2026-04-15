@@ -49,7 +49,7 @@ export const authOptions: AuthOptions = {
 
   callbacks: {
     async signIn({ user }) {
-      logger.info({ user }, 'Signing in user');
+      logger.info({ userId: user.id }, 'Signing in user');
       return true;
     },
 
@@ -57,14 +57,14 @@ export const authOptions: AuthOptions = {
       session.user.email = token.email;
       session.user.dialstackAccountId = token.user.dialstackAccountId;
 
-      logger.info({ email: token.email }, 'Got session for user');
+      logger.debug({ userId: token.sub }, 'Got session for user');
 
       return session;
     },
 
-    async jwt({ token, trigger, session, user }) {
+    async jwt({ token, trigger, user }) {
       if (trigger === 'update') {
-        logger.info({ session }, 'Updating session');
+        logger.info({ userId: token.sub }, 'Updating session');
       }
       if (user) {
         token.user = { ...token.user, ...user };

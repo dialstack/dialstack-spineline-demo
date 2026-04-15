@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     await Practice.update(token.email, updates);
 
-    logger.info({ email: token.email }, 'Password updated successfully');
+    logger.info({ userId: token.sub }, 'Password updated successfully');
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

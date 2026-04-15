@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     // Update email
     await Practice.updateEmail(token.email, newEmail);
 
-    logger.info({ oldEmail: token.email, newEmail }, 'Email updated successfully');
+    logger.info({ userId: token.sub }, 'Email updated successfully');
 
     return new Response(
       JSON.stringify({
