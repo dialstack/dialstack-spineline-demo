@@ -40,10 +40,12 @@ const BrandSettingsModal = () => {
   // Reset form when modal opens
   React.useEffect(() => {
     if (isOpen) {
+      /* eslint-disable react-hooks/set-state-in-effect -- reset form fields from props when modal opens */
       setPrimaryColor(settings.primaryColor || defaultPrimaryColor);
       setCompanyName(settings.companyName || 'Furever');
       setCompanyLogo(null);
       setLogoPreview(settings.companyLogoUrl || null);
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [isOpen, settings]);
 

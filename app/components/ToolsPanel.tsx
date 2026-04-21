@@ -19,6 +19,82 @@ import ClearTodayScheduleButton from './testdata/ClearTodayScheduleButton';
 import SeedDemoDataButton from './testdata/SeedDemoDataButton';
 import SpinelineLogo from '@/public/spineline_logo.png';
 
+type ActionEntry = {
+  description: string;
+  href: string;
+  component: React.ComponentType;
+};
+
+const ACTIONS: ActionEntry[] = [
+  {
+    description: 'Create test patients',
+    href: '/patients',
+    component: CreateTestPatientsButton,
+  },
+  {
+    description: 'Seed demo data (patients)',
+    href: '/patients',
+    component: SeedDemoDataButton,
+  },
+  {
+    description: 'Create test appointments',
+    href: '/home',
+    component: CreateTestAppointmentsButton,
+  },
+  {
+    description: 'Seed demo data (home)',
+    href: '/home',
+    component: SeedDemoDataButton,
+  },
+  {
+    description: 'Clear schedule',
+    href: '/home',
+    component: ClearTodayScheduleButton,
+  },
+];
+
+const CustomTools = ({ pathname }: { pathname: string }) => (
+  <div className="mt-4 flex flex-col items-stretch gap-2">
+    {ACTIONS.map(
+      (action) =>
+        pathname.includes(action.href) &&
+        action.component && <action.component key={action.description} />
+    )}
+  </div>
+);
+
+type DefaultToolsProps = {
+  border: boolean;
+  handleEnableBorderChange: (value: boolean) => void;
+};
+
+const DefaultTools = ({ border, handleEnableBorderChange }: DefaultToolsProps) => (
+  <div className="my-6 flex flex-col gap-y-4 text-lg font-medium">
+    <div className="flex flex-row items-center justify-between rounded-lg">
+      <Label className="text-left" htmlFor="outline">
+        Component outlines
+      </Label>
+      <Switch
+        id="outline"
+        checked={border}
+        onCheckedChange={() => handleEnableBorderChange(!border)}
+      />
+    </div>
+    <div className="flex flex-row items-center justify-between">
+      <Label className="text-left" htmlFor="theme">
+        Theme
+      </Label>
+      <ThemePicker />
+    </div>
+    <div className="flex flex-row items-center justify-between">
+      <Label className="text-left align-middle" htmlFor="outline">
+        Locale
+      </Label>
+      <LocaleSelector />
+    </div>
+  </div>
+);
+
 const ToolsPanel = () => {
   const pathname = usePathname();
 
@@ -26,85 +102,8 @@ const ToolsPanel = () => {
   const { handleOpenChange } = useToolsContext();
   const [border, setBorder] = React.useState(true);
 
-  const actions = [
-    {
-      description: 'Create test patients',
-      href: '/patients',
-      component: CreateTestPatientsButton,
-    },
-    {
-      description: 'Seed demo data (patients)',
-      href: '/patients',
-      component: SeedDemoDataButton,
-    },
-    {
-      description: 'Create test appointments',
-      href: '/home',
-      component: CreateTestAppointmentsButton,
-    },
-    {
-      description: 'Seed demo data (home)',
-      href: '/home',
-      component: SeedDemoDataButton,
-    },
-    {
-      description: 'Clear schedule',
-      href: '/home',
-      component: ClearTodayScheduleButton,
-    },
-  ];
-
-  const CustomTools = () => {
-    return (
-      <div className="mt-4 flex flex-col items-stretch gap-2">
-        {actions.map(
-          (action) =>
-            pathname.includes(action.href) &&
-            action.component && (
-              // <Button
-              //   className="my-1 rounded-lg border border-[#D8DEE4] bg-white py-1 text-sm font-medium shadow"
-              //   variant="secondary"
-              //   key={action.description}
-              // >
-              //   {action.description}
-              // </Button>
-              <action.component key={action.description} />
-            )
-        )}
-      </div>
-    );
-  };
-
-  const DefaultTools = () => {
-    return (
-      <div className="my-6 flex flex-col gap-y-4 text-lg font-medium">
-        <div className="flex flex-row items-center justify-between rounded-lg">
-          <Label className="text-left" htmlFor="outline">
-            Component outlines
-          </Label>
-          <Switch
-            id="outline"
-            checked={border}
-            onCheckedChange={() => handleEnableBorderChange(!border)}
-          />
-        </div>
-        <div className="flex flex-row items-center justify-between">
-          <Label className="text-left" htmlFor="theme">
-            Theme
-          </Label>
-          <ThemePicker />
-        </div>
-        <div className="flex flex-row items-center justify-between">
-          <Label className="text-left align-middle" htmlFor="outline">
-            Locale
-          </Label>
-          <LocaleSelector />
-        </div>
-      </div>
-    );
-  };
-
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mirror external border state from provider
     setBorder(enableBorder);
   }, [enableBorder]);
 
@@ -125,13 +124,13 @@ const ToolsPanel = () => {
           </div>
           <BrandSettingsModal />
         </div>
-        <DefaultTools />
+        <DefaultTools border={border} handleEnableBorderChange={handleEnableBorderChange} />
         <hr />
         <div className="my-4 flex items-center gap-x-2 text-lg font-bold text-primary">
           <FileIcon size={20} />
           On this page
         </div>
-        <CustomTools />
+        <CustomTools pathname={pathname} />
       </div>
       <div className="hidden justify-between md:flex">
         <Image src={SpinelineLogo} alt="Spineline logo" height={24} />

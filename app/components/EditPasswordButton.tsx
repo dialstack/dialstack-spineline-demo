@@ -29,83 +29,80 @@ const formSchema = z.object({
   password: z.string().min(8),
 });
 
-const EditPasswordButton = () => {
-  const [open, setOpen] = React.useState(false);
+const EditAccountForm = ({ setOpen }: { setOpen: (value: boolean) => void }) => {
+  const { data: session } = useSession();
 
-  const EditAccountForm = () => {
-    const { data: session } = useSession();
+  if (!session) {
+    redirect('/home');
+  }
 
-    if (!session) {
-      redirect('/home');
-    }
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      password: '',
+    },
+  });
 
-    const form = useForm<z.infer<typeof formSchema>>({
-      resolver: zodResolver(formSchema),
-      defaultValues: {
-        password: '',
-      },
-    });
-
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
-      const data = {
-        newPassword: bcrypt.hashSync(values.password, 8),
-        changedPassword: true,
-      };
-
-      const response = await fetch('/api/password_update', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        // Handle errors on the client side here
-        const { error } = await response.json();
-        console.warn('An error occurred: ', error);
-        return undefined;
-      } else {
-        setOpen(false);
-        window.location.reload();
-      }
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const data = {
+      newPassword: bcrypt.hashSync(values.password, 8),
+      changedPassword: true,
     };
 
-    return (
-      <>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="flex flex-col space-y-2">
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="rounded-md border border-gray-300 p-2 placeholder:text-gray-400"
-                        placeholder={'password'}
-                        type="password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="flex flex-row justify-end space-x-2">
-              <DialogClose asChild>
-                <Button type="button" variant="secondary">
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button variant="default" type="submit">
-                Update
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </>
-    );
+    const response = await fetch('/api/password_update', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const { error } = await response.json();
+      console.warn('An error occurred: ', error);
+      return undefined;
+    } else {
+      setOpen(false);
+      window.location.reload();
+    }
   };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="flex flex-col space-y-2">
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input
+                    className="rounded-md border border-gray-300 p-2 placeholder:text-gray-400"
+                    placeholder={'password'}
+                    type="password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex flex-row justify-end space-x-2">
+          <DialogClose asChild>
+            <Button type="button" variant="secondary">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button variant="default" type="submit">
+            Update
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+};
+
+const EditPasswordButton = () => {
+  const [open, setOpen] = React.useState(false);
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
@@ -116,7 +113,7 @@ const EditPasswordButton = () => {
         <DialogHeader>
           <DialogTitle>Edit password</DialogTitle>
         </DialogHeader>
-        <EditAccountForm />
+        <EditAccountForm setOpen={setOpen} />
       </DialogContent>
     </Dialog>
   );
