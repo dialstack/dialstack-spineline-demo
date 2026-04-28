@@ -172,6 +172,36 @@ A vertical SaaS platform for chiropractors that showcases DialStack embedded voi
 6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
+## AI Receptionist (DialStack AI Agent) Wiring
+
+Spineline demonstrates how a customer SaaS implements the three tool-call
+webhook endpoints a DialStack managed AI agent dispatches to when handling a
+call:
+
+- `POST /api/dialstack/webhooks/customers/lookup`
+- `POST /api/dialstack/webhooks/availability/search`
+- `POST /api/dialstack/webhooks/bookings`
+
+Each inbound request is signed with the voice-app's HMAC secret
+(`X-DialStack-Signature: t=…,v1=…`) and is verified using
+`DialStack.webhooks.constructEvent` from `@dialstack/sdk/server`.
+
+Because spineline is multi-tenant, each practice stores its own voice-app
+secret on the `practices` row (columns `dialstack_ai_agent_id` and
+`dialstack_voice_app_secret`) — there is **no** global webhook secret.
+
+To wire up a practice end-to-end:
+
+1. In the DialStack admin app, create an AI agent for this practice's
+   account and set `scheduling.webhook_url` to
+   `https://<your-spineline>/api/dialstack/webhooks`.
+2. Copy the returned `aia_…` agent id and the voice-app signing secret.
+3. In spineline, go to **Settings → AI receptionist**, paste both values,
+   and save.
+
+Tool-call webhooks will return 401 `account_not_configured` until the
+secret is set.
+
 ## Available Scripts
 
 - `npm run dev` - Start development server

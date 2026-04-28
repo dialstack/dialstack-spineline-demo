@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { fetchAccountInfo, updateTimezone } from '@/lib/api/account';
+import AIAgentSection from './AIAgentSection';
 
 const US_TIMEZONES = [
   { value: 'America/New_York', label: 'Eastern Time (ET)' },
@@ -48,7 +49,7 @@ export default function Settings() {
   const timezone = accountData?.timezone || 'America/New_York';
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <Container className="pl-5">
         <div className="flex flex-row justify-between">
           <h1 className="mb-4 text-xl font-semibold">Details</h1>
@@ -102,6 +103,8 @@ export default function Settings() {
           </div>
         )}
       </Container>
-    </>
+
+      <AIAgentSection />
+    </div>
   );
 }
