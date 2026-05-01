@@ -40,6 +40,11 @@ export async function POST(request: NextRequest) {
   const rangeStart = parseDateInput(start_at, timezone);
   const rangeEnd = parseDateInput(end_at, timezone, true);
 
+  // Earliest bookable instant: now + 1 hour. Past slots and slots within the
+  // next hour must not be returned, otherwise the AI agent will offer times
+  // it can no longer fulfill.
+  const earliest = new Date(Date.now() + 60 * 60 * 1000);
+
   // Get existing appointments in this range
   const existingAppointments = await AppointmentModel.findByPractice(
     practice.id!,
@@ -83,7 +88,7 @@ export async function POST(request: NextRequest) {
       rangeStart,
       rangeEnd,
       toAvailabilityInput(appointments),
-      rangeStart
+      earliest
     );
   } else {
     // Group appointments by provider_id once (O(A) instead of O(P*A))
@@ -106,7 +111,7 @@ export async function POST(request: NextRequest) {
         rangeStart,
         rangeEnd,
         toAvailabilityInput(providerAppointments),
-        rangeStart
+        earliest
       );
     });
 

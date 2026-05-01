@@ -228,6 +228,37 @@ describe('Availability Search Algorithm', () => {
     });
   });
 
+  describe('Past Slot Filtering', () => {
+    it('should not return slots earlier than now for a same-day query', () => {
+      // Range covers a full Thursday in EST (9am-5pm = 14:00-22:00 UTC)
+      // "Now" is 2pm EST (19:00 UTC) — only 2pm-5pm should be returned
+      const sameDayNow = new Date('2026-01-15T19:00:00Z');
+      const result = generateAvailabilities(
+        'America/New_York',
+        new Date('2026-01-15T14:00:00Z'),
+        new Date('2026-01-15T22:00:00Z'),
+        [],
+        sameDayNow
+      );
+
+      expect(result).toEqual([{ start_at: '2026-01-15T14:00:00-05:00', duration_minutes: 180 }]);
+    });
+
+    it('should not return slots within the next hour when now includes a buffer', () => {
+      // Same-day query, now=2pm EST + 1h buffer → earliest = 3pm EST (20:00 UTC)
+      const earliest = new Date('2026-01-15T20:00:00Z');
+      const result = generateAvailabilities(
+        'America/New_York',
+        new Date('2026-01-15T14:00:00Z'),
+        new Date('2026-01-15T22:00:00Z'),
+        [],
+        earliest
+      );
+
+      expect(result).toEqual([{ start_at: '2026-01-15T15:00:00-05:00', duration_minutes: 120 }]);
+    });
+  });
+
   describe('Outside Business Hours', () => {
     it('should return empty array for evening hours', () => {
       // Jan 17, 2026 02:00-08:00 UTC = Fri 6pm - Sat midnight PST
