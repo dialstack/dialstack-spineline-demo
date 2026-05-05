@@ -17,8 +17,6 @@ export interface Practice {
   businessName?: string;
   setup?: boolean;
   dialstack_account_id?: string;
-  dialstack_ai_agent_id?: string | null;
-  dialstack_voice_app_secret?: string | null;
   config?: PracticeConfig;
 }
 

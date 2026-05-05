@@ -11,8 +11,10 @@ import {
   Menu as MenuIcon,
   Sparkles as SparklesIcon,
   Phone as PhoneIcon,
+  Bot as BotIcon,
   Rocket as OnboardingIcon,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SpinelineLogo from '@/public/spineline_logo.png';
 import { useToolsContext } from '../hooks/ToolsPanelProvider';
@@ -20,7 +22,14 @@ import * as React from 'react';
 
 const isOnboardingEnabled = process.env.NEXT_PUBLIC_ENABLE_ONBOARDING === 'true';
 
-const navigationMenuItems = [
+interface NavItem {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  paths: string[];
+}
+
+const navigationMenuItems: NavItem[] = [
   {
     label: 'Home',
     href: '/home',
@@ -39,13 +48,19 @@ const navigationMenuItems = [
     icon: PhoneIcon,
     paths: [],
   },
+  {
+    label: 'AI Receptionist',
+    href: '/ai-receptionist',
+    icon: BotIcon,
+    paths: [],
+  },
   ...(isOnboardingEnabled
     ? [
         {
           label: 'Voice Onboarding',
           href: '/onboarding',
           icon: OnboardingIcon,
-          paths: [] as string[],
+          paths: [],
         },
       ]
     : []),

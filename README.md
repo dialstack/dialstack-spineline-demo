@@ -186,21 +186,20 @@ Each inbound request is signed with the voice-app's HMAC secret
 (`X-DialStack-Signature: t=…,v1=…`) and is verified using
 `DialStack.webhooks.constructEvent` from `@dialstack/sdk/server`.
 
-Because spineline is multi-tenant, each practice stores its own voice-app
-secret on the `practices` row (columns `dialstack_ai_agent_id` and
-`dialstack_voice_app_secret`) — there is **no** global webhook secret.
+Spineline is multi-tenant; verification looks up the per-practice
+voice-app secret from the DialStack API on demand (memoized in-process
+to keep webhook-rate calls cheap), so there is **no** stored copy of the
+secret in spineline's database and **no** global webhook secret. Upstream
+secret rotation recovers automatically — the verifier invalidates and
+refreshes once when a fresh-timestamped signature fails to verify, then
+keeps using the new value.
 
-To wire up a practice end-to-end:
-
-1. In the DialStack admin app, create an AI agent for this practice's
-   account and set `scheduling.webhook_url` to
-   `https://<your-spineline>/api/dialstack/webhooks`.
-2. Copy the returned `aia_…` agent id and the voice-app signing secret.
-3. In spineline, go to **Settings → AI receptionist**, paste both values,
-   and save.
-
-Tool-call webhooks will return 401 `account_not_configured` until the
-secret is set.
+The AI receptionist itself is auto-provisioned on the practice's first
+visit to `/ai-receptionist`: spineline calls
+`dialstack.aiAgents.create(...)` with sensible defaults, including
+`scheduling.webhook_url = NEXTAUTH_URL/api/dialstack/webhooks`. Operators
+edit name / persona / greeting / instructions / FAQ from the embedded
+`<AIAgent />` SDK component on that page; there is no separate paste flow.
 
 ## Available Scripts
 

@@ -24,6 +24,7 @@ export async function POST() {
       call_history: { enabled: true },
       phone_numbers: { enabled: true },
       dial_plan: { enabled: true },
+      ai_agent: { enabled: true },
     };
 
     // Only grant onboarding write scopes when the feature is enabled.
