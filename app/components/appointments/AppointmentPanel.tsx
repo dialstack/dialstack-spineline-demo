@@ -33,6 +33,7 @@ import {
   Stethoscope,
 } from 'lucide-react';
 import { useDialstackContext } from '@/app/hooks/EmbeddedComponentProvider';
+import { useSoftphoneDrawer } from '@/app/hooks/SoftphoneDrawerProvider';
 import type { Appointment, AppointmentStatus, AppointmentType } from '@/app/models/appointment';
 import type { Patient } from '@/app/models/patient';
 import type { Provider } from '@/app/models/provider';
@@ -139,6 +140,7 @@ interface AppointmentPanelProps {
 export function AppointmentPanel({ appointmentId, onClose }: AppointmentPanelProps) {
   const queryClient = useQueryClient();
   const { dialstackInstance } = useDialstackContext();
+  const { canDial, dial } = useSoftphoneDrawer();
   const [dialstackUserId, setDialstackUserId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [errorState, setErrorState] = useState<{
@@ -231,11 +233,17 @@ export function AppointmentPanel({ appointmentId, onClose }: AppointmentPanelPro
       ? patients.find((p) => p.id === appointment.patient_id)
       : null;
 
-  // Handle call patient
+  // Handle call patient. Softphone ON → place the call in-app via the softphone;
+  // otherwise fall back to click-to-call (rings the user's own device).
   const handleCallPatient = async () => {
-    if (!patient?.phone || !dialstackInstance || !dialstackUserId) {
+    if (!patient?.phone) return;
+
+    if (canDial) {
+      dial(patient.phone);
       return;
     }
+
+    if (!dialstackInstance || !dialstackUserId) return;
     try {
       await dialstackInstance.calls.create({ userId: dialstackUserId, dialString: patient.phone });
     } catch (error) {

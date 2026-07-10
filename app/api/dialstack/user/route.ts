@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { getDialstack } from '@/lib/dialstack';
+import { getDialstack, resolveAccountUser } from '@/lib/dialstack';
 
 // Fetch the DialStack user for the current practice, creating it if it doesn't exist
 export async function GET() {
@@ -24,17 +24,19 @@ export async function GET() {
     // Fetch users for this account
     const { data: users } = await dialstack.users.list({}, { dialstackAccount: accountId });
 
-    // If no user exists, create one opportunistically
-    if (users.length === 0) {
-      const newUser = await dialstack.users.create({ email }, { dialstackAccount: accountId });
-      return new Response(JSON.stringify(newUser), {
+    // Resolve the logged-in practice's user; create one if there's no match.
+    const existing = resolveAccountUser(users, email);
+
+    if (existing) {
+      return new Response(JSON.stringify(existing), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // Return the first (and should be only) user
-    return new Response(JSON.stringify(users[0]), {
+    // No matching user — create one for this practice.
+    const newUser = await dialstack.users.create({ email }, { dialstackAccount: accountId });
+    return new Response(JSON.stringify(newUser), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

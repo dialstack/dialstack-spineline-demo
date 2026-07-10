@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useDialstackContext } from './EmbeddedComponentProvider';
+import { useLookupPatient } from './useLookupPatient';
 import type { IncomingCallEvent } from '@dialstack/sdk';
 import type { Patient } from '@/app/models/patient';
 
@@ -28,24 +29,7 @@ export interface IncomingCallWithPatient {
 export function useCallEvents() {
   const { dialstackInstance } = useDialstackContext();
   const [currentCall, setCurrentCall] = useState<IncomingCallWithPatient | null>(null);
-
-  /**
-   * Look up patient by phone number
-   */
-  const lookupPatient = useCallback(async (phone: string): Promise<Patient | null> => {
-    try {
-      const response = await fetch(`/api/patients/lookup?phone=${encodeURIComponent(phone)}`);
-      if (!response.ok) {
-        console.error('Failed to lookup patient:', response.statusText);
-        return null;
-      }
-      const { patient } = await response.json();
-      return patient;
-    } catch (error) {
-      console.error('Error looking up patient:', error);
-      return null;
-    }
-  }, []);
+  const lookupPatient = useLookupPatient();
 
   /**
    * Handle incoming call event
@@ -62,12 +46,15 @@ export function useCallEvents() {
       // Look up patient
       const patient = await lookupPatient(event.from_number);
 
-      // Update with patient result
-      setCurrentCall({
-        call: event,
-        patient,
-        isLoading: false,
-      });
+      // Apply the result only if THIS call is still current — two calls arriving
+      // in quick succession would otherwise let the slower lookup from an earlier
+      // call clobber the newer call's state. Guard by the caller number, matching
+      // SoftphoneDrawerProvider's functional-updater pattern.
+      setCurrentCall((cur) =>
+        cur && cur.call.from_number === event.from_number
+          ? { ...cur, patient, isLoading: false }
+          : cur
+      );
     },
     [lookupPatient]
   );

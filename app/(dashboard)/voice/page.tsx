@@ -7,6 +7,7 @@ import { CallLogs, Voicemails, DialPlan } from '@dialstack/sdk/react';
 import { useDialstackContext } from '@/app/hooks/EmbeddedComponentProvider';
 import { CalendarCheck, UserPlus, PhoneForwarded, AlertCircle, Phone } from 'lucide-react';
 import { formatPhone } from '@/lib/phone';
+import { useSoftphoneDrawer } from '@/app/hooks/SoftphoneDrawerProvider';
 
 // Practice-specific call insights (Spineline native content)
 const callInsights = [
@@ -79,6 +80,13 @@ export default function VoicePage() {
   const [dialPlanId, setDialPlanId] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState<PhoneNumber | null>(null);
   const [phoneNumberLoading, setPhoneNumberLoading] = useState(true);
+
+  // WebRTC softphone: mint a user token; when available, the practice-number chip
+  // becomes a button that opens the softphone side panel. If the account has no
+  // user (token unavailable), the chip stays a plain, non-interactive label.
+  // The softphone panel + connection live app-wide in the dashboard layout
+  // (SoftphoneDrawerProvider); here we just open it.
+  const { setOpen: setSoftphoneOpen, canDial } = useSoftphoneDrawer();
 
   // Fetch the DialStack user ID on mount
   useEffect(() => {
@@ -165,7 +173,19 @@ export default function VoicePage() {
       {/* Header with Practice Phone Number */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Voice</h1>
-        <div className="flex items-center gap-3 px-4 py-2 bg-card border rounded-lg">
+        {/* Practice-number chip. When the WebRTC softphone is available it becomes
+            a button that opens the softphone side panel; otherwise a plain label. */}
+        <button
+          type="button"
+          onClick={() => canDial && setSoftphoneOpen(true)}
+          disabled={!canDial}
+          aria-label={canDial ? 'Open softphone' : undefined}
+          className={`flex items-center gap-3 px-4 py-2 bg-card border rounded-lg text-left transition-colors ${
+            canDial
+              ? 'cursor-pointer hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+              : 'cursor-default'
+          }`}
+        >
           <div className="p-2 rounded-lg bg-primary/10">
             <Phone className="w-5 h-5 text-primary" />
           </div>
@@ -179,7 +199,7 @@ export default function VoicePage() {
               <p className="text-base font-semibold text-muted-foreground">No number assigned</p>
             )}
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Practice Insights - Native Spineline Content */}

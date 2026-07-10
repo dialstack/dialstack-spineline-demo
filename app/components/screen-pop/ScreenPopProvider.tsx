@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallEvents } from '@/app/hooks/useCallEvents';
+import { useSoftphoneDrawer } from '@/app/hooks/SoftphoneDrawerProvider';
 import { ScreenPopPanel } from './ScreenPopPanel';
 
 interface ScreenPopProviderProps {
@@ -8,16 +9,20 @@ interface ScreenPopProviderProps {
 }
 
 /**
- * Provider component that wraps the app to enable screen pop functionality.
- * Subscribes to call events and renders the screen pop panel when calls arrive.
+ * Provider that renders the screen-pop panel when a call arrives — but only when
+ * the softphone is OFF. When the softphone is on, its own incoming-call drawer
+ * shows the same caller/patient info (see SoftphonePanel), so a second pop would be
+ * redundant. The call-events subscription runs regardless (it's the shared SSE),
+ * so toggling the softphone doesn't drop it.
  */
 export function ScreenPopProvider({ children }: ScreenPopProviderProps) {
   const { currentCall, dismissCall } = useCallEvents();
+  const { enabled: softphoneEnabled } = useSoftphoneDrawer();
 
   return (
     <>
       {children}
-      <ScreenPopPanel call={currentCall} onDismiss={dismissCall} />
+      {!softphoneEnabled && <ScreenPopPanel call={currentCall} onDismiss={dismissCall} />}
     </>
   );
 }

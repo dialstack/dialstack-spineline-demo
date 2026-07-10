@@ -6,6 +6,7 @@ import { File as FileIcon, PanelLeftClose, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useSoftphoneDrawer } from '@/app/hooks/SoftphoneDrawerProvider';
 import { Sparkles } from 'lucide-react';
 import { useEmbeddedComponentBorder } from '../hooks/EmbeddedComponentBorderProvider';
 import { useToolsContext } from '../hooks/ToolsPanelProvider';
@@ -68,32 +69,43 @@ type DefaultToolsProps = {
   handleEnableBorderChange: (value: boolean) => void;
 };
 
-const DefaultTools = ({ border, handleEnableBorderChange }: DefaultToolsProps) => (
-  <div className="my-6 flex flex-col gap-y-4 text-lg font-medium">
-    <div className="flex flex-row items-center justify-between rounded-lg">
-      <Label className="text-left" htmlFor="outline">
-        Component outlines
-      </Label>
-      <Switch
-        id="outline"
-        checked={border}
-        onCheckedChange={() => handleEnableBorderChange(!border)}
-      />
+const DefaultTools = ({ border, handleEnableBorderChange }: DefaultToolsProps) => {
+  // Softphone master switch — off by default so the browser WebRTC phone stays
+  // separate from click-to-call (which rings the user's own device).
+  const { enabled: softphoneOn, setEnabled: setSoftphoneOn } = useSoftphoneDrawer();
+  return (
+    <div className="my-6 flex flex-col gap-y-4 text-lg font-medium">
+      <div className="flex flex-row items-center justify-between rounded-lg">
+        <Label className="text-left" htmlFor="softphone">
+          Softphone
+        </Label>
+        <Switch id="softphone" checked={softphoneOn} onCheckedChange={setSoftphoneOn} />
+      </div>
+      <div className="flex flex-row items-center justify-between rounded-lg">
+        <Label className="text-left" htmlFor="outline">
+          Component outlines
+        </Label>
+        <Switch
+          id="outline"
+          checked={border}
+          onCheckedChange={() => handleEnableBorderChange(!border)}
+        />
+      </div>
+      <div className="flex flex-row items-center justify-between">
+        <Label className="text-left" htmlFor="theme">
+          Theme
+        </Label>
+        <ThemePicker />
+      </div>
+      <div className="flex flex-row items-center justify-between">
+        <Label className="text-left align-middle" htmlFor="outline">
+          Locale
+        </Label>
+        <LocaleSelector />
+      </div>
     </div>
-    <div className="flex flex-row items-center justify-between">
-      <Label className="text-left" htmlFor="theme">
-        Theme
-      </Label>
-      <ThemePicker />
-    </div>
-    <div className="flex flex-row items-center justify-between">
-      <Label className="text-left align-middle" htmlFor="outline">
-        Locale
-      </Label>
-      <LocaleSelector />
-    </div>
-  </div>
-);
+  );
+};
 
 const ToolsPanel = () => {
   const pathname = usePathname();

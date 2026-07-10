@@ -26,6 +26,7 @@ import {
 import { formatPhone, formatPhoneAsYouType, normalizePhone } from '@/lib/phone';
 import { CallHistory } from '@dialstack/sdk/react';
 import { useDialstackContext } from '@/app/hooks/EmbeddedComponentProvider';
+import { useSoftphoneDrawer } from '@/app/hooks/SoftphoneDrawerProvider';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
 import { EditableCell } from '@/app/components/EditableCell';
 import { PatientQuickInfo } from '@/app/components/patients/PatientQuickInfo';
@@ -58,6 +59,7 @@ interface PatientPanelProps {
 export function PatientPanel({ patient, onClose }: PatientPanelProps) {
   const queryClient = useQueryClient();
   const { dialstackInstance } = useDialstackContext();
+  const { canDial, dial } = useSoftphoneDrawer();
   const [dialstackUserId, setDialstackUserId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const isOpen = patient !== null;
@@ -95,12 +97,18 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
     fetchUser();
   }, []);
 
-  // Handle call patient button
+  // Handle call patient button. With the softphone ON, place the call through
+  // the browser softphone (WebRTC) so the user talks in-app; otherwise fall back to
+  // click-to-call, which rings the user's own device.
   const handleCallPatient = async () => {
-    if (!patient?.phone || !dialstackInstance || !dialstackUserId) {
+    if (!patient?.phone) return;
+
+    if (canDial) {
+      dial(patient.phone);
       return;
     }
 
+    if (!dialstackInstance || !dialstackUserId) return;
     try {
       await dialstackInstance.calls.create({ userId: dialstackUserId, dialString: patient.phone });
     } catch (error) {
