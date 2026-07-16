@@ -74,7 +74,7 @@ export function SoftphoneDrawerProvider({ children }: { children: React.ReactNod
 
   // Only mint/connect when the softphone is enabled — useWebrtcToken no-ops on a
   // null token, so passing enabled gates the whole connection.
-  const { token, apiBaseUrl, unavailable } = useWebrtcToken(enabled);
+  const { token, apiBaseUrl, unavailable, refresh } = useWebrtcToken(enabled);
   const canDial = enabled && !!token && !unavailable;
 
   // Bridge to the SDK provider's dial(): the bridge (mounted inside
@@ -202,6 +202,7 @@ export function SoftphoneDrawerProvider({ children }: { children: React.ReactNod
       <SoftphoneProvider
         token={enabled ? (token ?? '') : ''}
         apiBaseUrl={apiBaseUrl ?? undefined}
+        onTokenExpiring={refresh}
         onIncomingCall={onIncomingCall}
         onCallStarted={onCallStarted}
         onCallEnded={onCallEnded}
