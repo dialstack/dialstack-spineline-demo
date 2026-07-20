@@ -142,12 +142,15 @@ export const authOptions: AuthOptions = {
           });
           logger.info('Practice was created');
 
-          // Create DialStack account with 3-digit extensions. A billing address
-          // and agreed monthly rates are required at creation; this demo uses
-          // the platform's standard rates and a placeholder address.
+          // Create DialStack account with 3-digit extensions. Owner email +
+          // contact name, a billing address, and agreed monthly rates are all
+          // required at creation; this demo derives the contact name from the
+          // signup email and uses the platform's standard rates + a placeholder
+          // address.
           logger.info('Creating DialStack account...');
           const account = await getDialstack().accounts.create({
             email,
+            primary_contact_name: email.split('@')[0] || email,
             config: { extension_length: 3 },
             billing_address: {
               street: '123 Main St',
