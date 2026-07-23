@@ -9,6 +9,7 @@ const ComponentURLs: { [key: string]: string } = {
   CallHistory: 'https://docs.dialstack.ai/sdks/react/call-history',
   Voicemails: 'https://docs.dialstack.ai/sdks/react/voicemails',
   DialPlan: 'https://docs.dialstack.ai/sdks/react/dial-plan',
+  Softphone: 'https://docs.dialstack.ai/sdks/react/softphone',
 };
 
 const EmbeddedComponentContainer = ({

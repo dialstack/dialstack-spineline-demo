@@ -77,9 +77,9 @@ export function SoftphoneDrawerProvider({ children }: { children: React.ReactNod
   const { token, apiBaseUrl, unavailable, refresh } = useWebrtcToken(enabled);
   const canDial = enabled && !!token && !unavailable;
 
-  // Bridge to the SDK provider's dial(): the bridge (mounted inside
-  // <SoftphoneProvider>) publishes useSoftphone().dial here so host click-to-call
-  // buttons (which live outside that provider) can place a call.
+  // Bridge to the SDK provider's placeCall(): the bridge (mounted inside
+  // <SoftphoneProvider>) publishes useSoftphone().placeCall here so host
+  // click-to-call buttons (which live outside that provider) can place a call.
   const softphoneDialRef = useRef<((destination: string) => void) | null>(null);
 
   const dial = useCallback((destination: string) => {
@@ -219,21 +219,21 @@ export function SoftphoneDrawerProvider({ children }: { children: React.ReactNod
   );
 }
 
-// Publishes the SDK softphone's dial() into the host ref so click-to-call from
-// anywhere in the app routes through the (single, always-connected) softphone.
-// Renders nothing; must live inside <SoftphoneProvider>.
+// Publishes the SDK softphone's placeCall() into the host ref so click-to-call
+// from anywhere in the app routes through the (single, always-connected)
+// softphone. Renders nothing; must live inside <SoftphoneProvider>.
 function SoftphoneDialBridge({
   dialRef,
 }: {
   dialRef: React.RefObject<((destination: string) => void) | null>;
 }) {
-  const { dial } = useSoftphone();
+  const { placeCall } = useSoftphone();
   useEffect(() => {
-    dialRef.current = dial;
+    dialRef.current = (destination: string) => void placeCall(destination);
     return () => {
       dialRef.current = null;
     };
-  }, [dial, dialRef]);
+  }, [placeCall, dialRef]);
   return null;
 }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { Softphone } from '@dialstack/sdk/react';
+import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
 import { CallSheet } from '@/app/components/call/CallSheet';
 import { CallSheetHeader } from '@/app/components/call/CallSheetHeader';
 import { PatientCallCard } from '@/app/components/screen-pop/PatientCallCard';
@@ -42,8 +43,12 @@ export function SoftphonePanel() {
     >
       <div className="flex flex-col gap-5">
         {/* The SDK softphone (dial pad / incoming / in-call + E911). The incoming
-            answer/decline cards render here in full. */}
-        <Softphone autoFocusDestination />
+            answer/decline cards render here in full. Wrapped so the demo's
+            "highlight embedded components" toggle draws the dashed border and the
+            "View in Docs" link, same as the other SDK components. */}
+        <EmbeddedComponentContainer componentName="Softphone">
+          <Softphone autoFocusDestination />
+        </EmbeddedComponentContainer>
 
         {inOngoingCall ? (
           /* On an active call → the active call's patient match only. */
