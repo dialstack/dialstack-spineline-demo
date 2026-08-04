@@ -143,16 +143,23 @@ export const authOptions: AuthOptions = {
           logger.info('Practice was created');
 
           // Create DialStack account with 3-digit extensions. Owner email +
-          // contact name, a billing address, and agreed monthly rates are all
-          // required at creation; this demo derives the contact name from the
-          // signup email and uses the platform's standard rates + a placeholder
-          // address.
+          // contact name, an address, and agreed monthly rates are all required
+          // at creation; this demo derives the contact name from the signup
+          // email and uses the platform's standard rates.
+          //
+          // The address becomes the account's main location — the default
+          // location for emergency (911) calling and for tax and fee
+          // jurisdiction. This demo has no real address at signup, so it sends a
+          // generic but valid placeholder that geocodes and validates cleanly. A
+          // real integration would collect the customer's address here and let
+          // them update their main location afterwards. Emergency-address
+          // handling tailored to demo signups is tracked for a future release.
           logger.info('Creating DialStack account...');
           const account = await getDialstack().accounts.create({
             email,
             primary_contact_name: email.split('@')[0] || email,
             config: { extension_length: 3 },
-            billing_address: {
+            address: {
               street: '123 Main St',
               city: 'New York',
               state: 'NY',
