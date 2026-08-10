@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Phone, User, Calendar, UserPlus, FileText, Loader2, Clock } from 'lucide-react';
 import { formatPhone } from '@/lib/phone';
-import { CallHistory } from '@dialstack/sdk/react';
+import { CallHistory } from '@dialstack/sdk-react/call-history';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
 import { PatientQuickInfo } from '@/app/components/patients/PatientQuickInfo';
 import type { Patient } from '@/app/models/patient';

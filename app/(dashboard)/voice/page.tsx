@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import Container from '@/app/components/Container';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
-import { CallLogs, Voicemails, DialPlan } from '@dialstack/sdk/react';
+import { CallLogs } from '@dialstack/sdk-react/call-logs';
+import { DialPlan } from '@dialstack/sdk-react/dial-plan';
+import { Voicemails } from '@dialstack/sdk-react/voicemails';
 import { useDialstackContext } from '@/app/hooks/EmbeddedComponentProvider';
 import { CalendarCheck, UserPlus, PhoneForwarded, AlertCircle, Phone } from 'lucide-react';
 import { formatPhone } from '@/lib/phone';

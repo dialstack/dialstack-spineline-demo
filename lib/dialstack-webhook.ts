@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DialStack, WebhookErrorResponse } from '@dialstack/sdk/server';
+import { DialStack, WebhookErrorResponse } from '@dialstack/sdk-server';
 import PracticeModel, { Practice } from '@/app/models/practice';
 import { getPracticeAIAgentSecret } from '@/lib/dialstack-ai-agent';
 import logger from '@/lib/logger';

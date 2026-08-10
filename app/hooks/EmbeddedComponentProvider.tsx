@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import type { DialStackInstance } from '@dialstack/sdk';
+import type { DialStackInstance } from '@dialstack/sdk-js';
 
 type IDialstackContext = {
   dialstackInstance: DialStackInstance | null;

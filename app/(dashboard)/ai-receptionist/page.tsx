@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Container from '@/app/components/Container';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
-import { AIAgent } from '@dialstack/sdk/react';
+import { AIAgent } from '@dialstack/sdk-react/ai-agent';
 
 type AIAgentStatus = 'loading' | 'ready' | 'error';
 

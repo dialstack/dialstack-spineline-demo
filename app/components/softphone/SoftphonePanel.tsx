@@ -1,6 +1,6 @@
 'use client';
 
-import { Softphone } from '@dialstack/sdk/react';
+import { Softphone } from '@dialstack/sdk-react/softphone';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
 import { CallSheet } from '@/app/components/call/CallSheet';
 import { CallSheetHeader } from '@/app/components/call/CallSheetHeader';

@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockRetrieve = vi.fn();
 
-vi.mock('@dialstack/sdk/server', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@dialstack/sdk/server')>();
+vi.mock('@dialstack/sdk-server', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@dialstack/sdk-server')>();
   return {
     ...actual,
     DialStack: class MockDialStack {

@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { getDialstack } from '@/lib/dialstack';
-import type { DialPlanNode } from '@dialstack/sdk/server';
+import type { DialPlanNode } from '@dialstack/sdk-server';
 
 // Default business hours schedule: Monday-Friday 9am-5pm
 const DEFAULT_SCHEDULE_RANGES = [

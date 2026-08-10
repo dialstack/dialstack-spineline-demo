@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { type DialStackInstance, loadDialstackAndInitialize } from '@dialstack/sdk';
+import { type DialStackInstance, loadDialstackAndInitialize } from '@dialstack/sdk-js';
 
 /**
  * Hook to initialize and manage DialStack SDK instance

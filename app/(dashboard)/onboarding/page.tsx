@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useContext, useRef } from 'react';
-import { OnboardingPortal } from '@dialstack/sdk/react/onboarding';
+import { OnboardingPortal } from '@dialstack/sdk-react/onboarding';
 import { redirect } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { SettingsContext } from '@/app/contexts/settings/SettingsContext';

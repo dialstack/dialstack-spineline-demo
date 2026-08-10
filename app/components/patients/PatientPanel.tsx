@@ -24,7 +24,7 @@ import {
   LoaderCircle,
 } from 'lucide-react';
 import { formatPhone, formatPhoneAsYouType, normalizePhone } from '@/lib/phone';
-import { CallHistory } from '@dialstack/sdk/react';
+import { CallHistory } from '@dialstack/sdk-react/call-history';
 import { useDialstackContext } from '@/app/hooks/EmbeddedComponentProvider';
 import { useSoftphoneDrawer } from '@/app/hooks/SoftphoneDrawerProvider';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';

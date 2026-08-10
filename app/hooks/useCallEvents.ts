@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useDialstackContext } from './EmbeddedComponentProvider';
 import { useLookupPatient } from './useLookupPatient';
-import type { IncomingCallEvent } from '@dialstack/sdk';
+import type { IncomingCallEvent } from '@dialstack/sdk-js';
 import type { Patient } from '@/app/models/patient';
 
 /**

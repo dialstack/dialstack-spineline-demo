@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { SoftphoneProvider, useSoftphone, callPeerNumber } from '@dialstack/sdk/react';
+import { SoftphoneProvider, useSoftphone, callPeerNumber } from '@dialstack/sdk-react/softphone';
 import { useWebrtcToken } from './useWebrtcToken';
 import { useLookupPatient } from './useLookupPatient';
 import type { Patient } from '@/app/models/patient';

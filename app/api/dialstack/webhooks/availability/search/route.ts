@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AvailabilitySearchWebhook, AvailabilitySearchResponse } from '@dialstack/sdk/server';
+import { AvailabilitySearchWebhook, AvailabilitySearchResponse } from '@dialstack/sdk-server';
 import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { startOfDay, addDays } from 'date-fns';
 import { getTimezone } from '@/app/models/practice';

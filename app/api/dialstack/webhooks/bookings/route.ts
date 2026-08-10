@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CreateBookingWebhook, BookingResponse, WebhookErrorResponse } from '@dialstack/sdk/server';
+import { CreateBookingWebhook, BookingResponse, WebhookErrorResponse } from '@dialstack/sdk-server';
 import AppointmentModel from '@/app/models/appointment';
 import PatientModel from '@/app/models/patient';
 import ProviderModel, { Provider } from '@/app/models/provider';

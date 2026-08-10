@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CustomerLookupWebhook, CustomerLookupResponse } from '@dialstack/sdk/server';
+import { CustomerLookupWebhook, CustomerLookupResponse } from '@dialstack/sdk-server';
 import PatientModel from '@/app/models/patient';
 import AppointmentModel from '@/app/models/appointment';
 import { normalizePhone } from '@/lib/phone';
