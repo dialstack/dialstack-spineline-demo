@@ -31,6 +31,20 @@ export async function POST() {
     // This limits the blast radius of the session token on non-onboarding pages.
     if (process.env.NEXT_PUBLIC_ENABLE_ONBOARDING === 'true') {
       components.account_onboarding = { enabled: true };
+
+      // `agreement_acceptance` lets this session accept the subscription
+      // agreement, and it is a separate component from `account_onboarding` on
+      // purpose: onboarding alone can read the agreement and render the accept
+      // screen, but not sign it.
+      //
+      // Enabling it is an attestation. As the platform, we are asserting that the
+      // person holding this session is entitled to accept on the account's
+      // behalf. Spineline models one signed-in user per DialStack account, so the
+      // authenticated user IS that person here. In a product where several people
+      // share an account, gate this on your own notion of who may sign and leave
+      // it off for everyone else — they will still see the agreement and learn
+      // that service is blocked until it is accepted.
+      components.agreement_acceptance = { enabled: true };
     }
 
     const dialstack = getDialstack();

@@ -8,6 +8,19 @@ import { SettingsContext } from '@/app/contexts/settings/SettingsContext';
 
 const isOnboardingEnabled = process.env.NEXT_PUBLIC_ENABLE_ONBOARDING === 'true';
 
+// Whether the signed-in user may accept the subscription agreement for this
+// account. Spineline models one signed-in user per DialStack account, so that
+// user is the account's signer and this is simply true — but it is named rather
+// than inlined because it is a real decision, and it must match the condition
+// the session mint uses to enable the `agreement_acceptance` component (see
+// app/api/dialstack/session/route.ts).
+//
+// A product where several people share one account should compute this from its
+// own notion of who signs, and pass false for everyone else: the portal cannot
+// see the session's components, so this is what makes the accept screen say "ask
+// the account owner" instead of offering a button the API would reject.
+const userMayAcceptAgreement = true;
+
 /** Escape HTML special characters to prevent XSS. */
 function escapeHtml(str: string): string {
   return str
@@ -77,6 +90,7 @@ export default function OnboardingPage() {
         logoHtml={logoHtml}
         onBack={handleExit}
         backLabel="Back to Spineline"
+        canAcceptAgreement={userMayAcceptAgreement}
         onStepChange={(event) => {
           if (process.env.NODE_ENV === 'development') {
             console.log('Onboarding step:', event.step);
