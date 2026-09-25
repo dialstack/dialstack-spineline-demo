@@ -6,10 +6,11 @@ import Provider from '@/app/models/provider';
 import dbConnect from '@/lib/dbConnect';
 import { getToken } from 'next-auth/jwt';
 import logger from '@/lib/logger';
-import { buildDemoPatients, generateDemoAppointments } from '@/lib/demo-seed-data';
-
-const DEFAULT_MICHAEL_PHONE = '+15551000001';
-const DEFAULT_JEREMY_PHONE = '+15551000002';
+import {
+  buildDemoPatients,
+  generateDemoAppointments,
+  resolveVipPhones,
+} from '@/lib/demo-seed-data';
 
 /**
  * POST /api/testdata/seed-demo
@@ -40,15 +41,9 @@ export async function POST(req: NextRequest) {
       .filter(Boolean);
     const isDemoPractice = DEMO_EMAILS.includes(token.email);
 
-    let michaelPhone = DEFAULT_MICHAEL_PHONE;
-    let jeremyPhone = DEFAULT_JEREMY_PHONE;
-
-    if (isDemoPractice) {
-      const envMichael = process.env.DEMO_PATIENT_PHONE_MICHAEL;
-      const envJeremy = process.env.DEMO_PATIENT_PHONE_JEREMY;
-      if (envMichael && envMichael !== 'disabled') michaelPhone = envMichael;
-      if (envJeremy && envJeremy !== 'disabled') jeremyPhone = envJeremy;
-    }
+    // Only demo practices get VIP patients, so only they need the real numbers;
+    // every other practice resolves to the unroutable placeholders.
+    const vipPhones = resolveVipPhones(isDemoPractice ? process.env : {});
 
     // Delete existing demo data (idempotent reset)
     await pool.query(
@@ -69,7 +64,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Build and create patients
-    const demoPatients = buildDemoPatients({ isDemoPractice, michaelPhone, jeremyPhone });
+    const demoPatients = buildDemoPatients({ isDemoPractice, vipPhones });
     const createdPatients: { id: number; index: number }[] = [];
 
     for (let i = 0; i < demoPatients.length; i++) {

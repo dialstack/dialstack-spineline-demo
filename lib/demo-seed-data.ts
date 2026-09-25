@@ -23,14 +23,276 @@ export interface DemoAppointment {
   idempotency_key: string;
 }
 
-// VIP patient indices
-export const VIP_MICHAEL_INDEX = 0;
-export const VIP_JEREMY_INDEX = 1;
+/**
+ * A VIP demo patient: a sales rep, seeded into their own demo practice so that
+ * calling the practice from their own mobile pops their patient record.
+ *
+ * Adding a rep is one entry here. Nothing else in this file counts VIPs — the
+ * filler-patient offset is derived from VIP_PATIENTS.length — so there is no
+ * second place to keep in sync.
+ *
+ * `phoneEnvVar` is read at runtime rather than stored: these are real personal
+ * mobile numbers, and everything under spineline/ is mirrored verbatim to a
+ * public repository. The number lives in SSM and reaches us as an environment
+ * variable; `fallbackPhone` is the unroutable placeholder used when it is
+ * absent or "disabled".
+ */
+export interface VipPatient {
+  key: VipKey;
+  first_name: string;
+  last_name: string;
+  email: string;
+  date_of_birth: Date;
+  registration_date: Date;
+  status: string;
+  /** Every appointment for this patient is with this provider. */
+  providerLastName: string;
+  phoneEnvVar: string;
+  fallbackPhone: string;
+  appointments: VipAppointment[];
+}
+
+/** One appointment, relative to the reference date the seeder is called with. */
+export interface VipAppointment {
+  dayOffset: number;
+  hour: number;
+  minute: number;
+  durationMin: number;
+  type: AppointmentType;
+  notes: string;
+}
+
+export type VipKey = 'michael' | 'jeremy' | 'jake';
+
+export const VIP_PATIENTS: VipPatient[] = [
+  {
+    key: 'michael',
+    first_name: 'Michael',
+    last_name: 'Sharp',
+    email: 'michael.sharp@example.com',
+    date_of_birth: new Date('1978-03-15'),
+    registration_date: new Date('2024-01-10'),
+    status: 'active',
+    providerLastName: 'Martinez',
+    phoneEnvVar: 'DEMO_PATIENT_PHONE_MICHAEL',
+    fallbackPhone: '+15551000001',
+    appointments: [
+      {
+        dayOffset: -14,
+        hour: 9,
+        minute: 0,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'Regular spinal adjustment. Patient reports mild lower back discomfort.',
+      },
+      {
+        dayOffset: -12,
+        hour: 10,
+        minute: 30,
+        durationMin: 30,
+        type: 'follow_up',
+        notes: 'Follow-up on lumbar adjustment. Improvement noted.',
+      },
+      {
+        dayOffset: -9,
+        hour: 9,
+        minute: 0,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'Thoracic spine adjustment. Patient feeling much better.',
+      },
+      {
+        dayOffset: -7,
+        hour: 14,
+        minute: 0,
+        durationMin: 45,
+        type: 'follow_up',
+        notes: 'Comprehensive follow-up. Reviewed X-ray results.',
+      },
+      {
+        dayOffset: -5,
+        hour: 11,
+        minute: 0,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'Cervical adjustment. Mild tension in neck area.',
+      },
+      {
+        dayOffset: -3,
+        hour: 9,
+        minute: 30,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'Routine adjustment. Patient maintaining good progress.',
+      },
+      {
+        dayOffset: 0,
+        hour: 10,
+        minute: 0,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'Same-day spinal adjustment.',
+      },
+      {
+        dayOffset: 2,
+        hour: 10,
+        minute: 0,
+        durationMin: 30,
+        type: 'follow_up',
+        notes: 'Scheduled follow-up assessment.',
+      },
+    ],
+  },
+  {
+    key: 'jeremy',
+    first_name: 'Jeremy',
+    last_name: 'Charchenko',
+    email: 'jeremy.charchenko@example.com',
+    date_of_birth: new Date('1985-11-22'),
+    registration_date: new Date('2025-06-15'),
+    status: 'active',
+    providerLastName: 'Chen',
+    phoneEnvVar: 'DEMO_PATIENT_PHONE_JEREMY',
+    fallbackPhone: '+15551000002',
+    appointments: [
+      {
+        dayOffset: -10,
+        hour: 13,
+        minute: 0,
+        durationMin: 45,
+        type: 'initial',
+        notes: 'Initial consultation. Patient reports sports injury to shoulder.',
+      },
+      {
+        dayOffset: -7,
+        hour: 15,
+        minute: 0,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'First adjustment session. Focus on shoulder and upper back.',
+      },
+      {
+        dayOffset: -4,
+        hour: 14,
+        minute: 30,
+        durationMin: 30,
+        type: 'follow_up',
+        notes: 'Follow-up on shoulder treatment. Good range of motion improvement.',
+      },
+      {
+        dayOffset: 0,
+        hour: 14,
+        minute: 0,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'Same-day shoulder adjustment.',
+      },
+      {
+        dayOffset: 5,
+        hour: 13,
+        minute: 30,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'Continued shoulder rehabilitation.',
+      },
+    ],
+  },
+  {
+    key: 'jake',
+    first_name: 'Jake',
+    last_name: 'Bascom',
+    email: 'jake.bascom@example.com',
+    date_of_birth: new Date('1982-07-09'),
+    registration_date: new Date('2025-11-03'),
+    status: 'active',
+    providerLastName: 'Johnson',
+    phoneEnvVar: 'DEMO_PATIENT_PHONE_JAKE',
+    fallbackPhone: '+15551000003',
+    appointments: [
+      {
+        dayOffset: -21,
+        hour: 10,
+        minute: 0,
+        durationMin: 45,
+        type: 'initial',
+        notes:
+          'Initial consultation. Patient reports recurring lower back pain after long flights.',
+      },
+      {
+        dayOffset: -14,
+        hour: 9,
+        minute: 0,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'First adjustment session. Focus on lumbar spine and hips.',
+      },
+      {
+        dayOffset: -8,
+        hour: 11,
+        minute: 30,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'Lumbar adjustment. Patient reports less morning stiffness.',
+      },
+      {
+        dayOffset: -3,
+        hour: 16,
+        minute: 0,
+        durationMin: 30,
+        type: 'follow_up',
+        notes: 'Follow-up on lumbar treatment. Reviewed desk setup and stretching routine.',
+      },
+      // 11:00 is Dr. Johnson's filler3 slot today; 11:30 is his next free one.
+      // The seeder inserts straight through Appointment.create, so nothing
+      // rejects a double-booking at write time.
+      {
+        dayOffset: 0,
+        hour: 11,
+        minute: 30,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'Same-day lumbar adjustment.',
+      },
+      {
+        dayOffset: 4,
+        hour: 10,
+        minute: 30,
+        durationMin: 30,
+        type: 'adjustment',
+        notes: 'Continued lumbar rehabilitation.',
+      },
+    ],
+  },
+];
+
+/**
+ * Index of a VIP patient in the array buildDemoPatients returns for a demo
+ * practice. VIPs occupy the leading slots, filler patients follow.
+ */
+export function vipIndex(key: VipKey): number {
+  const idx = VIP_PATIENTS.findIndex((v) => v.key === key);
+  if (idx < 0) throw new Error(`Unknown VIP patient key: ${key}`);
+  return idx;
+}
+
+/**
+ * Resolve each VIP's phone from the environment, falling back to an unroutable
+ * placeholder. "disabled" is what the SSM parameter carries when a rep has no
+ * number configured in that environment.
+ */
+export function resolveVipPhones(env: Record<string, string | undefined>): Record<VipKey, string> {
+  const phones = {} as Record<VipKey, string>;
+  for (const vip of VIP_PATIENTS) {
+    const configured = env[vip.phoneEnvVar];
+    phones[vip.key] = configured && configured !== 'disabled' ? configured : vip.fallbackPhone;
+  }
+  return phones;
+}
 
 export interface BuildDemoPatientsOptions {
   isDemoPractice: boolean;
-  michaelPhone: string;
-  jeremyPhone: string;
+  /** Phone per VIP; see resolveVipPhones. */
+  vipPhones: Record<VipKey, string>;
 }
 
 /**
@@ -40,30 +302,17 @@ export interface BuildDemoPatientsOptions {
 export function buildDemoPatients(opts: BuildDemoPatientsOptions): DemoPatient[] {
   if (!opts.isDemoPractice) return [...FILLER_PATIENTS];
 
-  return [
-    // VIP #0: Michael Sharp — long-time patient
-    {
-      first_name: 'Michael',
-      last_name: 'Sharp',
-      email: 'michael.sharp@example.com',
-      phone: opts.michaelPhone,
-      date_of_birth: new Date('1978-03-15'),
-      registration_date: new Date('2024-01-10'),
-      status: 'active',
-    },
-    // VIP #1: Jeremy Charchenko — newer patient
-    {
-      first_name: 'Jeremy',
-      last_name: 'Charchenko',
-      email: 'jeremy.charchenko@example.com',
-      phone: opts.jeremyPhone,
-      date_of_birth: new Date('1985-11-22'),
-      registration_date: new Date('2025-06-15'),
-      status: 'active',
-    },
-    // Filler patients (~25)
-    ...FILLER_PATIENTS,
-  ];
+  const vips: DemoPatient[] = VIP_PATIENTS.map((vip) => ({
+    first_name: vip.first_name,
+    last_name: vip.last_name,
+    email: vip.email,
+    phone: opts.vipPhones[vip.key],
+    date_of_birth: vip.date_of_birth,
+    registration_date: vip.registration_date,
+    status: vip.status,
+  }));
+
+  return [...vips, ...FILLER_PATIENTS];
 }
 
 const FILLER_PATIENTS: DemoPatient[] = [
@@ -298,7 +547,7 @@ const FILLER_PATIENTS: DemoPatient[] = [
 /**
  * Generate demo appointments relative to a reference date.
  * Returns appointments with provider IDs resolved by last name.
- * VIP patient appointments (Michael, Jeremy) are only generated for demo practices.
+ * VIP patient appointments are only generated for demo practices.
  */
 export function generateDemoAppointments(
   patients: DemoPatient[],
@@ -342,119 +591,31 @@ export function generateDemoAppointments(
   };
 
   if (isDemoPractice) {
-    // Michael Sharp — 6 past appointments + 1 today + 1 upcoming
-    addAppt(
-      0,
-      0,
-      -14,
-      9,
-      0,
-      30,
-      'adjustment',
-      'Martinez',
-      'Regular spinal adjustment. Patient reports mild lower back discomfort.'
-    );
-    addAppt(
-      0,
-      1,
-      -12,
-      10,
-      30,
-      30,
-      'follow_up',
-      'Martinez',
-      'Follow-up on lumbar adjustment. Improvement noted.'
-    );
-    addAppt(
-      0,
-      2,
-      -9,
-      9,
-      0,
-      30,
-      'adjustment',
-      'Martinez',
-      'Thoracic spine adjustment. Patient feeling much better.'
-    );
-    addAppt(
-      0,
-      3,
-      -7,
-      14,
-      0,
-      45,
-      'follow_up',
-      'Martinez',
-      'Comprehensive follow-up. Reviewed X-ray results.'
-    );
-    addAppt(
-      0,
-      4,
-      -5,
-      11,
-      0,
-      30,
-      'adjustment',
-      'Martinez',
-      'Cervical adjustment. Mild tension in neck area.'
-    );
-    addAppt(
-      0,
-      5,
-      -3,
-      9,
-      30,
-      30,
-      'adjustment',
-      'Martinez',
-      'Routine adjustment. Patient maintaining good progress.'
-    );
-    addAppt(0, 6, 0, 10, 0, 30, 'adjustment', 'Martinez', 'Same-day spinal adjustment.');
-    addAppt(0, 7, 2, 10, 0, 30, 'follow_up', 'Martinez', 'Scheduled follow-up assessment.');
-
-    // Jeremy Charchenko — 3 past appointments + 1 today + 1 upcoming
-    addAppt(
-      1,
-      0,
-      -10,
-      13,
-      0,
-      45,
-      'initial',
-      'Chen',
-      'Initial consultation. Patient reports sports injury to shoulder.'
-    );
-    addAppt(
-      1,
-      1,
-      -7,
-      15,
-      0,
-      30,
-      'adjustment',
-      'Chen',
-      'First adjustment session. Focus on shoulder and upper back.'
-    );
-    addAppt(
-      1,
-      2,
-      -4,
-      14,
-      30,
-      30,
-      'follow_up',
-      'Chen',
-      'Follow-up on shoulder treatment. Good range of motion improvement.'
-    );
-    addAppt(1, 3, 0, 14, 0, 30, 'adjustment', 'Chen', 'Same-day shoulder adjustment.');
-    addAppt(1, 4, 5, 13, 30, 30, 'adjustment', 'Chen', 'Continued shoulder rehabilitation.');
+    // VIPs occupy the leading patient slots, in VIP_PATIENTS order, matching
+    // buildDemoPatients.
+    VIP_PATIENTS.forEach((vip, vipIdx) => {
+      vip.appointments.forEach((appt, apptIdx) => {
+        addAppt(
+          vipIdx,
+          apptIdx,
+          appt.dayOffset,
+          appt.hour,
+          appt.minute,
+          appt.durationMin,
+          appt.type,
+          vip.providerLastName,
+          appt.notes
+        );
+      });
+    });
   }
 
   // Filler patients with appointments.
-  // vipOffset = 2 when VIP patients are present (demo practice), 0 otherwise.
-  // All filler indices below are expressed as 0-based filler positions; vipOffset adjusts to
-  // the actual patient array index at runtime.
-  const vipOffset = isDemoPractice ? 2 : 0;
+  // Filler indices below are 0-based filler positions; vipOffset shifts them past
+  // the VIP slots at runtime. Derived from VIP_PATIENTS.length rather than written
+  // out, because a stale literal here silently reassigns every filler
+  // appointment to the wrong patient — plausible-looking data, not an error.
+  const vipOffset = isDemoPractice ? VIP_PATIENTS.length : 0;
   const filler = (idx: number) => idx + vipOffset;
 
   const fillerWithPast = [0, 2, 3, 5, 7, 9, 11, 13, 15, 17].map(filler);
