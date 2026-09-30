@@ -40,10 +40,16 @@ export default async function dbConnect(): Promise<Pool> {
       max: 20, // Maximum number of clients in the pool
       idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
       connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
+      // TCP keepalive, so a pooled connection to a server that vanished without
+      // closing it is noticed in seconds instead of lingering until the OS gives up.
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 10000,
       // SSL configuration (optional, enabled via DB_SSL_ENABLED=true)
       ssl: sslEnabled
         ? {
-            rejectUnauthorized: false, // RDS certificates are valid but may not be in system trust store
+            // Encryption without identity checks: the server may present a
+            // certificate that is not in the system trust store.
+            rejectUnauthorized: false,
           }
         : false,
     });
