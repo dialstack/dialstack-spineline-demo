@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spineline-branded override of expo-callkit-telecom's incoming-call screen
+     (same view ids; copied over the library resource by plugins/withBrandedIncomingCall). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/spineline_incoming_bg"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <!-- Spineline wordmark. The library binds app_icon/app_name, so both stay
+         in the tree, hidden. -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:background="@drawable/spineline_incoming_chip"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="12dp">
+
+        <ImageView
+            android:layout_width="180dp"
+            android:layout_height="44dp"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/spineline_wordmark" />
+
+        <ImageView
+            android:id="@+id/expo_callkit_telecom_app_icon"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/expo_callkit_telecom_app_name"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Top spacer pushes caller info toward upper-center -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="2" />
+
+    <!-- Caller avatar circle with image or initial fallback -->
+    <FrameLayout
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:background="@drawable/expo_callkit_telecom_bg_avatar">
+
+        <ImageView
+            android:id="@+id/expo_callkit_telecom_avatar_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/expo_callkit_telecom_avatar_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#0077B6"
+            android:textSize="34sp" />
+    </FrameLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="24dp" />
+
+    <!-- Caller display name -->
+    <TextView
+        android:id="@+id/expo_callkit_telecom_caller_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="-0.01"
+        android:textColor="#FFFFFF"
+        android:textSize="26sp" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="8dp" />
+
+    <!-- Call type subtitle -->
+    <TextView
+        android:id="@+id/expo_callkit_telecom_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif"
+        android:textColor="#CDE7F5"
+        android:textSize="16sp" />
+
+    <!-- Patient details from the push (metadata.caller_details), filled in by the
+         patched IncomingCallActivity. Hidden when the caller is not a patient. -->
+    <TextView
+        android:id="@+id/expo_callkit_telecom_caller_details"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="28dp"
+        android:background="@drawable/spineline_incoming_details"
+        android:fontFamily="sans-serif"
+        android:lineSpacingExtra="10dp"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="16dp"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:visibility="gone" />
+
+    <!-- Middle spacer pushes buttons toward bottom -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="3" />
+
+    <!-- Answer and decline buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <!-- Decline button column -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/expo_callkit_telecom_decline_button"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/expo_callkit_telecom_bg_decline"
+                android:contentDescription="Decline"
+                android:scaleType="center"
+                android:src="@drawable/expo_callkit_telecom_ic_decline" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:text="Decline"
+                android:textColor="#CDE7F5"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- Answer button column -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/expo_callkit_telecom_answer_button"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/expo_callkit_telecom_bg_answer"
+                android:contentDescription="Answer"
+                android:scaleType="center"
+                android:src="@drawable/expo_callkit_telecom_ic_answer" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:text="Answer"
+                android:textColor="#CDE7F5"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom padding -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="56dp" />
+
+</LinearLayout>

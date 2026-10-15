@@ -1,5 +1,5 @@
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { getDialstack, resolveAccountUser } from '@/lib/dialstack';
 
 // Mints a WebRTC *user* session token for the embedded <Softphone>. Unlike
@@ -14,18 +14,20 @@ import { getDialstack, resolveAccountUser } from '@/lib/dialstack';
 // targeted, so click-to-call rang a user with no live session. Unlike
 // /api/dialstack/user this does NOT create a user — no match means no Softphone
 // (409), so the client leaves the softphone touchpoints unrendered.
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // getToken, not getServerSession: it also accepts the mobile app's
+    // `Authorization: Bearer` token from /api/mobile/login.
+    const token = await getToken({ req });
 
-    if (!session?.user?.dialstackAccountId) {
+    if (!token?.user?.dialstackAccountId) {
       return new Response(JSON.stringify({ error: 'No authenticated user found' }), {
         status: 401,
       });
     }
 
-    const accountId = session.user.dialstackAccountId;
-    const email = session.user.email;
+    const accountId = token.user.dialstackAccountId;
+    const email = token.email;
     const dialstack = getDialstack();
 
     const { data: users } = await dialstack.users.list({}, { dialstackAccount: accountId });

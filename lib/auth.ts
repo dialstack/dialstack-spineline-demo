@@ -8,12 +8,12 @@ import { getDialstack } from '@/lib/dialstack';
 
 /**
  * Validates credentials and returns the user if valid.
- * Used by both login and updateemail providers.
+ * Used by the login and updateemail providers and the mobile login route.
  */
-async function validateCredentials(
+export async function validateCredentials(
   email: string | undefined,
   password: string | undefined
-): Promise<User | null> {
+): Promise<(User & { dialstackAccountId: string }) | null> {
   if (!email) {
     logger.info('Could not find an email for provider');
     return null;
@@ -34,7 +34,7 @@ async function validateCredentials(
     id: user.id?.toString(),
     email: user.email,
     dialstackAccountId: user.dialstack_account_id,
-  } as User;
+  } as User & { dialstackAccountId: string };
 }
 
 export const authOptions: AuthOptions = {

@@ -1,13 +1,15 @@
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { getDialstack, resolveAccountUser } from '@/lib/dialstack';
 
 // Fetch the DialStack user for the current practice, creating it if it doesn't exist
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // getToken, not getServerSession: it also accepts the mobile app's
+    // `Authorization: Bearer` token from /api/mobile/login.
+    const token = await getToken({ req });
 
-    if (!session?.user?.dialstackAccountId) {
+    if (!token?.user?.dialstackAccountId) {
       return new Response(
         JSON.stringify({
           error: 'No authenticated user found',
@@ -16,8 +18,8 @@ export async function GET() {
       );
     }
 
-    const accountId = session.user.dialstackAccountId;
-    const email = session.user.email;
+    const accountId = token.user.dialstackAccountId;
+    const email = token.email;
 
     const dialstack = getDialstack();
 

@@ -6,5 +6,7 @@ export default defineConfig({
     environment: 'node',
     testTimeout: 60000, // 60s for container startup/teardown
     hookTimeout: 60000,
+    // The React Native app is a separate install with no tests here.
+    exclude: ['**/node_modules/**', 'mobile/**'],
   },
 });

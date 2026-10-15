@@ -1,0 +1,751 @@
+diff --git a/node_modules/expo-callkit-telecom/android/src/main/AndroidManifest.xml b/node_modules/expo-callkit-telecom/android/src/main/AndroidManifest.xml
+--- a/node_modules/expo-callkit-telecom/android/src/main/AndroidManifest.xml
++++ b/node_modules/expo-callkit-telecom/android/src/main/AndroidManifest.xml
+@@ -6,6 +6,13 @@
+   <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
++  <!-- Network-bearing type so a backgrounded call's own sockets (e.g. a WebRTC
++       signalling WebSocket) survive Doze/background reaping. phoneCall alone does
++       not carry this exemption. -->
++  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
++  <!-- Lets the call keep RECORDING (mic) while backgrounded — Android 14+ blocks
++       background mic capture without a microphone-type foreground service. -->
++  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+ 
+   <application>
+     <activity
+@@ -29,5 +36,10 @@
+         <action android:name="com.google.firebase.MESSAGING_EVENT" />
+       </intent-filter>
+     </service>
++
++    <service
++      android:name="expo.modules.callkittelecom.services.CallForegroundService"
++      android:exported="false"
++      android:foregroundServiceType="phoneCall|dataSync|microphone" />
+   </application>
+ </manifest>
+diff --git a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/ExpoCallKitTelecomModule.kt b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/ExpoCallKitTelecomModule.kt
+--- a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/ExpoCallKitTelecomModule.kt
++++ b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/ExpoCallKitTelecomModule.kt
+@@ -5,6 +5,7 @@
+ import expo.modules.callkittelecom.managers.CallAudioManager
+ import expo.modules.callkittelecom.managers.CallManager
+ import expo.modules.callkittelecom.managers.CaptureSessionManager
++import expo.modules.callkittelecom.managers.DialtonePlayer
+ import expo.modules.callkittelecom.managers.VoIPPushManager
+ import expo.modules.callkittelecom.models.CallEndedReason
+ import expo.modules.callkittelecom.models.CallOptions
+@@ -95,6 +96,17 @@
+         OnDestroy { CallEventEmitter.setSender(null) }
+ 
+         OnNewIntent { intent -> handleAnswerIntent(intent) }
++
++        // When a push-wake integration pre-initializes this module from a headless
++        // JS task, OnCreate has already run by the time the user taps the
++        // notification's Answer action — so its handleLaunchIntent() saw no answer
++        // intent. The tap then launches MainActivity fresh, so OnNewIntent does not
++        // fire either (the intent arrives as the launch intent, not a re-delivered
++        // one). The ACTION_ANSWER intent would fall between both hooks and the call
++        // would time out "unanswered". Re-check the launch intent whenever the
++        // activity enters the foreground; handleAnswerIntent clears the action
++        // after handling it, so this is idempotent.
++        OnActivityEntersForeground { handleLaunchIntent() }
+ 
+         // Register per-event observers
+         OnStartObserving(CallEvents.CALL_SESSION_ADDED) {
+@@ -234,6 +246,14 @@
+         // Restores pre-call audio mode/route state.
+         Function("restoreAudioSession") { CallAudioManager.restoreAudioSession() }
+ 
++        // Outbound ringback, under the app's control: only it knows when the far
++        // end is alerting and when early media replaces it.
++        Function("playDialtone") {
++            appContext.reactContext?.let { DialtonePlayer.play(it) }
++        }
++
++        Function("stopDialtone") { DialtonePlayer.stop() }
++
+         // Overrides route to speaker (true) or clears override (false).
+         Function("setAudioSessionPortOverride") { enabled: Boolean ->
+             CallAudioManager.setAudioSessionPortOverride(enabled)
+diff --git a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/IncomingCallActivity.kt b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/IncomingCallActivity.kt
+--- a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/IncomingCallActivity.kt
++++ b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/IncomingCallActivity.kt
+@@ -66,6 +66,7 @@
+ 
+         bindAppBranding()
+         bindCallerInfo(caller?.displayName, session.options.hasVideo)
++        bindCallerDetails(session.incomingCallEvent?.metadata?.get("caller_details") as? String)
+         loadAvatar(caller?.avatarUrl)
+         bindButtons(id, session.options.hasVideo)
+         observeSessionChanges(id)
+@@ -119,6 +120,35 @@
+             if (hasVideo) "Incoming video call" else "Incoming call"
+     }
+ 
++    /**
++     * Optional extra lines about the caller from the push's `metadata.caller_details`
++     * ("Label\tValue" per line), shown only by an app layout that provides a
++     * `expo_callkit_telecom_caller_details` TextView. Looked up by name so the
++     * library's own layout, which has none, is unaffected.
++     */
++    private fun bindCallerDetails(details: String?) {
++        if (details.isNullOrBlank()) return
++        val viewId = resources.getIdentifier("expo_callkit_telecom_caller_details", "id", packageName)
++        if (viewId == 0) return
++        val view = findViewById<TextView>(viewId) ?: return
++        val text = android.text.SpannableStringBuilder()
++        details.lines().filter { it.isNotBlank() }.forEachIndexed { i, line ->
++            if (i > 0) text.append("\n")
++            val parts = line.split('\t', limit = 2)
++            if (parts.size == 2) {
++                val start = text.length
++                text.append(parts[0].uppercase())
++                text.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), start, text.length, 0)
++                text.setSpan(android.text.style.RelativeSizeSpan(0.8f), start, text.length, 0)
++                text.append("   ").append(parts[1])
++            } else {
++                text.append(line)
++            }
++        }
++        view.text = text
++        view.visibility = android.view.View.VISIBLE
++    }
++
+     /**
+      * Loads the caller's avatar from [avatarUrl] on a background thread. On success, displays a
+      * circular-cropped image and hides the initial letter. On failure, silently keeps the initial
+diff --git a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/CallManager.kt b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/CallManager.kt
+--- a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/CallManager.kt
++++ b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/CallManager.kt
+@@ -265,6 +265,14 @@
+                 callCapabilities = CallAttributesCompat.SUPPORTS_SET_INACTIVE,
+             )
+ 
++        // Start the network-keeping foreground service NOW, while the app is still
++        // in the foreground. Handing the call to Telecom can put the app in the
++        // background at once (some OEMs, OnePlus among them, open their own
++        // in-call screen for a self-managed call), and started only inside the
++        // call scope below the service arrived too late: the backgrounded app
++        // lost its signalling socket within seconds and the dial failed.
++        CallNotificationManager.showDialingCall(context, id, recipient.displayName)
++
+         val actions = CallActions()
+         val job =
+             launchCallScope(
+@@ -286,7 +294,8 @@
+                     }
+                 }
+ 
+-                DialtonePlayer.play(context)
++                // The dialtone is the app's to start (playDialtone): only it knows
++                // when the far end is alerting and when early media replaces it.
+ 
+                 CallEventEmitter.send(
+                     CallEvents.OUTGOING_CALL_STARTED,
+diff --git a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/CallNotificationManager.kt b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/CallNotificationManager.kt
+--- a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/CallNotificationManager.kt
++++ b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/CallNotificationManager.kt
+@@ -15,6 +15,7 @@
+ import androidx.core.app.Person
+ import androidx.core.graphics.drawable.IconCompat
+ import expo.modules.callkittelecom.IncomingCallActivity
++import expo.modules.callkittelecom.services.CallForegroundService
+ import expo.modules.callkittelecom.services.CallNotificationReceiver
+ import expo.modules.callkittelecom.utils.CallKitTelecomLog
+ import java.util.UUID
+@@ -224,12 +225,24 @@
+                     )
+                 )
+                 .setFullScreenIntent(fullScreenIntent, true)
++                // Tapping the ringing notification opens the app itself, so it can
++                // show the caller before answering. Without a content intent the tap
++                // falls back to the full-screen IncomingCallActivity, which stays the
++                // lock-screen surface.
++                .setContentIntent(buildFullScreenIntent(ctx, callId))
+                 .setOngoing(true)
+                 .setAutoCancel(false)
+                 .setPriority(NotificationCompat.PRIORITY_MAX)
+                 .build()
+ 
+         postNotification(ctx, callId, displayName, "incoming call")
++        // Promote to a network-bearing foreground service already at the RING, not
++        // just on answer: a cold-wake incoming call must keep its signalling socket
++        // alive (to re-REGISTER and receive the parked INVITE) while it rings with
++        // the app still in the background. A ringing call records nothing, so no
++        // microphone here (and starting a mic FGS from the background would throw) —
++        // phoneCall + dataSync only. The ongoing start adds microphone on answer.
++        CallForegroundService.start(ctx, notification, withMicrophone = false)
+         notify(ctx, notification)
+     }
+ 
+@@ -267,6 +280,13 @@
+                 .build()
+ 
+         postNotification(ctx, callId, displayName, "dialing call")
++        // Start the network-bearing foreground service at the EARLIEST call point,
++        // while the app is still foreground (a foreground start has no
++        // background-start restriction). Once running it survives backgrounding, so
++        // the call's socket is protected before the user can background the app.
++        // A dialing call has not connected yet, so it is not recording — no
++        // microphone type. The ongoing start adds it once the call is answered.
++        CallForegroundService.start(ctx, notification, withMicrophone = false)
+         notify(ctx, notification)
+     }
+ 
+@@ -310,6 +330,17 @@
+                 .build()
+ 
+         postNotification(ctx, callId, displayName, "ongoing call")
++        // Run the ongoing-call notification as a foreground service carrying a
++        // network-bearing type, so a backgrounded call's socket (e.g. the app's
++        // WebRTC signalling WebSocket) survives Doze/background reaping. Reuses
++        // NOTIFICATION_ID so there is a single notification. `start()` falls back
++        // gracefully if the OS refuses the foreground start.
++        //
++        // The call is answered here and the app is foregrounded, so claim microphone:
++        // this re-delivers on the same service, upgrading a call that woke in the
++        // background as phoneCall + dataSync so it also keeps RECORDING alive when
++        // re-backgrounded.
++        CallForegroundService.start(ctx, notification, withMicrophone = true)
+         notify(ctx, notification)
+     }
+ 
+@@ -319,6 +350,10 @@
+         val ctx = context.applicationContext
+         val displayName = callerName ?: "Unknown"
+ 
++        // The call is over: release the network-bearing foreground service. The
++        // "Call ended" notification below is posted independently and auto-cancels.
++        CallForegroundService.stop(ctx)
++
+         val notification =
+             buildBase(ctx, CHANNEL_ONGOING, displayName, "Call ended")
+                 .setOngoing(false)
+@@ -338,6 +373,10 @@
+     /** Cancels any active call notification. */
+     fun cancel(context: Context) {
+         cancelDelayedCancel()
++        // Release the foreground service before removing its notification, so a
++        // hard cancel (e.g. an answer-timeout drop) doesn't leave the service
++        // running against a notification that no longer exists.
++        CallForegroundService.stop(context.applicationContext)
+         NotificationManagerCompat.from(context.applicationContext).cancel(NOTIFICATION_ID)
+         CallKitTelecomLog.d(TAG) { "Cancelled call notification" }
+     }
+@@ -421,8 +460,19 @@
+         )
+     }
+ 
+-    /** Resolves the app's icon resource for the notification small icon. */
++    /**
++     * Resolves the notification small icon. Android draws it from the alpha
++     * channel only, so an opaque launcher icon renders as a solid square: prefer
++     * the white silhouette expo-notifications' `icon` option installs as
++     * `notification_icon`, and fall back to the launcher icon without it.
++     */
+     private fun getAppIconRes(context: Context): Int =
++        context.resources
++            .getIdentifier("notification_icon", "drawable", context.packageName)
++            .takeIf { it != 0 }
++            ?: launcherIconRes(context)
++
++    private fun launcherIconRes(context: Context): Int =
+         try {
+             val appInfo = context.packageManager.getApplicationInfo(context.packageName, 0)
+             appInfo.icon.takeIf { it != 0 } ?: android.R.drawable.sym_def_app_icon
+diff --git a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/DialtonePlayer.kt b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/DialtonePlayer.kt
+--- a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/DialtonePlayer.kt
++++ b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/managers/DialtonePlayer.kt
+@@ -2,6 +2,8 @@
+ 
+ import android.content.Context
+ import android.content.pm.PackageManager
++import android.media.AudioAttributes
++import android.media.AudioManager
+ import android.media.MediaPlayer
+ import expo.modules.callkittelecom.utils.CallKitTelecomLog
+ import kotlinx.coroutines.CoroutineScope
+@@ -100,7 +102,21 @@
+                 }
+ 
+                 try {
+-                    val mp = MediaPlayer.create(context.applicationContext, rawResourceId)
++                    // Call-signalling usage, not the default media stream: media is
++                    // routed and muted independently of the call, so the tone could be
++                    // silent or play from the wrong device.
++                    val attributes =
++                        AudioAttributes.Builder()
++                            .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION_SIGNALLING)
++                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
++                            .build()
++                    val mp =
++                        MediaPlayer.create(
++                            context.applicationContext,
++                            rawResourceId,
++                            attributes,
++                            AudioManager.AUDIO_SESSION_ID_GENERATE,
++                        )
+                     if (mp == null) {
+                         CallKitTelecomLog.e(TAG) { "Failed to create MediaPlayer for dialtone" }
+                         return@withLock
+diff --git a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/services/CallForegroundService.kt b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/services/CallForegroundService.kt
+new file mode 100644
+--- /dev/null
++++ b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/services/CallForegroundService.kt
+@@ -0,0 +1,149 @@
++package expo.modules.callkittelecom.services
++
++import android.app.Notification
++import android.app.Service
++import android.content.Context
++import android.content.Intent
++import android.content.pm.ServiceInfo
++import android.os.Build
++import android.os.IBinder
++import android.util.Log
++
++/**
++ * Keeps a live call's process AND network alive while the app is backgrounded.
++ *
++ * Core-Telecom's `CallsManager.addCall` grants only a `phoneCall`-type foreground
++ * service delegation, which keeps the process schedulable but does NOT exempt the
++ * app's own sockets (e.g. a WebRTC signalling WebSocket) from background/Doze
++ * network reaping. Without a network-bearing foreground service, a backgrounded
++ * call loses its socket within a few seconds and drops.
++ *
++ * This service promotes the module's existing ongoing-call notification
++ * (NOTIFICATION_ID = 8400) to a real foreground service that also carries
++ * `dataSync` — the type that keeps the socket alive in the background. Reusing the
++ * same notification id means Android renders ONE notification, not two.
++ *
++ * `dataSync` (not `microphone`): Android disallows starting the `microphone` FGS
++ * type from the background, and Telecom already owns call audio; `dataSync` is the
++ * lower-friction network-bearing type. Note `dataSync` has a ~6h/day cumulative
++ * cap on Android 15 — fine per call because the service stops at each call end.
++ */
++class CallForegroundService : Service() {
++    override fun onBind(intent: Intent?): IBinder? = null
++
++    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
++        // A service started via startForegroundService MUST call startForeground()
++        // within a few seconds or the OS raises a timeout and kills it (which, on a
++        // call, drops the call). So ALWAYS call startForeground — never take an
++        // early-return path that skips it. The notification rides in the Intent (a
++        // Notification is Parcelable), which is reliable across the
++        // startForegroundService -> onStartCommand boundary, unlike a static field.
++        val notification: Notification? =
++            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
++                intent?.getParcelableExtra(EXTRA_NOTIFICATION, Notification::class.java)
++            } else {
++                @Suppress("DEPRECATION")
++                intent?.getParcelableExtra(EXTRA_NOTIFICATION)
++            }
++
++        if (notification == null) {
++            // Should not happen (start() always packs it), but we still cannot
++            // leave a foreground-started service without a startForeground call.
++            Log.w(TAG, "onStartCommand with no notification — stopping")
++            stopSelf()
++            return START_NOT_STICKY
++        }
++
++        // Only an ANSWERED (ongoing) call claims microphone. A ringing incoming call
++        // captures no audio, and starting a microphone-type FGS from the background
++        // (the cold-wake path) is disallowed and would throw — so incoming/dialing
++        // request phoneCall + dataSync only. See foregroundTypes().
++        val withMicrophone = intent?.getBooleanExtra(EXTRA_WITH_MICROPHONE, false) ?: false
++
++        try {
++            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
++                startForeground(NOTIFICATION_ID, notification, foregroundTypes(withMicrophone))
++            } else {
++                startForeground(NOTIFICATION_ID, notification)
++            }
++        } catch (e: Exception) {
++            // Log at ERROR unconditionally: a failure here is the difference between
++            // a call surviving the background and dropping, and it's otherwise silent.
++            Log.e(TAG, "startForeground failed", e)
++            stopSelf()
++        }
++        return START_NOT_STICKY
++    }
++
++    private fun foregroundTypes(withMicrophone: Boolean): Int {
++        var types = ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
++            // dataSync keeps the socket alive; both it and phoneCall are allowed
++            // from a background start under the FCM allowlist, so a cold-wake
++            // incoming call keeps its signalling socket while ringing.
++            types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
++
++            // microphone lets the call keep RECORDING while backgrounded (Android 14+
++            // blocks background mic capture without it). Claimed only once the call is
++            // ANSWERED — a ringing call records nothing, and starting a mic-type FGS
++            // from the background (the wake path) is disallowed and throws.
++            if (withMicrophone) {
++                types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
++            }
++        }
++        return types
++    }
++
++    companion object {
++        private const val TAG = "CallForegroundService"
++        private const val EXTRA_NOTIFICATION = "notification"
++        private const val EXTRA_WITH_MICROPHONE = "withMicrophone"
++
++        // Must match CallNotificationManager.NOTIFICATION_ID so the FGS adopts the
++        // existing ongoing-call notification (one notification, not two).
++        private const val NOTIFICATION_ID = 8400
++
++        /**
++         * Promote the call notification to a foreground service. Idempotent: calling
++         * it again while running re-delivers with the current notification, which the
++         * OS treats as a notification update — so the incoming start (phoneCall +
++         * dataSync) can later be upgraded to include microphone by the ongoing start.
++         *
++         * `withMicrophone` is true only for an ANSWERED call. A ringing incoming call
++         * records nothing and starts from the background (the FCM wake path), where a
++         * microphone-type FGS is disallowed and would throw — so incoming/dialing pass
++         * false and claim phoneCall + dataSync only (both allowed under the wake
++         * allowlist, enough to keep the signalling socket alive while ringing).
++         */
++        fun start(context: Context, notification: Notification, withMicrophone: Boolean) {
++            val ctx = context.applicationContext
++            val intent =
++                Intent(ctx, CallForegroundService::class.java)
++                    .putExtra(EXTRA_NOTIFICATION, notification)
++                    .putExtra(EXTRA_WITH_MICROPHONE, withMicrophone)
++            try {
++                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
++                    ctx.startForegroundService(intent)
++                } else {
++                    ctx.startService(intent)
++                }
++            } catch (e: Exception) {
++                // A background-start restriction (e.g. started too late, already in
++                // the background) — the notification itself is still posted by
++                // CallNotificationManager, so the call is not invisible; it just
++                // lacks the network exemption.
++                Log.e(TAG, "startForegroundService failed", e)
++            }
++        }
++
++        /** Stop the foreground service; the notification's own lifecycle is unchanged. */
++        fun stop(context: Context) {
++            val ctx = context.applicationContext
++            try {
++                ctx.stopService(Intent(ctx, CallForegroundService::class.java))
++            } catch (e: Exception) {
++                Log.e(TAG, "stopService failed", e)
++            }
++        }
++    }
++}
+diff --git a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/services/ExpoCallKitTelecomMessagingService.kt b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/services/ExpoCallKitTelecomMessagingService.kt
+--- a/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/services/ExpoCallKitTelecomMessagingService.kt
++++ b/node_modules/expo-callkit-telecom/android/src/main/java/expo/modules/callkittelecom/services/ExpoCallKitTelecomMessagingService.kt
+@@ -1,9 +1,11 @@
+ package expo.modules.callkittelecom.services
+ 
++import android.content.Intent
+ import android.os.Handler
+ import android.os.Looper
+ import android.util.Log
+ import com.google.firebase.messaging.RemoteMessage
++import expo.modules.callkittelecom.events.CallEventEmitter
+ import expo.modules.callkittelecom.managers.CallManager
+ import expo.modules.callkittelecom.managers.VoIPPushManager
+ import expo.modules.callkittelecom.models.IncomingCallEvent
+@@ -77,6 +79,14 @@
+ 
+             CallManager.shared.reportIncomingCall(event)
+             Log.d(TAG, "Reported incoming call from FCM payload")
++            // The app's receiver only hears events no JS was listening for. A warm
++            // app in the background hears the call itself, but its JS timers are
++            // paused until something starts a headless task, so always tell it.
++            sendBroadcast(
++                Intent(CallEventEmitter.ACTION_CALL_EVENT)
++                    .setPackage(packageName)
++                    .putExtra("eventName", "onPushCallReported")
++            )
+         } catch (error: IllegalStateException) {
+             Log.w(TAG, "Ignoring incoming call push while another session exists: ${error.message}")
+         } catch (error: Throwable) {
+diff --git a/node_modules/expo-callkit-telecom/build/Calls.d.ts b/node_modules/expo-callkit-telecom/build/Calls.d.ts
+--- a/node_modules/expo-callkit-telecom/build/Calls.d.ts
++++ b/node_modules/expo-callkit-telecom/build/Calls.d.ts
+@@ -182,6 +182,13 @@
+  *
+  * @category Audio
+  */
++/**
++ * Starts the configured dialtone (outbound ringback). Skipped while the audio
++ * session is inactive.
++ */
++export declare function playDialtone(): void;
++/** Stops the dialtone. */
++export declare function stopDialtone(): void;
+ export declare function setAudioSessionPortOverride(enabled: boolean): void;
+ /**
+  * Subscribes to audio session activated events.
+diff --git a/node_modules/expo-callkit-telecom/build/Calls.js b/node_modules/expo-callkit-telecom/build/Calls.js
+--- a/node_modules/expo-callkit-telecom/build/Calls.js
++++ b/node_modules/expo-callkit-telecom/build/Calls.js
+@@ -215,6 +215,17 @@
+  *
+  * @category Audio
+  */
++/**
++ * Starts the configured dialtone (outbound ringback). Skipped while the audio
++ * session is inactive.
++ */
++export function playDialtone() {
++    ExpoCallKitTelecomModule.playDialtone();
++}
++/** Stops the dialtone. */
++export function stopDialtone() {
++    ExpoCallKitTelecomModule.stopDialtone();
++}
+ export function setAudioSessionPortOverride(enabled) {
+     ExpoCallKitTelecomModule.setAudioSessionPortOverride(enabled);
+ }
+diff --git a/node_modules/expo-callkit-telecom/ios/ExpoCallKitTelecomModule.swift b/node_modules/expo-callkit-telecom/ios/ExpoCallKitTelecomModule.swift
+--- a/node_modules/expo-callkit-telecom/ios/ExpoCallKitTelecomModule.swift
++++ b/node_modules/expo-callkit-telecom/ios/ExpoCallKitTelecomModule.swift
+@@ -315,8 +315,18 @@
+ 
+     Function("restoreAudioSession") {
+       AudioManager.shared.restoreAudioSession()
++    }
++
++    // Outbound ringback, under the app's control: only it knows when the far
++    // end is alerting and when early media replaces it.
++    Function("playDialtone") {
++      DialtonePlayer.shared.play()
+     }
+ 
++    Function("stopDialtone") {
++      DialtonePlayer.shared.stop()
++    }
++
+     Function("setAudioSessionPortOverride") { (enabled: Bool) in
+       AudioManager.shared.setAudioSessionPortOverride(enabled)
+     }
+diff --git a/node_modules/expo-callkit-telecom/ios/Managers/CallManager.swift b/node_modules/expo-callkit-telecom/ios/Managers/CallManager.swift
+--- a/node_modules/expo-callkit-telecom/ios/Managers/CallManager.swift
++++ b/node_modules/expo-callkit-telecom/ios/Managers/CallManager.swift
+@@ -1,4 +1,5 @@
+ import CallKit
++import UIKit
+ import os
+ 
+ /// Errors that can occur during call operations.
+@@ -24,6 +25,43 @@
+   private let callController = CXCallController()
+   private let provider: CXProvider
+ 
++  /// CallKit id of each call already reported, by server call id. A VoIP push
++  /// for a call the app already reported (it arrived over the app's own socket
++  /// first) must not become a second CallKit call.
++  private var callIdsByServerCallId: [String: UUID] = [:]
++  /// Claimed ids CallKit has not accepted yet: a report racing one in flight for
++  /// the same server call id must join it, not start a second call.
++  private var pendingCallIds: Set<UUID> = []
++  private let knownCallsLock = NSLock()
++
++  /// Claim `id` for `serverCallId`, or return the CallKit id already reported, or
++  /// being reported, for it. Atomic, so the push and the app's own report of one
++  /// call can't both create a CallKit call when they land together.
++  private func claimCall(_ id: UUID, serverCallId: String) -> UUID? {
++    guard !serverCallId.isEmpty else { return nil }
++    knownCallsLock.lock()
++    defer { knownCallsLock.unlock() }
++    if let existing = callIdsByServerCallId[serverCallId],
++      pendingCallIds.contains(existing)
++        || callController.callObserver.calls.contains(where: { $0.uuid == existing && !$0.hasEnded })
++    {
++      return existing
++    }
++    callIdsByServerCallId[serverCallId] = id
++    pendingCallIds.insert(id)
++    return nil
++  }
++
++  /// Settle a claim once CallKit has answered: keep it if the call was reported.
++  private func settleClaim(_ id: UUID, serverCallId: String, reported: Bool) {
++    knownCallsLock.lock()
++    defer { knownCallsLock.unlock() }
++    pendingCallIds.remove(id)
++    if !reported, callIdsByServerCallId[serverCallId] == id {
++      callIdsByServerCallId.removeValue(forKey: serverCallId)
++    }
++  }
++
+   private let supportsHolding = false
+   private let supportsGrouping = false
+   private let supportsUngrouping = false
+@@ -55,7 +93,8 @@
+ 
+   private override init() {
+     let configuration = CXProviderConfiguration()
+-    configuration.supportsVideo = true
++    // Audio-only calls: without this CallKit offers a video button that does nothing.
++    configuration.supportsVideo = false
+     configuration.maximumCallGroups = 1
+     configuration.maximumCallsPerCallGroup = 1
+     configuration.supportedHandleTypes = [.phoneNumber, .generic]
+@@ -70,6 +109,13 @@
+       ringtone != "default"
+     {
+       configuration.ringtoneSound = ringtone
++    }
++
++    // The image behind the call screen's open-the-app button; without it CallKit
++    // shows a blank placeholder. Added to the asset catalog by the app's
++    // withCallKitIcon config plugin.
++    if let icon = UIImage(named: "CallKitIcon") {
++      configuration.iconTemplateImageData = icon.pngData()
+     }
+ 
+     provider = CXProvider(configuration: configuration)
+@@ -285,6 +331,15 @@
+     let id = UUID()
+     Log.call.debug("Reporting incoming call - id: \(id)")
+ 
++    // The push for this call got there first: it is already on screen, so there
++    // is nothing to report. The session is found by its server call id.
++    if let existing = claimCall(id, serverCallId: event.serverCallId) {
++      Log.call.debug(
++        "Call already reported - keeping id: \(existing), serverCallId: \(event.serverCallId)"
++      )
++      return
++    }
++
+     // Prepare audio session before reporting to CallKit
+     AudioManager.shared.prepareAudioSessionForCall(hasVideo: event.hasVideo)
+ 
+@@ -320,17 +375,24 @@
+     update.supportsDTMF = supportsDTMF
+ 
+     do {
+-      try await withCheckedThrowingContinuation {
+-        (continuation: CheckedContinuation<Void, Error>) in
+-        provider.reportNewIncomingCall(with: id, update: update) { error in
+-          if let error = error {
+-            continuation.resume(throwing: error)
+-          } else {
+-            continuation.resume()
++      do {
++        try await withCheckedThrowingContinuation {
++          (continuation: CheckedContinuation<Void, Error>) in
++          provider.reportNewIncomingCall(with: id, update: update) { error in
++            if let error = error {
++              continuation.resume(throwing: error)
++            } else {
++              continuation.resume()
++            }
+           }
+         }
++      } catch let error as CXErrorCodeIncomingCallError where error.code == .callUUIDAlreadyExists {
++        // The push for this call joined our claim and reported this id first:
++        // the call is on screen under it, which is what this report was for.
++        Log.call.debug("Incoming call already reported under this id by its push - id: \(id)")
+       }
+       Log.call.debug("Incoming call reported to CallKit - id: \(id)")
++      settleClaim(id, serverCallId: event.serverCallId, reported: true)
+ 
+       await store.add(session)
+ 
+@@ -345,6 +407,7 @@
+       Log.call.error(
+         "Failed to report incoming call to CallKit - id: \(id), error: \(error.localizedDescription)"
+       )
++      settleClaim(id, serverCallId: event.serverCallId, reported: false)
+       AudioManager.shared.restoreAudioSession()
+       throw error
+     }
+@@ -362,6 +425,21 @@
+     let id = UUID()
+     Log.call.debug("Reporting incoming call (sync) - id: \(id)")
+ 
++    // A push for a call already on screen (it reached the app over its own
++    // socket first): report it again under the SAME id. PushKit requires every
++    // VoIP push to be reported, and CallKit treats a report for a known id as an
++    // update, so no second call appears. Checked before any audio setup, which
++    // must not touch a call that may already be live.
++    if let existing = claimCall(id, serverCallId: event.serverCallId) {
++      Log.call.debug(
++        "Push for a call already reported - reusing id: \(existing), serverCallId: \(event.serverCallId)"
++      )
++      let update = CXCallUpdate()
++      update.hasVideo = event.hasVideo
++      provider.reportNewIncomingCall(with: existing, update: update) { _ in completion(nil) }
++      return
++    }
++
+     // Pre-heat audio session before reporting to CallKit
+     AudioManager.shared.prepareAudioSessionForCall(hasVideo: event.hasVideo)
+ 
+@@ -402,12 +480,14 @@
+         Log.call.error(
+           "Failed to report incoming call to CallKit - id: \(id), error: \(error.localizedDescription)"
+         )
++        self?.settleClaim(id, serverCallId: event.serverCallId, reported: false)
+         AudioManager.shared.restoreAudioSession()
+         completion(error)
+         return
+       }
+ 
+       Log.call.debug("Incoming call reported to CallKit - id: \(id)")
++      self?.settleClaim(id, serverCallId: event.serverCallId, reported: true)
+ 
+       // Now do the async work (store session, emit events, start timeout)
+       Task {
+diff --git a/node_modules/expo-callkit-telecom/ios/Managers/CallManager+CXProviderDelegate.swift b/node_modules/expo-callkit-telecom/ios/Managers/CallManager+CXProviderDelegate.swift
+--- a/node_modules/expo-callkit-telecom/ios/Managers/CallManager+CXProviderDelegate.swift
++++ b/node_modules/expo-callkit-telecom/ios/Managers/CallManager+CXProviderDelegate.swift
+@@ -175,14 +175,8 @@
+     Task {
+       let sessions = await store.allSessions
+       AudioManager.shared.onAVAudioSessionActivated(calls: sessions)
+-
+-      // Play dialtone for outgoing calls that are still connecting
+-      if let session = sessions.first,
+-        session.origin == .outgoingApp || session.origin == .outgoingSystem,
+-        session.status == .connecting
+-      {
+-        DialtonePlayer.shared.play()
+-      }
++      // The dialtone is the app's to start (playDialtone): only it knows when
++      // the far end is alerting and when early media replaces it.
+     }
+   }
+ 
+diff --git a/node_modules/expo-callkit-telecom/src/Calls.ts b/node_modules/expo-callkit-telecom/src/Calls.ts
+--- a/node_modules/expo-callkit-telecom/src/Calls.ts
++++ b/node_modules/expo-callkit-telecom/src/Calls.ts
+@@ -269,7 +269,20 @@
+  *   the default route (typically earpiece for voice calls).
+  *
+  * @category Audio
++ */
++/**
++ * Starts the configured dialtone (outbound ringback). Skipped while the audio
++ * session is inactive.
+  */
++export function playDialtone(): void {
++  ExpoCallKitTelecomModule.playDialtone();
++}
++
++/** Stops the dialtone. */
++export function stopDialtone(): void {
++  ExpoCallKitTelecomModule.stopDialtone();
++}
++
+ export function setAudioSessionPortOverride(enabled: boolean): void {
+   ExpoCallKitTelecomModule.setAudioSessionPortOverride(enabled);
+ }
