@@ -15,10 +15,11 @@ import { useSoftphoneDrawer } from '@/app/hooks/SoftphoneDrawerProvider';
 // The SDK <Softphone> owns the dial pad / incoming / in-call UI and its built-in
 // E911 prompt; spineline adds the matched-patient card below it.
 export function SoftphonePanel() {
-  const { enabled, open, setOpen, callMatch, incomingMatches } = useSoftphoneDrawer();
+  const { enabled, style, open, setOpen, callMatch, incomingMatches } = useSoftphoneDrawer();
 
   // Softphone off → nothing (SoftphoneDrawerProvider also skips the connection).
-  if (!enabled) return null;
+  // The floating style is Spineline's own UI (FloatingSoftphone) instead.
+  if (!enabled || style !== 'drawer') return null;
 
   // During an ONGOING (answered) call, show ONLY the active call's patient match —
   // even if another call is ringing (call-waiting). The incoming patient cards

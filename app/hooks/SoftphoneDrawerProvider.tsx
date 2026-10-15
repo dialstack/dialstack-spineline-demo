@@ -9,10 +9,17 @@ import {
   useRef,
   useState,
 } from 'react';
-import { SoftphoneProvider, useSoftphone, callPeerNumber } from '@dialstack/sdk-react/softphone';
+import {
+  SoftphoneProvider,
+  useSoftphone,
+  callPeerNumber,
+  type ResolvePeer,
+} from '@dialstack/sdk-react/softphone';
 import { useWebrtcToken } from './useWebrtcToken';
-import { useLookupPatient } from './useLookupPatient';
+import { useLookupPatient, usePeekPatient } from './useLookupPatient';
+import { useStoredChoice } from './useStoredChoice';
 import type { Patient } from '@/app/models/patient';
+import { patientFullName, patientInitials } from '@/lib/patientName';
 
 // App-level softphone state. The WebRTC softphone is OFF by default and opt-in
 // via `enabled`. When ON, "Call" actions across the app place the call through
@@ -30,10 +37,23 @@ export interface CallMatch {
   isLoading: boolean;
 }
 
+/**
+ * How the softphone is shown: the SDK's drop-in <Softphone> in a drawer, or
+ * Spineline's own UI on useSoftphone() as a floating bubble. Same connection.
+ */
+export type SoftphoneStyle = 'drawer' | 'floating';
+
+const STYLE_KEY = 'spineline.softphoneStyle';
+const STYLES = ['drawer', 'floating'] as const;
+const ENABLED_KEY = 'spineline.softphoneEnabled';
+const ON_OFF = ['on', 'off'] as const;
+
 interface SoftphoneDrawerContextValue {
   // Softphone master switch (persistent toggle in the UI).
   enabled: boolean;
   setEnabled: (enabled: boolean) => void;
+  style: SoftphoneStyle;
+  setStyle: (style: SoftphoneStyle) => void;
   // Whether the softphone panel is open.
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -55,12 +75,21 @@ interface SoftphoneDrawerContextValue {
 const SoftphoneDrawerContext = createContext<SoftphoneDrawerContextValue | null>(null);
 
 export function SoftphoneDrawerProvider({ children }: { children: React.ReactNode }) {
-  const [enabled, setEnabled] = useState(false);
+  // Both remembered per browser, so a reload keeps the demo on the same
+  // softphone (and its calls on WebRTC rather than click-to-call).
+  const [enabledChoice, setEnabledChoice] = useStoredChoice(ENABLED_KEY, 'off', ON_OFF);
+  const enabled = enabledChoice === 'on';
+  const setEnabled = useCallback(
+    (on: boolean) => setEnabledChoice(on ? 'on' : 'off'),
+    [setEnabledChoice]
+  );
+  const [style, setStyle] = useStoredChoice<SoftphoneStyle>(STYLE_KEY, 'drawer', STYLES);
   const [open, setOpen] = useState(false);
   const [callMatch, setCallMatch] = useState<CallMatch | null>(null);
   // Matched patient per ringing inbound call, keyed by caller number.
   const [incomingMatches, setIncomingMatches] = useState<CallMatch[]>([]);
   const lookupPatient = useLookupPatient();
+  const peekPatient = usePeekPatient();
 
   // Whether the current foreground call is inbound — decides whether to
   // auto-close the drawer on end (inbound only; keep open after an outbound so
@@ -99,13 +128,20 @@ export function SoftphoneDrawerProvider({ children }: { children: React.ReactNod
         setCallMatch(null);
         return;
       }
+      // An answered call was already looked up while it rang: show that match
+      // straight away instead of flashing the card back to loading.
+      const known = peekPatient(peer);
+      if (known !== undefined) {
+        setCallMatch({ peer, patient: known, isLoading: false });
+        return;
+      }
       setCallMatch({ peer, patient: null, isLoading: true });
       const patient = await lookupPatient(peer);
       setCallMatch((cur) =>
         cur && cur.peer === peer ? { ...cur, patient, isLoading: false } : cur
       );
     },
-    [lookupPatient]
+    [lookupPatient, peekPatient]
   );
 
   // Reconcile the matched-patient list for the CURRENTLY RINGING inbound calls,
@@ -147,6 +183,17 @@ export function SoftphoneDrawerProvider({ children }: { children: React.ReactNod
     [lookupPatient]
   );
 
+  // Titles each call with the matched patient's name and initials in the
+  // drop-in softphone's own styles.
+  const resolvePeer = useCallback<ResolvePeer>(
+    async (call) => {
+      const patient = await lookupPatient(callPeerNumber(call));
+      if (!patient) return null;
+      return { name: patientFullName(patient), avatar: { initials: patientInitials(patient) } };
+    },
+    [lookupPatient]
+  );
+
   const onIncomingCall = useCallback(() => {
     inboundActiveRef.current = true;
     setOpen(true);
@@ -174,6 +221,8 @@ export function SoftphoneDrawerProvider({ children }: { children: React.ReactNod
     () => ({
       enabled,
       setEnabled,
+      style,
+      setStyle,
       open,
       setOpen,
       canDial,
@@ -183,7 +232,19 @@ export function SoftphoneDrawerProvider({ children }: { children: React.ReactNod
       callMatch,
       incomingMatches,
     }),
-    [enabled, open, canDial, token, apiBaseUrl, dial, callMatch, incomingMatches]
+    [
+      enabled,
+      setEnabled,
+      style,
+      setStyle,
+      open,
+      canDial,
+      token,
+      apiBaseUrl,
+      dial,
+      callMatch,
+      incomingMatches,
+    ]
   );
 
   return (
@@ -206,6 +267,10 @@ export function SoftphoneDrawerProvider({ children }: { children: React.ReactNod
         onIncomingCall={onIncomingCall}
         onCallStarted={onCallStarted}
         onCallEnded={onCallEnded}
+        resolvePeer={resolvePeer}
+        // The drawer is wide but sized to its content, so 'auto' would read the
+        // shorter screens as compact and drop the caller's avatar.
+        layoutVariant="full"
       >
         <SoftphoneDialBridge dialRef={softphoneDialRef} />
         <SoftphoneStateBridge

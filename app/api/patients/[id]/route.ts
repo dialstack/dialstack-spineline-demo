@@ -4,7 +4,7 @@ import Patient from '@/app/models/patient';
 import dbConnect from '@/lib/dbConnect';
 import { getToken } from 'next-auth/jwt';
 import logger from '@/lib/logger';
-import { normalizePhone } from '@/lib/phone';
+import { normalizePatientPhone } from '@/lib/phone';
 
 /**
  * DELETE /api/patients/[id]
@@ -103,7 +103,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if ('phone' in updates) {
       const phoneValue = updates.phone as string | null;
       if (phoneValue) {
-        const normalized = normalizePhone(phoneValue);
+        const normalized = normalizePatientPhone(phoneValue);
         if (!normalized) {
           return new Response(JSON.stringify({ error: 'Invalid phone number format' }), {
             status: 400,

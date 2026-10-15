@@ -72,7 +72,12 @@ type DefaultToolsProps = {
 const DefaultTools = ({ border, handleEnableBorderChange }: DefaultToolsProps) => {
   // Softphone master switch — off by default so the browser WebRTC phone stays
   // separate from click-to-call (which rings the user's own device).
-  const { enabled: softphoneOn, setEnabled: setSoftphoneOn } = useSoftphoneDrawer();
+  const {
+    enabled: softphoneOn,
+    setEnabled: setSoftphoneOn,
+    style: softphoneStyle,
+    setStyle: setSoftphoneStyle,
+  } = useSoftphoneDrawer();
   return (
     <div className="my-6 flex flex-col gap-y-4 text-lg font-medium">
       <div className="flex flex-row items-center justify-between rounded-lg">
@@ -81,6 +86,36 @@ const DefaultTools = ({ border, handleEnableBorderChange }: DefaultToolsProps) =
         </Label>
         <Switch id="softphone" checked={softphoneOn} onCheckedChange={setSoftphoneOn} />
       </div>
+      {softphoneOn && (
+        // Same connection either way: the SDK's drop-in <Softphone> in a drawer,
+        // or Spineline's own UI on useSoftphone() as a floating bubble.
+        <div className="flex flex-row items-center justify-between rounded-lg">
+          <Label className="text-left">Softphone style</Label>
+          <div className="flex rounded-md border p-0.5 text-sm" role="radiogroup">
+            {(
+              [
+                ['drawer', 'Drop-in drawer'],
+                ['floating', 'Custom bubble'],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={softphoneStyle === value}
+                onClick={() => setSoftphoneStyle(value)}
+                className={`rounded px-2.5 py-1 font-medium ${
+                  softphoneStyle === value
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="flex flex-row items-center justify-between rounded-lg">
         <Label className="text-left" htmlFor="outline">
           Component outlines

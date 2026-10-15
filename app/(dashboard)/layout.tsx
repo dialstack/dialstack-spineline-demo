@@ -5,6 +5,8 @@ import { ToolsPanelProvider } from '@/app/hooks/ToolsPanelProvider';
 import { EmbeddedComponentWrapper } from '@/app/hooks/EmbeddedComponentWrapper';
 import { SoftphoneDrawerProvider } from '@/app/hooks/SoftphoneDrawerProvider';
 import { SoftphonePanel } from '@/app/components/softphone/SoftphonePanel';
+import { FloatingSoftphone } from '@/app/components/softphone/FloatingSoftphone';
+import { SoftphoneBubble } from '@/app/components/softphone/SoftphoneBubble';
 import { ScreenPopProvider } from '@/app/components/screen-pop';
 import { ScheduleDateProvider } from '@/app/hooks/ScheduleDateProvider';
 import { SelectedAppointmentProvider } from '@/app/hooks/SelectedAppointmentProvider';
@@ -36,6 +38,8 @@ export default function DashboardLayout({
                     {/* Always-mounted softphone: persistent WebRTC session so an
                         incoming call auto-opens the panel from any page. */}
                     <SoftphonePanel />
+                    <FloatingSoftphone />
+                    <SoftphoneBubble />
                   </ToolsPanelProvider>
                 </SelectedAppointmentProvider>
               </ScheduleDateProvider>

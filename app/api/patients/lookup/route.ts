@@ -4,7 +4,7 @@ import Patient from '@/app/models/patient';
 import dbConnect from '@/lib/dbConnect';
 import { getToken } from 'next-auth/jwt';
 import logger from '@/lib/logger';
-import { normalizePhone } from '@/lib/phone';
+import { normalizePatientPhone } from '@/lib/phone';
 
 /**
  * GET /api/patients/lookup?phone=+15551234567
@@ -27,9 +27,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Missing phone parameter' }, { status: 400 });
     }
 
-    // Normalize phone number to E.164 format
-    // Note: DialStack events already send E.164, but normalize just in case
-    const normalizedPhone = normalizePhone(phone);
+    // Normalize to E.164 (DialStack events already send E.164, but just in case).
+    // An internal caller arrives as a bare extension (e.g. "1003"), which
+    // patients reachable that way store as-is.
+    const normalizedPhone = normalizePatientPhone(phone);
 
     if (!normalizedPhone) {
       return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 });

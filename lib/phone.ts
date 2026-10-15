@@ -46,6 +46,19 @@ export function normalizePhone(input: string): string | null {
   return phone.format('E.164');
 }
 
+/** An internal extension such as "1003": 2 to 6 digits, nothing else. */
+export function isExtension(input: string): boolean {
+  return /^\d{2,6}$/.test(input.trim());
+}
+
+/**
+ * A patient phone as stored: E.164 for a phone number, or the bare digits for an
+ * extension (internal callers arrive as their extension). Null when it's neither.
+ */
+export function normalizePatientPhone(input: string): string | null {
+  return normalizePhone(input) ?? (isExtension(input) ? input.trim() : null);
+}
+
 /**
  * Format a phone number as the user types.
  * Provides real-time formatting feedback.
