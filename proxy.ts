@@ -13,7 +13,15 @@ const isDevelopment = process.env.NODE_ENV === 'development';
  * Access logs are disabled in development to reduce noise.
  */
 export function proxy(request: NextRequest) {
-  const response = NextResponse.next();
+  // Pages here only render: every POST goes to an /api route, and there are no
+  // Server Actions. Next still runs any other method on a page through its
+  // Server Action handler, and scanners' forged actions make it throw (500).
+  // Adding a `'use server'` action means letting POST through here.
+  const isPage = !request.nextUrl.pathname.startsWith('/api/');
+  const response =
+    isPage && request.method !== 'GET' && request.method !== 'HEAD'
+      ? new NextResponse('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD' } })
+      : NextResponse.next();
 
   // Skip access logs in development
   if (isDevelopment) {
