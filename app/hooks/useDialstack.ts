@@ -55,6 +55,7 @@ export const useDialstack = () => {
           return loadDialstackAndInitialize({
             publishableKey,
             apiUrl,
+            appInfo: { name: 'dialstack-spineline' },
             fetchClientSecret: async () => {
               return await fetchClientSecret();
             },
