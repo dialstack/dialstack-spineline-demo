@@ -48,6 +48,8 @@ const deletePatient = async (patientId: number): Promise<void> => {
 interface PatientPanelProps {
   /** Patient to display (null when closed) */
   patient: Patient | null;
+  /** Other patients in the practice with the same phone number */
+  phoneSharedWith?: Patient[];
   /** Called when the panel should be closed */
   onClose: () => void;
 }
@@ -56,7 +58,7 @@ interface PatientPanelProps {
  * Patient details panel displayed as a right-side column.
  * Shows patient information with inline editing and call history.
  */
-export function PatientPanel({ patient, onClose }: PatientPanelProps) {
+export function PatientPanel({ patient, phoneSharedWith = [], onClose }: PatientPanelProps) {
   const queryClient = useQueryClient();
   const { dialstackInstance } = useDialstackContext();
   const { canDial, dial } = useSoftphoneDrawer();
@@ -195,6 +197,13 @@ export function PatientPanel({ patient, onClose }: PatientPanelProps) {
                     parseValue={(v) => normalizePhone(v)}
                     className="text-sm"
                   />
+                  {phoneSharedWith.length > 0 && (
+                    <p className="mt-1 text-xs text-amber-600 dark:text-amber-500">
+                      Also the phone of{' '}
+                      {phoneSharedWith.map((p) => `${p.first_name} ${p.last_name}`).join(', ')}.
+                      Calls from this number show the patient updated most recently.
+                    </p>
+                  )}
                 </div>
 
                 {/* Email */}

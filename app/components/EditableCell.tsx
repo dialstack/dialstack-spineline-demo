@@ -128,6 +128,15 @@ export function EditableCell({
 
   // Save on blur or Enter
   const handleSave = () => {
+    // Untouched input: close without saving. Comparing the parsed value with
+    // rawValue below isn't enough: a date input ("2020-01-01") never equals the
+    // stored ISO string, so just clicking in and out would PATCH, bumping
+    // updated_at, which decides which patient a shared phone's caller matches.
+    if (value === inputValue) {
+      setIsEditing(false);
+      return;
+    }
+
     // Parse the value appropriately
     let parsedValue: unknown = value;
 

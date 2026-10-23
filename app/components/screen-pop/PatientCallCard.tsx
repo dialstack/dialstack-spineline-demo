@@ -12,6 +12,8 @@ import type { Patient } from '@/app/models/patient';
 export interface PatientCallCardProps {
   /** Caller phone number (E.164 or raw). */
   fromNumber: string;
+  /** Caller-ID name, if any: names the patient "Create New Patient" creates. */
+  fromName?: string | null;
   /** Matched patient, or null when no match. */
   patient: Patient | null;
   /** True while the patient lookup is in flight. */
@@ -42,6 +44,7 @@ function formatDate(d?: Date | string) {
  */
 export function PatientCallCard({
   fromNumber,
+  fromName,
   patient,
   isLoading,
   showCallerNumber = true,
@@ -161,7 +164,11 @@ export function PatientCallCard({
           </>
         ) : (
           <Button
-            onClick={() => go(`/patients?new=true&phone=${encodeURIComponent(fromNumber)}`)}
+            onClick={() => {
+              const params = new URLSearchParams({ new: 'true', phone: fromNumber });
+              if (fromName) params.set('name', fromName);
+              go(`/patients?${params}`);
+            }}
             className="w-full"
             disabled={isLoading}
           >

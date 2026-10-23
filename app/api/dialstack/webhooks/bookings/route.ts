@@ -5,6 +5,7 @@ import PatientModel from '@/app/models/patient';
 import ProviderModel, { Provider } from '@/app/models/provider';
 import { formatProviderNotes } from '@/lib/provider-utils';
 import { verifyToolCallWebhook } from '@/lib/dialstack-webhook';
+import { normalizePhone } from '@/lib/phone';
 
 // POST /api/dialstack/webhooks/bookings
 // DialStack's ai-agent calls this endpoint to create a new booking.
@@ -93,10 +94,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Try to find an existing patient by phone number
+  // Try to find an existing patient by phone number (normalized to E.164 to
+  // match stored phones). The name picks the right family member when several
+  // patients share the phone.
   let patientId: number | null = null;
-  if (event.booking.customer.phone) {
-    const patient = await PatientModel.findByPhone(practice.id!, event.booking.customer.phone);
+  const { phone, name } = event.booking.customer;
+  if (phone) {
+    const patient = await PatientModel.findByPhone(
+      practice.id!,
+      normalizePhone(phone) ?? phone,
+      name
+    );
     if (patient) {
       patientId = patient.id ?? null;
     }

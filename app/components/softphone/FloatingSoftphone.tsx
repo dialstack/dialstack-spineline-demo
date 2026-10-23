@@ -2,7 +2,12 @@
 
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { callPeerNumber, EmergencyBanner, useSoftphone } from '@dialstack/sdk-react/softphone';
+import {
+  callPeerName,
+  callPeerNumber,
+  EmergencyBanner,
+  useSoftphone,
+} from '@dialstack/sdk-react/softphone';
 import { ChevronDown, Mic, MicOff, Pause, Phone, PhoneOff, Play, Search, X } from 'lucide-react';
 import type { Patient } from '@/app/models/patient';
 import { patientFullName, patientInitials } from '@/lib/patientName';
@@ -203,6 +208,7 @@ function Caller({ call }: { call: Call }) {
   return (
     <StablePatientCallCard
       fromNumber={number}
+      fromName={callPeerName(call)}
       patient={patient}
       isLoading={isLoading}
       onAction={keepOpen}

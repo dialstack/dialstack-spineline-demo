@@ -1,6 +1,11 @@
 'use client';
 
-import { Softphone } from '@dialstack/sdk-react/softphone';
+import {
+  Softphone,
+  callPeerName,
+  callPeerNumber,
+  useSoftphone,
+} from '@dialstack/sdk-react/softphone';
 import EmbeddedComponentContainer from '@/app/components/EmbeddedComponentContainer';
 import { CallSheet } from '@/app/components/call/CallSheet';
 import { CallSheetHeader } from '@/app/components/call/CallSheetHeader';
@@ -16,6 +21,12 @@ import { useSoftphoneDrawer } from '@/app/hooks/SoftphoneDrawerProvider';
 // E911 prompt; spineline adds the matched-patient card below it.
 export function SoftphonePanel() {
   const { enabled, style, open, setOpen, callMatch, incomingMatches } = useSoftphoneDrawer();
+  const { calls } = useSoftphone();
+  // Caller-ID name of the call with this peer, for naming a new patient.
+  const peerName = (peer: string) => {
+    const call = calls.find((c) => callPeerNumber(c) === peer);
+    return call ? callPeerName(call) : null;
+  };
 
   // Softphone off → nothing (SoftphoneDrawerProvider also skips the connection).
   // The floating style is Spineline's own UI (FloatingSoftphone) instead.
@@ -56,6 +67,7 @@ export function SoftphonePanel() {
           <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
             <PatientCallCard
               fromNumber={callMatch.peer}
+              fromName={peerName(callMatch.peer)}
               patient={callMatch.patient}
               isLoading={callMatch.isLoading}
               showCallerNumber={false}
@@ -77,6 +89,7 @@ export function SoftphonePanel() {
               <div className={boundIncoming ? 'max-h-64 overflow-y-auto p-4' : 'p-4'}>
                 <PatientCallCard
                   fromNumber={match.peer}
+                  fromName={peerName(match.peer)}
                   patient={match.patient}
                   isLoading={match.isLoading}
                   showCallerNumber={false}

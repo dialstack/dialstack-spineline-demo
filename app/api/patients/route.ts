@@ -4,6 +4,7 @@ import Patient from '@/app/models/patient';
 import dbConnect from '@/lib/dbConnect';
 import { getToken } from 'next-auth/jwt';
 import logger from '@/lib/logger';
+import { normalizePatientPhone } from '@/lib/phone';
 
 /**
  * GET /api/patients
@@ -66,6 +67,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Store the phone the way the caller lookup matches it (E.164, or a bare
+    // extension), same as PATCH /api/patients/:id.
+    let phone: string | null = null;
+    if (body.phone) {
+      phone = normalizePatientPhone(body.phone);
+      if (!phone) {
+        return new Response('Invalid phone number format', { status: 400 });
+      }
+    }
+
     // Connect to database
     await dbConnect();
 
@@ -81,7 +92,7 @@ export async function POST(req: NextRequest) {
       first_name: body.first_name,
       last_name: body.last_name,
       email: body.email || null,
-      phone: body.phone || null,
+      phone,
       date_of_birth: body.date_of_birth || null,
       status: body.status || 'active',
     });

@@ -31,6 +31,7 @@ export function ScreenPopPanel({ call, onDismiss }: ScreenPopPanelProps) {
       {call && (
         <PatientCallCard
           fromNumber={call.call.from_number}
+          fromName={call.call.from_name}
           patient={call.patient}
           isLoading={call.isLoading}
           onAction={onDismiss}

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { Suspense, useState, useEffect, useMemo, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Container from '@/app/components/Container';
 import { Input } from '@/components/ui/input';
@@ -25,6 +26,8 @@ import {
 import type { Patient } from '@/app/models/patient';
 import { formatPhone } from '@/lib/phone';
 import { PatientPanel } from '@/app/components/patients/PatientPanel';
+import { NewPatientDialog } from '@/app/components/patients/NewPatientDialog';
+import { splitCallerName } from '@/lib/patientName';
 
 /**
  * Fetch patients from the API
@@ -90,10 +93,20 @@ type SortDirection = 'asc' | 'desc';
 /**
  * Patients CRM page
  * Displays all patients for the authenticated practice in a table
- * with a detail panel on the right when a patient is selected
+ * with a detail panel on the right when a patient is selected.
+ * Wrapped in Suspense because it reads the URL's search params.
  */
-export default function Patients() {
+export default function PatientsPage() {
+  return (
+    <Suspense>
+      <Patients />
+    </Suspense>
+  );
+}
+
+function Patients() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortColumn, setSortColumn] = useState<SortColumn>('name');
@@ -114,22 +127,62 @@ export default function Patients() {
     return patients.find((p) => p.id === selectedPatientId) || null;
   }, [selectedPatientId, patients]);
 
+  // Other patients with the selected patient's phone: a call from that number
+  // can only pop one of them, so the panel warns about the overlap.
+  const phoneSharedWith = useMemo(() => {
+    if (!selectedPatient?.phone || !patients) return [];
+    return patients.filter((p) => p.id !== selectedPatient.id && p.phone === selectedPatient.phone);
+  }, [selectedPatient, patients]);
+
+  // "Create New Patient" from a call's screen pop lands here with
+  // ?new=true&phone=…&name=…. With a caller-ID name, the patient is created
+  // straight away under that name and the caller's number. Without one, the
+  // new patient dialog asks for a name, with the number already filled in.
+  const searchParams = useSearchParams();
+  const fromCall =
+    searchParams.get('new') === 'true'
+      ? {
+          phone: searchParams.get('phone') || undefined,
+          name: splitCallerName(searchParams.get('name')),
+        }
+      : null;
+
+  // New patient dialog. A patient is saved only once it has a name, so no
+  // placeholder record is left behind to match a caller's phone.
+  const [addPatientOpen, setAddPatientOpen] = useState(false);
+  const newPatientOpen = addPatientOpen || (fromCall !== null && fromCall.name === null);
+
+  // Done with a new patient (saved or cancelled): drop the ?new=true params so
+  // a reload doesn't start another one.
+  const closeNewPatient = () => {
+    setAddPatientOpen(false);
+    if (fromCall) router.replace('/patients');
+  };
+
   // Create patient mutation
   const createMutation = useMutation({
     mutationFn: createPatient,
     onSuccess: (createdPatient) => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
+      closeNewPatient();
       setSelectedPatientId(createdPatient.id!);
     },
   });
+  const { mutate: create } = createMutation;
 
   // Handle adding a new patient
-  const handleAddPatient = () => {
-    createMutation.mutate({
-      first_name: 'New',
-      last_name: 'Patient',
-    });
-  };
+  const handleAddPatient = () => setAddPatientOpen(true);
+
+  // Caller-ID name in hand: create the patient without asking. The ref guards
+  // against StrictMode's double effect creating it twice.
+  const createdFromCall = useRef(false);
+  useEffect(() => {
+    if (createdFromCall.current || searchParams.get('new') !== 'true') return;
+    const name = splitCallerName(searchParams.get('name'));
+    if (!name) return;
+    createdFromCall.current = true;
+    create({ ...name, phone: searchParams.get('phone') || undefined });
+  }, [searchParams, create]);
 
   // Handle column sorting
   const handleSort = (column: SortColumn) => {
@@ -401,7 +454,18 @@ export default function Patients() {
       </div>
 
       {/* Patient details panel */}
-      <PatientPanel patient={selectedPatient} onClose={() => setSelectedPatientId(null)} />
+      <NewPatientDialog
+        open={newPatientOpen}
+        onOpenChange={(open) => !open && closeNewPatient()}
+        phone={fromCall?.phone}
+        onCreate={create}
+        isPending={createMutation.isPending}
+      />
+      <PatientPanel
+        patient={selectedPatient}
+        phoneSharedWith={phoneSharedWith}
+        onClose={() => setSelectedPatientId(null)}
+      />
     </>
   );
 }

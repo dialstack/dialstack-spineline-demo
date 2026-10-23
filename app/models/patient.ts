@@ -195,14 +195,25 @@ class PatientModel {
     }
   }
 
-  // Find patient by phone number (for screen pop caller lookup)
-  static async findByPhone(practiceId: number, phone: string): Promise<Patient | null> {
+  // Find patient by phone number (for screen pop caller lookup).
+  // Several patients can share a phone (a family, or a duplicate record). Without an ORDER BY, Postgres returns whichever row it reads first,
+  // usually the oldest. A caller who gave their name (an AI-receptionist booking)
+  // gets the patient with that name; otherwise the record someone most recently
+  // worked on wins.
+  static async findByPhone(
+    practiceId: number,
+    phone: string,
+    name?: string
+  ): Promise<Patient | null> {
     const pool = await dbConnect();
 
     try {
       const result = await pool.query(
-        'SELECT * FROM patients WHERE practice_id = $1 AND phone = $2 LIMIT 1',
-        [practiceId, phone]
+        `SELECT * FROM patients WHERE practice_id = $1 AND phone = $2
+        ORDER BY lower(first_name || ' ' || last_name) = lower($3::text) DESC NULLS LAST,
+          updated_at DESC, id DESC
+        LIMIT 1`,
+        [practiceId, phone, name?.trim() || null]
       );
 
       return result.rows[0] || null;
