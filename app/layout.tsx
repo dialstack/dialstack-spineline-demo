@@ -1,6 +1,6 @@
 'use client';
 
-import { Inter as FontSans } from 'next/font/google';
+import localFont from 'next/font/local';
 import { cn } from '@/lib/utils';
 import './global.css';
 import NextAuthProvider from './auth';
@@ -9,9 +9,11 @@ import { SettingsProvider } from '@/app/contexts/settings';
 import { EmbeddedComponentBorderProvider } from '@/app/hooks/EmbeddedComponentBorderProvider';
 import QueryProvider from '@/app/providers/QueryProvider';
 
-const fontSans = FontSans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
+// Self-hosted rather than next/font/google, so the build never downloads fonts.
+// See fonts/README.md.
+const fontSans = localFont({
+  src: './fonts/InterVariable.woff2',
+  weight: '100 900',
   variable: '--font-sans',
 });
 
