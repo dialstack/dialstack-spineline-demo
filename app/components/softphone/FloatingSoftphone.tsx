@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   callPeerName,
@@ -15,12 +15,6 @@ import { normalizePatientPhone } from '@/lib/phone';
 import { PatientCallCard } from '@/app/components/screen-pop/PatientCallCard';
 import { useSoftphoneDrawer } from '@/app/hooks/SoftphoneDrawerProvider';
 import { usePeekPatient } from '@/app/hooks/useLookupPatient';
-
-// The in-call screen re-renders every second for its timer, and every render of
-// the SDK's <CallHistory> inside the card reloads it, so skip renders whose
-// props haven't changed. Drop this once that SDK wrapper stops reloading when
-// it re-renders with the same props.
-const StablePatientCallCard = memo(PatientCallCard);
 
 type Call = NonNullable<ReturnType<typeof useSoftphone>['activeCall']>;
 
@@ -195,7 +189,6 @@ function Row(props: {
 function Caller({ call }: { call: Call }) {
   const { callMatch, incomingMatches, setOpen } = useSoftphoneDrawer();
   const peekPatient = usePeekPatient();
-  const keepOpen = useCallback(() => setOpen(true), [setOpen]);
   const number = callPeerNumber(call);
   const match =
     incomingMatches.find((m) => m.peer === number) ??
@@ -206,12 +199,12 @@ function Caller({ call }: { call: Call }) {
   const patient = match && !match.isLoading ? match.patient : (cached ?? null);
   const isLoading = (match?.isLoading ?? true) && cached === undefined;
   return (
-    <StablePatientCallCard
+    <PatientCallCard
       fromNumber={number}
       fromName={callPeerName(call)}
       patient={patient}
       isLoading={isLoading}
-      onAction={keepOpen}
+      onAction={() => setOpen(true)}
     />
   );
 }

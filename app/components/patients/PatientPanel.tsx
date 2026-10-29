@@ -32,6 +32,10 @@ import { EditableCell } from '@/app/components/EditableCell';
 import { PatientQuickInfo } from '@/app/components/patients/PatientQuickInfo';
 import type { Patient } from '@/app/models/patient';
 
+// Module-level so it keeps its identity across renders: the SDK re-applies an
+// object prop only when it is a new object.
+const CALL_HISTORY_CLASSES = { base: 'rounded-lg', item: 'rounded-md' };
+
 /**
  * Delete a patient via the API
  */
@@ -277,10 +281,7 @@ export function PatientPanel({ patient, phoneSharedWith = [], onClose }: Patient
                     <CallHistory
                       phoneNumber={patient.phone}
                       limit={5}
-                      classes={{
-                        base: 'rounded-lg',
-                        item: 'rounded-md',
-                      }}
+                      classes={CALL_HISTORY_CLASSES}
                     />
                   </EmbeddedComponentContainer>
                 </div>

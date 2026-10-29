@@ -28,6 +28,10 @@ export interface PatientCallCardProps {
   onAction?: () => void;
 }
 
+// Module-level so it keeps its identity across renders: the SDK re-applies an
+// object prop only when it is a new object.
+const CALL_HISTORY_CLASSES = { base: 'rounded-lg', item: 'rounded-md text-sm' };
+
 function formatDate(d?: Date | string) {
   if (!d) return null;
   return new Date(d).toLocaleDateString('en-US', {
@@ -123,11 +127,7 @@ export function PatientCallCard({
               <span className="text-sm font-medium text-muted-foreground">Recent Calls</span>
             </div>
             <EmbeddedComponentContainer componentName="CallHistory">
-              <CallHistory
-                phoneNumber={fromNumber}
-                limit={3}
-                classes={{ base: 'rounded-lg', item: 'rounded-md text-sm' }}
-              />
+              <CallHistory phoneNumber={fromNumber} limit={3} classes={CALL_HISTORY_CLASSES} />
             </EmbeddedComponentContainer>
           </div>
         </div>

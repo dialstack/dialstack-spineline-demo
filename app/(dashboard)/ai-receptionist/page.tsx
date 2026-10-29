@@ -7,6 +7,10 @@ import { AIAgent } from '@dialstack/sdk-react/ai-agent';
 
 type AIAgentStatus = 'loading' | 'ready' | 'error';
 
+// Module-level so it keeps its identity across renders: the SDK re-applies an
+// object prop only when it is a new object.
+const HIDDEN_FIELDS: ['name'] = ['name'];
+
 export default function AIReceptionistPage() {
   const [aiAgentId, setAiAgentId] = useState<string | null>(null);
   const [status, setStatus] = useState<AIAgentStatus>('loading');
@@ -40,7 +44,7 @@ export default function AIReceptionistPage() {
       <Container className="p-5">
         <EmbeddedComponentContainer componentName="AIAgent">
           {status === 'ready' && aiAgentId ? (
-            <AIAgent agentId={aiAgentId} hideFields={['name']} />
+            <AIAgent agentId={aiAgentId} hideFields={HIDDEN_FIELDS} />
           ) : status === 'error' ? (
             <p className="text-sm text-red-600">
               Could not load the AI receptionist. Please try again in a moment.
