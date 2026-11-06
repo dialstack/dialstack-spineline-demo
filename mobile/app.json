@@ -59,14 +59,12 @@
           "color": "#0077b6"
         }
       ],
-      "./plugins/withWakeHeadlessService",
-      "./plugins/withLocalRigCleartext",
-      "./plugins/withCallKitIcon",
       "./plugins/withBrandedIncomingCall"
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": true,
+      "tsconfigPaths": false
     }
   }
 }

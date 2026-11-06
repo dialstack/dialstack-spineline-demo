@@ -4,12 +4,13 @@ import { Redirect, Tabs } from 'expo-router';
 import { SoftphoneProvider } from '@dialstack/sdk-native';
 
 import { useAuth } from '../../auth';
-import { CallProximity } from '../../CallProximity';
+import { resolvePatient } from '../../caller';
+import { CallProximity } from '@os/CallProximity';
 import { FollowCall } from '../../components/FollowCall';
-import { audioOutput, bridge, phone } from '../../callBridge';
+import { audioOutput, bridge, phone } from '@os/callBridge';
 import { Icon, type IconName } from '../../components/TabIcon';
 import { API_BASE_URL, sessionToken } from '../../config';
-import { requestMicrophonePermission } from '../../permissions';
+import { requestMicrophonePermission } from '@os/permissions';
 import { registerForWakePush } from '../../pushRegistration';
 import { storage } from '../../storage';
 import { colors, fonts, softphoneAppearance, useBrandFonts } from '../../theme';
@@ -55,6 +56,8 @@ export default function AppLayout() {
       storage={storage}
       apiBaseUrl={API_BASE_URL}
       appearance={softphoneAppearance}
+      // Names the call after the patient in the drop-in, as the web drawer does.
+      resolvePeer={resolvePatient}
       // Dial through the bridge so an outbound call is reported to the OS and
       // survives backgrounding, like an incoming one.
       bridge={bridge}

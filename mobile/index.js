@@ -1,6 +1,6 @@
-import './src/webrtcGlobals';
+import '@os/webrtcGlobals';
 import { registerWakeTask } from '@dialstack/sdk-native';
-import { bridge } from './src/callBridge';
+import { bridge } from '@os/callBridge';
 import { isSignedIn } from './src/session';
 
 // Both entry paths run this file: the app window, and on Android the headless

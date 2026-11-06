@@ -1,5 +1,5 @@
-import { SPINELINE_URL } from './config';
-import { clearTokens, getSpinelineToken } from './storage';
+import { SPINELINE_URL } from '@/config';
+import { clearTokens, getSpinelineToken } from '@/storage';
 
 /**
  * The Spineline backend's JSON API — the same routes the web app uses, called
@@ -62,6 +62,18 @@ export async function login(email: string, password: string): Promise<string> {
 
 export const listPatients = () => api<Patient[]>('/api/patients');
 
+/** The practice's patients, A to Z by last name. */
+export const listPatientsByName = async () =>
+  (await listPatients()).sort((a, b) => a.last_name.localeCompare(b.last_name));
+
+/** The patient a phone number or extension belongs to, matched as the web app's screen pop does. */
+export async function findPatientByPhone(phone: string): Promise<Patient | null> {
+  const { patient } = await api<{ patient: Patient | null }>(
+    `/api/patients/lookup?phone=${encodeURIComponent(phone)}`
+  );
+  return patient;
+}
+
 /**
  * The practice's DialStack user, created if it has none yet: the webrtc-session
  * route only finds a user, so a practice that never opened the web softphone
@@ -73,6 +85,13 @@ export function listAppointments(start: Date, end: Date): Promise<Appointment[]>
   const q = `start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`;
   return api<Appointment[]>(`/api/appointments?${q}`);
 }
+
+export const TYPE_LABEL: Record<Appointment['type'], string> = {
+  initial: 'Initial consult',
+  adjustment: 'Adjustment',
+  walk_in: 'Walk-in',
+  follow_up: 'Follow-up',
+};
 
 export const patientName = (p: Pick<Patient, 'first_name' | 'last_name'>) =>
   `${p.first_name} ${p.last_name}`;

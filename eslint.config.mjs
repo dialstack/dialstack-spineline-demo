@@ -12,8 +12,9 @@ export default defineConfig([
     'next-env.d.ts',
     '.yalc/**',
     '.venv/**',
-    // The React Native app has its own toolchain (mobile/eslint.config.js).
+    // The React Native apps have their own toolchains (mobile*/eslint.config.js).
     'mobile/**',
+    'mobile-click-to-call/**',
   ]),
   ...fixupConfigRules([...nextVitals, ...nextTypescript]),
 ]);

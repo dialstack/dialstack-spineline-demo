@@ -1,0 +1,17 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/assets/*": ["./assets/*"],
+      "@spineline/*": ["../mobile/src/*"],
+      "@c2c/*": [
+        "../../sdk/examples/mobile/click-to-call/src/*",
+        "../../dialstack-sdk/examples/mobile/click-to-call/src/*"
+      ],
+      "*": ["./node_modules/@types/*", "./node_modules/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+}

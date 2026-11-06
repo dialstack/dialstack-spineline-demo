@@ -29,5 +29,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "mobile"]
+  "exclude": ["node_modules", "mobile", "mobile-click-to-call"]
 }

@@ -1,36 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useSoftphone, type Call } from '@dialstack/sdk-native';
 
-import { resolvePatient, type PeerInfo } from '../caller';
-
-// One lookup per call, shared by every screen that shows it.
-const lookups = new Map<string, Promise<PeerInfo | null>>();
+import { peerKey, peerNumber, resolvePatient, type PeerInfo } from '../caller';
 
 /** Who a call is with, for Spineline's own screens: the patient behind its number. */
 export function useCallerTitle(call: Call) {
   const { displayNumber } = useSoftphone();
-  // The lookup's answer, tagged with its call: still looking while the tag differs.
-  const [resolved, setResolved] = useState<{ id: string; info: PeerInfo | null } | null>(null);
+  // The lookup's answer, tagged with the party it is for: still looking while
+  // the tag differs, as after a transfer.
+  const key = peerKey(call);
+  const [resolved, setResolved] = useState<{ key: string; info: PeerInfo | null } | null>(null);
 
   useEffect(() => {
     let live = true;
-    let lookup = lookups.get(call.id);
-    if (!lookup) {
-      lookup = resolvePatient(call).catch(() => null);
-      lookups.clear(); // only the current call's lookup is needed
-      lookups.set(call.id, lookup);
-    }
-    void lookup.then((info) => live && setResolved({ id: call.id, info }));
+    void resolvePatient(call).then((info) => live && setResolved({ key, info }));
     return () => {
       live = false;
     };
-    // A call's number never changes, so its id is enough.
+    // The key names the call and its number, all the lookup reads.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [call.id]);
+  }, [key]);
 
-  const looking = resolved?.id !== call.id;
+  const looking = resolved?.key !== key;
   const info = looking ? null : resolved.info;
-  const number = displayNumber(call.direction === 'inbound' ? call.from : call.to);
+  const number = displayNumber(peerNumber(call));
   return {
     info,
     // True until the patient lookup settles, so a screen can wait to say "not on file".

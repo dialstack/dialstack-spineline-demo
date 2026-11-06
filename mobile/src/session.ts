@@ -1,4 +1,4 @@
-import { bridge, phone } from './callBridge';
+import { bridge, phone } from '@os/callBridge';
 import { WAKE_REGISTRY_URL } from './config';
 import * as spineline from './spineline';
 import {

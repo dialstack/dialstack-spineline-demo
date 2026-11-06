@@ -8,8 +8,16 @@ module.exports = defineConfig([
     ignores: ['dist/*'],
   },
   {
+    // Read by Node when Expo loads the app config, like metro.config.js.
+    files: ['app.config.js'],
+    languageOptions: {
+      globals: { __dirname: 'readonly', require: 'readonly', module: 'writable' },
+    },
+  },
+  {
     /**
-     * The OS call library is reachable from exactly one file: the adapter.
+     * The OS call library is reachable from exactly one file: the adapter, which
+     * this app imports from the os-integration example (`@os/os/...`).
      *
      * Everything else talks to the OS through the `OsCallAdapter` port from
      * `@dialstack/sdk-native`, so swapping expo-callkit-telecom for
@@ -24,7 +32,6 @@ module.exports = defineConfig([
     // in BOTH the window and the headless wake runtime, so a stray listener there
     // is live on the hardest path to reproduce. `patterns` also blocks subpaths.
     files: ['**/*.{js,jsx,mjs,ts,tsx}'],
-    ignores: ['src/os/expoCallKitTelecomAdapter.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -33,7 +40,7 @@ module.exports = defineConfig([
             {
               group: ['expo-callkit-telecom', 'expo-callkit-telecom/*'],
               message:
-                'Only src/os/expoCallKitTelecomAdapter.ts may import expo-callkit-telecom. Everything else uses the OsCallAdapter port from @dialstack/sdk-native.',
+                "Only os-integration's src/os/expoCallKitTelecomAdapter.ts may import expo-callkit-telecom. Everything else uses the OsCallAdapter port from @dialstack/sdk-native.",
             },
           ],
         },

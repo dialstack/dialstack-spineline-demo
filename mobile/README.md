@@ -17,6 +17,9 @@ Level 1 and Level 2 can be shown rather than described:
 Level 2 (CallKit / Telecom and push wake) is on under both UIs: lock the phone
 and call it.
 
+For the other path, where the app never carries audio and calls ring the user's
+own cell, see the click-to-call demo in [`../mobile-click-to-call`](../mobile-click-to-call).
+
 A call from a number on file is a patient call everywhere it appears: the
 lock-screen call (Spineline-branded, named by the push harness from Spineline's
 patients), the Phone tab while it rings (next visit, last visit, age) and once it
@@ -50,6 +53,20 @@ so the next practice to sign in on the phone gets its own session.
 Node 24. You need three things running: Spineline's backend, the push harness,
 and the app.
 
+The app imports its OS layer from the DialStack SDK's `os-integration` example.
+In this monorepo it finds it at `../../sdk/examples/mobile/os-integration`. From the
+public `dialstack-spineline-demo` repo, clone
+[`dialstack-sdk`](https://github.com/dialstack/dialstack-sdk) next to it, at the
+same point in time (both on `main`):
+
+```bash
+git clone https://github.com/dialstack/dialstack-spineline-demo.git
+git clone https://github.com/dialstack/dialstack-sdk.git
+```
+
+Nothing needs installing in the SDK checkout: every package resolves from this
+app.
+
 **1. Spineline**, the web app in `..`, pointed at your DialStack environment
 (`DIALSTACK_API_URL`, `NEXT_PUBLIC_DIALSTACK_API_URL`, and that environment's
 secret and publishable keys). Expose it on a public URL with any tunnel, so a
@@ -65,9 +82,20 @@ cp .env.example .env.local   # then fill it in
 
 `EXPO_PUBLIC_SPINELINE_URL` is the Spineline tunnel.
 
-The OS layer (the CallKit/Telecom adapter, call bridge, background-timers module
-and wake config plugins) is a copy of the [`os-integration`](https://github.com/dialstack/dialstack-sdk/tree/main/examples/mobile/os-integration) example's.
-It only exists to make this a working example.
+The OS layer (the CallKit/Telecom adapter, call bridge, permissions, the
+background-timers native module and the wake config plugins) is imported from
+[`os-integration`](https://github.com/dialstack/dialstack-sdk/tree/main/examples/mobile/os-integration),
+not copied:
+
+- Code imports it as `@os/…`. Its own files import their config and storage as
+  `@/…`, which resolves to this app's `src/`, so the call bridge signs in through
+  Spineline here and through a bundled token in `os-integration`.
+- `tsconfig.json` maps the aliases for TypeScript, plus a catch-all `"*"` path
+  so the imported files find their packages' types in this app. `metro.config.js`
+  maps them for the bundle (Expo's own tsconfig-paths support is off, or the
+  catch-all would send packages to their types at runtime), `app.config.js` adds the shared config plugins, and
+  `expo.autolinking.searchPaths` in `package.json` links the native module.
+  Each lists the monorepo path first, then the sibling clone.
 
 **3. Push wake.** Firebase / APNs, `mobile_push_wakeup` on the user, the webhook
 endpoint and the harness are set up exactly as in the
@@ -163,10 +191,11 @@ device selection and moves the audio to the speaker behind Telecom's back.
 
 ## Swapping the call library
 
-`src/os/expoCallKitTelecomAdapter.ts` is the only file that imports
-`expo-callkit-telecom`, so a callkeep (or hand-rolled CallKit/Telecom) twin is a
-drop-in that exports the same `expoCallKitTelecom()` shape, `{ os, ringback,
-audioOutput }`, and `src/callBridge.ts` changes one import. An eslint rule holds that
+`os-integration`'s `src/os/expoCallKitTelecomAdapter.ts` is the only file that
+imports `expo-callkit-telecom`, so a callkeep (or hand-rolled CallKit/Telecom)
+twin is a drop-in that exports the same `expoCallKitTelecom()` shape, `{ os,
+ringback, audioOutput }`, and its `src/callBridge.ts` changes one import. Make
+that change in `os-integration`; this app picks it up. An eslint rule holds that
 line: a second subscriber to the OS call events races the bridge on every answer,
 and the two then disagree about who owns the session.
 

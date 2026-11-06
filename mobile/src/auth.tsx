@@ -8,8 +8,8 @@ import {
   type ReactNode,
 } from 'react';
 
-import * as session from './session';
-import { onTokensCleared } from './storage';
+import * as session from '@/session';
+import { onTokensCleared } from '@/storage';
 
 type Auth = {
   signedIn: boolean;

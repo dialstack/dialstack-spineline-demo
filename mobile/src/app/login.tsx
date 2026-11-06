@@ -14,7 +14,7 @@ import { Redirect } from 'expo-router';
 
 import { useAuth } from '../auth';
 import { UnauthorizedError } from '../spineline';
-import { colors, fonts, radius, useBrandFonts } from '../theme';
+import { colors, fonts, radius, useBrandFonts } from '@/theme';
 
 /** Same sign-in as the web app's form (`app/(auth)/login/form.tsx`): same account, same password. */
 export default function Login() {

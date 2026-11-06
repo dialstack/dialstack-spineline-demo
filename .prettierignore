@@ -1,2 +1,3 @@
-# The React Native app formats with its own config (mobile/.prettierrc.yml).
+# The React Native apps format with their own config (mobile*/.prettierrc.yml).
 mobile/
+mobile-click-to-call/

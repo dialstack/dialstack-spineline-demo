@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Spineline Callback",
+    "slug": "spineline-click-to-call-demo",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "spineline-c2c",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "ai.dialstack.spineline.clicktocall"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "package": "ai.dialstack.spineline.clicktocall"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 96
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "tsconfigPaths": false
+    }
+  }
+}

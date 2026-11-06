@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from '../auth';
-import { colors, useBrandFonts } from '../theme';
+import { colors, useBrandFonts } from '@/theme';
 
 // Hold the splash until Inter is in, rather than returning null from this layout:
 // the navigator must mount on the first render, or expo-router's launch-URL

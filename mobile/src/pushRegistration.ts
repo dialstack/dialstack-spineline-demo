@@ -1,6 +1,6 @@
 import { WAKE_REGISTRY_URL } from './config';
-import { getWakePushToken } from './os/expoCallKitTelecomAdapter';
-import { requestNotificationPermission } from './permissions';
+import { getWakePushToken } from '@os/os/expoCallKitTelecomAdapter';
+import { requestNotificationPermission } from '@os/permissions';
 import { getInstallId, getSpinelineToken } from './storage';
 
 // The integrator's backend, which receives DialStack's `call.mobile_push_wakeup`

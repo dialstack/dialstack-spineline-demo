@@ -4,7 +4,12 @@
     "strict": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@/assets/*": ["./assets/*"]
+      "@/assets/*": ["./assets/*"],
+      "@os/*": [
+        "../../sdk/examples/mobile/os-integration/src/*",
+        "../../dialstack-sdk/examples/mobile/os-integration/src/*"
+      ],
+      "*": ["./node_modules/@types/*", "./node_modules/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
