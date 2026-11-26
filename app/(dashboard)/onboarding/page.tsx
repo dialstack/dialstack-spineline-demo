@@ -38,14 +38,14 @@ function buildLogoHtml(companyName?: string, companyLogoUrl?: string): string {
     const safeUrl = encodeURI(companyLogoUrl);
     return `<div style="display:flex;align-items:center;gap:8px">
       <img src="${safeUrl}" alt="" style="height:28px;width:auto" />
-      <span style="font-size:20px;font-weight:700;color:#f0f0ff">${safeName}</span>
+      <span style="font-size:20px;font-weight:700;color:inherit">${safeName}</span>
     </div>`;
   }
 
   // Default: use Spineline logo from public assets
   return `<div style="display:flex;align-items:center;gap:8px">
     <img src="/spineline_icon.webp" alt="" style="height:28px;width:auto" />
-    <span style="font-size:20px;font-weight:700;color:#f0f0ff">${safeName}</span>
+    <span style="font-size:20px;font-weight:700;color:inherit">${safeName}</span>
   </div>`;
 }
 
